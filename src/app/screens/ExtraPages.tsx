@@ -6,7 +6,7 @@ import { useI18n } from "../i18n";
 
 function ProductGrid({ items }: { items: ApiProduct[] }) {
   const { t } = useI18n();
-  const fmt = (v: string | number) => `${Number(v).toFixed(2)} ₼`;
+  const fmt = (v: string | number) => `${Number(v).toFixed(2)} \u20BC`;
 
   if (items.length === 0) {
     return <p className="text-zinc-400">{t("shop.noProducts")}</p>;
@@ -17,7 +17,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
       {items.map((p) => (
         <Link
           key={p.id}
-          to={`/product/${p.id}`}
+          to={`/product/${p.slug}`}
           className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
         >
           <div className="aspect-[4/5] overflow-hidden">
@@ -268,11 +268,28 @@ export function ShippingReturnsPage() {
   const { t } = useI18n();
   return (
     <PageWrap title={t("shipret.title")} subtitle={t("shipret.subtitle")}>
-      <ul className="space-y-3 text-zinc-300">
-        <li className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">{t("shipret.item1")}</li>
-        <li className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">{t("shipret.item2")}</li>
-        <li className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">{t("shipret.item3")}</li>
-      </ul>
+      <div className="space-y-4 text-zinc-300">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <h3 className="text-white text-lg mb-3">🚚 Çatdırılma və Ödəniş</h3>
+          <ul className="space-y-2">
+            <li>• Şəhər daxili çatdırılma — Yango, Bolt və s.</li>
+            <li>• AzerPoçt ilə göndəriş — 3 \u20BC</li>
+            <li>• N.Nərimanov və Gənclik metrosuna çatdırılma — 2 \u20BC</li>
+            <li>• Depodan təhvil alma — Pulsuz</li>
+          </ul>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <h4 className="text-white mb-2">📍 Ünvan:</h4>
+          <p>Fəxrəddin Musayev küçəsi, Adore Plaza</p>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <h4 className="text-white mb-2">💳 Ödəniş</h4>
+          <p>Ödəniş məhsul çatdırıldıqda edilir.</p>
+          <p>Nağd və ya kartdan-karta ödəniş mümkündür.</p>
+        </div>
+      </div>
     </PageWrap>
   );
 }
@@ -361,4 +378,7 @@ export function NotFoundPage() {
     </div>
   );
 }
+
+
+
 

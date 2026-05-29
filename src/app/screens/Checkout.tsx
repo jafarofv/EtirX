@@ -1,8 +1,16 @@
-﻿import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, MapPin, Truck, CheckCircle2 } from "lucide-react";
 import { useI18n } from "../i18n";
 import { createOrder } from "../lib/api";
+import { getAuthToken, getMe, updateMe } from "../lib/auth";
+
+type DeliveryMethod = {
+  id: "city_courier" | "metro_drop" | "azerpost" | "pickup";
+  label: string;
+  eta: string;
+  fee: number;
+};
 
 export function Checkout() {
   const navigate = useNavigate();
@@ -13,8 +21,78 @@ export function Checkout() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [profileHadAddress, setProfileHadAddress] = useState(false);
+
+  const deliveryMethods: DeliveryMethod[] = [
+    { id: "city_courier", label: t("checkout.delivery.cityCourier"), eta: t("checkout.delivery.cityCourierEta"), fee: 0 },
+    { id: "metro_drop", label: t("checkout.delivery.metroDrop"), eta: t("checkout.delivery.metroDropEta"), fee: 2 },
+    { id: "azerpost", label: t("checkout.delivery.azerpost"), eta: t("checkout.delivery.azerpostEta"), fee: 3 },
+    { id: "pickup", label: t("checkout.delivery.pickup"), eta: t("checkout.delivery.pickupEta"), fee: 0 },
+  ];
+  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryMethod["id"] | null>(null);
+  const selectedMethod = deliveryMethods.find((m) => m.id === selectedDelivery) ?? null;
+
+  useEffect(() => {
+    let mounted = true;
+    const guestRaw = localStorage.getItem("guest-checkout-info");
+    const savedPromo = localStorage.getItem("checkout-promo-code");
+    if (savedPromo && mounted) setPromoCode(savedPromo);
+    if (guestRaw) {
+      try {
+        const guest = JSON.parse(guestRaw) as { fullName?: string; phone?: string; address?: string; notes?: string };
+        if (mounted) {
+          setFullName((prev) => prev || guest.fullName || "");
+          setPhone((prev) => prev || guest.phone || "");
+          setAddress((prev) => prev || guest.address || "");
+          setNotes((prev) => prev || guest.notes || "");
+        }
+      } catch {
+        // ignore guest draft parse errors
+      }
+    }
+
+    (async () => {
+      if (!getAuthToken()) {
+        if (mounted) setIsLoggedIn(false);
+        return;
+      }
+      try {
+        const me = await getMe();
+        if (!mounted) return;
+        setIsLoggedIn(true);
+        setProfileHadAddress(Boolean(me.address?.trim()));
+        setFullName(me.full_name || "");
+        setPhone(me.phone || "");
+        if (me.address?.trim()) setAddress(me.address);
+      } catch {
+        if (mounted) setIsLoggedIn(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(
+      "guest-checkout-info",
+      JSON.stringify({ fullName, phone, address, notes })
+    );
+  }, [fullName, phone, address, notes]);
+
+  useEffect(() => {
+    const code = promoCode.trim();
+    if (!code) {
+      localStorage.removeItem("checkout-promo-code");
+      return;
+    }
+    localStorage.setItem("checkout-promo-code", code);
+  }, [promoCode]);
 
   if (step === "success") {
     return (
@@ -81,6 +159,15 @@ export function Checkout() {
               rows={2}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
+            <input
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              placeholder={t("checkout.promo")}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+            />
+            {promoCode.trim() && !isLoggedIn && (
+              <p className="text-xs text-amber-400">{t("checkout.promoLoginHint")}</p>
+            )}
           </div>
           <div className="flex items-center gap-2 mb-4">
             <MapPin className="w-5 h-5 text-zinc-400" />
@@ -98,13 +185,22 @@ export function Checkout() {
             <h2 className="font-medium">{t("checkout.delivery")}</h2>
           </div>
           <div className="space-y-3">
-            <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 flex items-center justify-between">
-              <div>
-                <p className="font-medium mb-0.5">{t("checkout.standard")}</p>
-                <p className="text-sm text-zinc-400">{t("checkout.deliveryEta")}</p>
-              </div>
-              <p className="font-medium">4.99 ₼</p>
-            </div>
+            {deliveryMethods.map((method) => (
+              <button
+                key={method.id}
+                type="button"
+                onClick={() => setSelectedDelivery(method.id)}
+                className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
+                  selectedDelivery === method.id ? "border-white" : "border-zinc-800 hover:border-zinc-600"
+                }`}
+              >
+                <div>
+                  <p className="font-medium mb-0.5">{method.label}</p>
+                  <p className="text-sm text-zinc-400">{method.eta}</p>
+                </div>
+                <p className="font-medium">{method.fee === 0 ? t("checkout.delivery.free") : `${method.fee.toFixed(2)} \u20BC`}</p>
+              </button>
+            ))}
             <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
               <p className="font-medium mb-0.5">{t("checkout.cod")}</p>
               <p className="text-sm text-zinc-400">{t("checkout.codDesc")}</p>
@@ -119,18 +215,37 @@ export function Checkout() {
               setError(t("checkout.requiredError"));
               return;
             }
+            if (!selectedMethod) {
+              setError(t("checkout.deliveryRequiredError"));
+              return;
+            }
+            if (promoCode.trim() && !isLoggedIn) {
+              setError(t("checkout.promoLoginRequired"));
+              return;
+            }
             try {
               setSubmitting(true);
               const raw = localStorage.getItem("cart-items");
               const parsed: Array<{ id: number; quantity: number }> = raw ? JSON.parse(raw) : [];
+              if (parsed.length === 0) {
+                setError(t("cart.empty"));
+                return;
+              }
               const result = await createOrder({
                 full_name: fullName,
                 phone,
                 address,
-                notes,
-                shipping_fee: "4.99",
+                notes: promoCode.trim() ? `${notes}\nPromo: ${promoCode.trim()}`.trim() : notes,
+                shipping_fee: selectedMethod.fee.toFixed(2),
                 items: parsed.map((i) => ({ product_id: i.id, quantity: i.quantity })),
               });
+              if (isLoggedIn && !profileHadAddress && address.trim()) {
+                await updateMe({
+                  full_name: fullName.trim(),
+                  phone: phone.trim(),
+                  address: address.trim(),
+                });
+              }
               setOrderCode(result.code);
               setStep("success");
             } catch {
@@ -148,3 +263,5 @@ export function Checkout() {
     </div>
   );
 }
+
+

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu } from "lucide-react";
 import { useI18n, type Language } from "../i18n";
@@ -28,11 +28,11 @@ export function Layout() {
   ];
   const langs: Language[] = ["az", "en", "ru"];
   const extraPages = [
-    { to: "/shop", label: t("menu.shop") },
+    { to: "/perfumes", label: t("menu.shop") },
     { to: "/categories", label: t("menu.category") },
     { to: "/kampaniyalar", label: t("menu.campaigns") },
     { to: "/haqqimizda", label: t("menu.about") },
-    { to: "/catdirilma-qaytarma", label: t("menu.shipping") },
+    { to: "/catdirilma", label: t("menu.shipping") },
     { to: "/faq", label: t("menu.faq") },
     { to: "/elaqe", label: t("menu.contact") },
     { to: "/gizlilik", label: t("menu.privacy") },
@@ -40,9 +40,9 @@ export function Layout() {
   ];
   const promoLines = [t("promo.line1"), t("promo.line2"), t("promo.line3")];
   const langFlags: Record<Language, string> = {
-    az: "🇦🇿",
-    en: "🇬🇧",
-    ru: "🇷🇺",
+    az: "\uD83C\uDDE6\uD83C\uDDFF",
+    en: "\uD83C\uDDEC\uD83C\uDDE7",
+    ru: "\uD83C\uDDF7\uD83C\uDDFA",
   };
 
   useEffect(() => {
@@ -106,9 +106,10 @@ export function Layout() {
           <div className="w-full px-6 lg:px-8 h-16 flex items-center justify-between">
             <button
               onClick={() => navigate("/")}
-              className="text-lg tracking-tight"
+              className="inline-flex items-center"
+              aria-label="EtirX home"
             >
-              {t("brand.name")}
+              <img src="/logo.png" alt="EtirX" className="h-14 w-14 object-cover" />
             </button>
             <nav className="flex items-center gap-2">
               <div ref={langDesktopRef} className="relative mr-2">
@@ -193,58 +194,63 @@ export function Layout() {
         </header>
         <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
           <div className="md:hidden sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
-            <div className="px-4 py-2.5 flex items-center justify-end gap-2">
-              <div ref={langMobileRef} className="relative">
-                <button
-                  onClick={() => {
-                    setIsLangOpen((v) => !v);
-                  }}
-                  className="px-3 py-1.5 text-base rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  {langFlags[language]}
-                </button>
-                {isLangOpen && (
-                  <div className="absolute right-0 mt-2 w-24 rounded-xl border border-zinc-700 bg-zinc-900 p-1">
-                    {langs.map((lang) => (
-                      <button
-                        key={`m-${lang}`}
-                        onClick={() => {
-                          setLanguage(lang);
-                          setIsLangOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                          language === lang ? "bg-white text-black" : "text-zinc-300 hover:bg-zinc-800"
-                        }`}
-                      >
-                        {langFlags[lang]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div>
-                <button
-                  onClick={() => {
-                    setIsLangOpen(false);
-                    setTheme(theme === "dark" ? "light" : "dark");
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                >
-                  {theme === "dark" ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-                  <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
-                </button>
-              </div>
-              <div ref={pagesMobileRef} className="relative">
-                <button
-                  onClick={() => {
-                    setIsPagesOpen((v) => !v);
-                    setIsLangOpen(false);
-                  }}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                >
-                  <Menu className="w-3.5 h-3.5" />
-                </button>
+            <div className="px-4 py-2.5 flex items-center justify-between">
+              <button onClick={() => navigate("/")} className="inline-flex items-center" aria-label="EtirX home">
+                <img src="/logo.png" alt="EtirX" className="h-12 w-12 object-cover" />
+              </button>
+              <div className="flex items-center gap-2">
+                <div ref={langMobileRef} className="relative">
+                  <button
+                    onClick={() => {
+                      setIsLangOpen((v) => !v);
+                    }}
+                    className="px-3 py-1.5 text-base rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    {langFlags[language]}
+                  </button>
+                  {isLangOpen && (
+                    <div className="absolute right-0 mt-2 w-24 rounded-xl border border-zinc-700 bg-zinc-900 p-1">
+                      {langs.map((lang) => (
+                        <button
+                          key={`m-${lang}`}
+                          onClick={() => {
+                            setLanguage(lang);
+                            setIsLangOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-base rounded-lg ${
+                            language === lang ? "bg-white text-black" : "text-zinc-300 hover:bg-zinc-800"
+                          }`}
+                        >
+                          {langFlags[lang]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setIsLangOpen(false);
+                      setTheme(theme === "dark" ? "light" : "dark");
+                    }}
+                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  >
+                    {theme === "dark" ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                    <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
+                  </button>
+                </div>
+                <div ref={pagesMobileRef} className="relative">
+                  <button
+                    onClick={() => {
+                      setIsPagesOpen((v) => !v);
+                      setIsLangOpen(false);
+                    }}
+                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  >
+                    <Menu className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -324,3 +330,8 @@ export function Layout() {
     </div>
   );
 }
+
+
+
+
+

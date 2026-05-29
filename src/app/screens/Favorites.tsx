@@ -1,37 +1,31 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Heart, Star, ShoppingBag } from "lucide-react";
-import { perfumes } from "../data/perfumes";
 import { useI18n } from "../i18n";
 import { addToCart } from "../lib/storage";
-
-function loadFavorites() {
-  try {
-    const raw = localStorage.getItem("favorites");
-    const ids: number[] = raw ? JSON.parse(raw) : [];
-
-    const isOldDemoSeed = ids.length === 3 && ids.includes(1) && ids.includes(2) && ids.includes(5);
-    if (isOldDemoSeed) {
-      localStorage.setItem("favorites", "[]");
-      return [];
-    }
-
-    return perfumes.filter((p) => ids.includes(p.id));
-  } catch {
-    return [];
-  }
-}
+import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 
 export function Favorites() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [favorites, setFavorites] = useState(() => loadFavorites());
-  const fmt = (v: number) => `${v.toFixed(2)} ₼`;
+  const [favorites, setFavorites] = useState<CatalogProduct[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
 
   useEffect(() => {
+    (async () => {
+      const products = await loadCatalogProducts();
+      const favoriteIds: number[] = JSON.parse(localStorage.getItem("favorites") ?? "[]");
+      setFavorites(products.filter((p) => favoriteIds.includes(p.id)));
+      setHydrated(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem("favorites", JSON.stringify(favorites.map((f) => f.id)));
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
-  }, [favorites]);
+  }, [favorites, hydrated]);
 
   const removeFavorite = (id: number) => {
     setFavorites((favs) => favs.filter((p) => p.id !== id));
@@ -66,7 +60,7 @@ export function Favorites() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {favorites.map((perfume) => (
             <div key={perfume.id} className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 group">
-              <div onClick={() => navigate(`/product/${perfume.id}`)} className="cursor-pointer">
+              <div onClick={() => navigate(`/product/${perfume.slug}`)} className="cursor-pointer">
                 <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
                   <img src={perfume.image} alt={perfume.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <button
@@ -115,3 +109,8 @@ export function Favorites() {
     </div>
   );
 }
+
+
+
+
+

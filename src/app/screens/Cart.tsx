@@ -1,32 +1,19 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
-import { perfumes } from "../data/perfumes";
 import { useI18n } from "../i18n";
+import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
+import { getAuthToken } from "../lib/auth";
 
 interface CartItem {
-  perfume: typeof perfumes[0];
+  perfume: CatalogProduct;
   quantity: number;
 }
 
-function loadCartItems(): CartItem[] {
+function loadRows() {
   try {
     const raw = localStorage.getItem("cart-items");
-    const parsed: Array<{ id: number; quantity: number }> = raw ? JSON.parse(raw) : [];
-
-    const isOldDemoSeed =
-      parsed.length === 2 &&
-      parsed.some((x) => x.id === 1 && x.quantity === 1) &&
-      parsed.some((x) => x.id === 4 && x.quantity === 2);
-
-    if (isOldDemoSeed) {
-      localStorage.setItem("cart-items", "[]");
-      return [];
-    }
-
-    return parsed
-      .map((i) => ({ perfume: perfumes.find((p) => p.id === i.id), quantity: i.quantity }))
-      .filter((i): i is { perfume: typeof perfumes[0]; quantity: number } => Boolean(i.perfume));
+    return (raw ? JSON.parse(raw) : []) as Array<{ id: number; quantity: number }>;
   } catch {
     return [];
   }
@@ -35,16 +22,34 @@ function loadCartItems(): CartItem[] {
 export function Cart() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => loadCartItems());
-  const fmt = (v: number) => `${v.toFixed(2)} ₼`;
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoMsg, setPromoMsg] = useState<string | null>(null);
+  const [promoErr, setPromoErr] = useState<string | null>(null);
+  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
 
   useEffect(() => {
+    (async () => {
+      const products = await loadCatalogProducts();
+      const byId = new Map(products.map((p) => [p.id, p] as const));
+      const items = loadRows()
+        .map((i) => ({ perfume: byId.get(i.id), quantity: i.quantity }))
+        .filter((i): i is CartItem => Boolean(i.perfume));
+      setCartItems(items);
+      setPromoCode(localStorage.getItem("checkout-promo-code") ?? "");
+      setHydrated(true);
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(
       "cart-items",
       JSON.stringify(cartItems.map((i) => ({ id: i.perfume.id, quantity: i.quantity })))
     );
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
-  }, [cartItems]);
+  }, [cartItems, hydrated]);
 
   const updateQuantity = (id: number, delta: number) => {
     setCartItems((items) =>
@@ -63,7 +68,7 @@ export function Cart() {
   };
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.perfume.price * item.quantity, 0);
-  const shipping = subtotal > 0 ? 4.99 : 0;
+  const shipping = 0;
   const total = subtotal + shipping;
 
   if (cartItems.length === 0) {
@@ -101,7 +106,7 @@ export function Cart() {
               <div className="flex-1 flex flex-col">
                 <div className="flex-1">
                   <h3 className="font-medium mb-1">{item.perfume.name}</h3>
-                  <p className="text-sm text-zinc-400 mb-2">{item.perfume.brand} · {item.perfume.size}</p>
+                  <p className="text-sm text-zinc-400 mb-2">{item.perfume.brand} � {item.perfume.size}</p>
                   <p className="text-lg font-medium">{fmt(item.perfume.price)}</p>
                 </div>
                 <div className="flex items-center justify-between">
@@ -125,11 +130,43 @@ export function Cart() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 flex gap-3">
-          <input type="text" placeholder={t("cart.promo")} className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500" />
-          <button className="bg-white text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-all">
-            {t("cart.apply")}
-          </button>
+        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(e) => {
+                setPromoCode(e.target.value);
+                setPromoErr(null);
+                setPromoMsg(null);
+              }}
+              placeholder={t("cart.promo")}
+              className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500"
+            />
+            <button
+              onClick={() => {
+                setPromoErr(null);
+                setPromoMsg(null);
+                const code = promoCode.trim();
+                if (!code) {
+                  localStorage.removeItem("checkout-promo-code");
+                  setPromoMsg(t("cart.promoCleared"));
+                  return;
+                }
+                if (!getAuthToken()) {
+                  setPromoErr(t("cart.promoLoginRequired"));
+                  return;
+                }
+                localStorage.setItem("checkout-promo-code", code);
+                setPromoMsg(t("cart.promoApplied"));
+              }}
+              className="bg-white text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-all"
+            >
+              {t("cart.apply")}
+            </button>
+          </div>
+          {promoErr && <p className="mt-2 text-xs text-red-400">{promoErr}</p>}
+          {promoMsg && <p className="mt-2 text-xs text-green-400">{promoMsg}</p>}
         </div>
       </div>
 
@@ -138,7 +175,7 @@ export function Cart() {
           <h3 className="font-medium mb-4">{t("cart.summary")}</h3>
           <div className="space-y-3 mb-4">
             <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.subtotal")}</span><span className="font-medium">{fmt(subtotal)}</span></div>
-            <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.shipping")}</span><span className="font-medium">{fmt(shipping)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.shipping")}</span><span className="font-medium text-zinc-400">{t("cart.shippingAtCheckout")}</span></div>
             <div className="border-t border-zinc-800 pt-3">
               <div className="flex justify-between"><span className="font-medium">{t("cart.total")}</span><span className="text-xl font-medium">{fmt(total)}</span></div>
             </div>
@@ -157,3 +194,5 @@ export function Cart() {
     </div>
   );
 }
+
+

@@ -1,24 +1,32 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { ArrowLeft, Heart, Star, ShoppingBag, Minus, Plus, Truck, MessageCircle, CreditCard } from "lucide-react";
-import { perfumes } from "../data/perfumes";
 import { useI18n } from "../i18n";
 import { addToCart, isFavorite, toggleFavorite } from "../lib/storage";
+import { loadCatalogProductBySlug, type CatalogProduct } from "../lib/catalog";
 
 export function ProductDetails() {
   const navigate = useNavigate();
   const { t } = useI18n();
-  const { id } = useParams();
+  const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [favorite, setFavorite] = useState(false);
   const [pulseFavorite, setPulseFavorite] = useState(false);
   const [pulseCart, setPulseCart] = useState(false);
-  const fmt = (v: number) => `${v.toFixed(2)} ₼`;
+  const [perfume, setPerfume] = useState<CatalogProduct | null>(null);
+  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
 
-  const perfume = perfumes.find((p) => p.id === Number(id));
   useEffect(() => {
-    if (perfume) setFavorite(isFavorite(perfume.id));
-  }, [perfume]);
+    (async () => {
+      if (!slug) {
+        setPerfume(null);
+        return;
+      }
+      const found = await loadCatalogProductBySlug(slug);
+      setPerfume(found);
+      if (found) setFavorite(isFavorite(found.id));
+    })();
+  }, [slug]);
 
   if (!perfume) {
     return (
@@ -28,7 +36,11 @@ export function ProductDetails() {
     );
   }
 
-  const gender = [1, 3, 5].includes(perfume.id) ? "Qadın" : [2, 4].includes(perfume.id) ? "Kişi" : "Uniseks";
+  const gender = /women|qadin/i.test(`${perfume.name} ${perfume.description}`)
+    ? "Qadın"
+    : /men|kisi/i.test(`${perfume.name} ${perfume.description}`)
+      ? "Kişi"
+      : "Uniseks";
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -42,7 +54,7 @@ export function ProductDetails() {
           </button>
           <button
             onClick={() => {
-              setFavorite(toggleFavorite(Number(id)));
+              setFavorite(toggleFavorite(perfume.id));
               setPulseFavorite(true);
               setTimeout(() => setPulseFavorite(false), 180);
             }}
@@ -103,7 +115,7 @@ export function ProductDetails() {
             <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="w-4 h-4 text-zinc-300" />
-                <p className="text-sm font-medium">Qapıda Ödəniş ilə Ödə</p>
+                <p className="text-sm font-medium">Qapıda ödəniş ilə ödə</p>
               </div>
               <p className="text-sm text-zinc-400">Məhsulu təhvil alanda nağd və ya kartla ödəniş et.</p>
             </div>
@@ -148,15 +160,15 @@ export function ProductDetails() {
             <div className="space-y-3">
               <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
                 <p className="text-xs text-zinc-500 mb-2">{t("product.topNotes")}</p>
-                <p className="text-sm">{perfume.notes.top.join(", ")}</p>
+                <p className="text-sm">{perfume.notes.top.join(", ") || "-"}</p>
               </div>
               <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
                 <p className="text-xs text-zinc-500 mb-2">{t("product.heartNotes")}</p>
-                <p className="text-sm">{perfume.notes.heart.join(", ")}</p>
+                <p className="text-sm">{perfume.notes.heart.join(", ") || "-"}</p>
               </div>
               <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
                 <p className="text-xs text-zinc-500 mb-2">{t("product.baseNotes")}</p>
-                <p className="text-sm">{perfume.notes.base.join(", ")}</p>
+                <p className="text-sm">{perfume.notes.base.join(", ") || "-"}</p>
               </div>
             </div>
           </div>
@@ -170,3 +182,7 @@ export function ProductDetails() {
     </div>
   );
 }
+
+
+
+

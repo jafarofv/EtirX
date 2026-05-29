@@ -4,6 +4,7 @@
 
 ```bash
 cd backend
+copy .env.example .env
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
@@ -41,9 +42,16 @@ python manage.py seed_data
 - `GET /api/products/{slug}/`
 - `GET /api/products/?category={slug}`
 - `GET /api/products/?q={query}`
+- `POST /api/auth/register/`
+- `POST /api/auth/login/`
+- `GET /api/auth/me/`
+- `PATCH /api/auth/me/`
+- `POST /api/auth/me/` (change password)
+- `POST /api/auth/logout/`
 - `POST /api/orders/`
 - `GET /api/orders/{code}/`
 - `GET /api/orders/{code}/tracking/`
+- `GET /api/orders/my-orders/`
 - `POST /api/contact/`
 
 ## Example order payload

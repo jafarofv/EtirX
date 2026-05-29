@@ -1,4 +1,4 @@
-import { Link } from "react-router";
+﻿import { Link } from "react-router";
 
 type Props = {
   title: string;
@@ -18,7 +18,10 @@ export function SimplePage({ title, description, items = [] }: Props) {
           ))}
         </ul>
       )}
-      <Link to="/" className="inline-block bg-white text-black px-5 py-2.5 rounded-xl">Ana s?hif?y? qay�t</Link>
+      <Link to="/" className="inline-block bg-white text-black px-5 py-2.5 rounded-xl">
+        Ana səhifəyə qayıt
+      </Link>
     </div>
   );
 }
+

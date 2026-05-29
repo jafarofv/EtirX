@@ -1,8 +1,14 @@
+import { getAuthToken } from "./auth";
+
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getAuthToken();
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Token ${token}` } : {}),
+    },
     ...init,
   });
   if (!res.ok) {
@@ -56,4 +62,8 @@ export async function getProducts(params?: { category?: string; q?: string }) {
   if (params?.q) search.set("q", params.q);
   const qs = search.toString();
   return request<ApiProduct[]>(`/products/${qs ? `?${qs}` : ""}`);
+}
+
+export async function getProductBySlug(slug: string) {
+  return request<ApiProduct>(`/products/${slug}/`);
 }
