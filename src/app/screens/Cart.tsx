@@ -1,0 +1,159 @@
+﻿import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
+import { perfumes } from "../data/perfumes";
+import { useI18n } from "../i18n";
+
+interface CartItem {
+  perfume: typeof perfumes[0];
+  quantity: number;
+}
+
+function loadCartItems(): CartItem[] {
+  try {
+    const raw = localStorage.getItem("cart-items");
+    const parsed: Array<{ id: number; quantity: number }> = raw ? JSON.parse(raw) : [];
+
+    const isOldDemoSeed =
+      parsed.length === 2 &&
+      parsed.some((x) => x.id === 1 && x.quantity === 1) &&
+      parsed.some((x) => x.id === 4 && x.quantity === 2);
+
+    if (isOldDemoSeed) {
+      localStorage.setItem("cart-items", "[]");
+      return [];
+    }
+
+    return parsed
+      .map((i) => ({ perfume: perfumes.find((p) => p.id === i.id), quantity: i.quantity }))
+      .filter((i): i is { perfume: typeof perfumes[0]; quantity: number } => Boolean(i.perfume));
+  } catch {
+    return [];
+  }
+}
+
+export function Cart() {
+  const navigate = useNavigate();
+  const { t } = useI18n();
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => loadCartItems());
+  const fmt = (v: number) => `${v.toFixed(2)} ₼`;
+
+  useEffect(() => {
+    localStorage.setItem(
+      "cart-items",
+      JSON.stringify(cartItems.map((i) => ({ id: i.perfume.id, quantity: i.quantity })))
+    );
+    window.dispatchEvent(new CustomEvent("app-storage-updated"));
+  }, [cartItems]);
+
+  const updateQuantity = (id: number, delta: number) => {
+    setCartItems((items) =>
+      items
+        .map((item) =>
+          item.perfume.id === id
+            ? { ...item, quantity: Math.max(0, item.quantity + delta) }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
+  };
+
+  const removeItem = (id: number) => {
+    setCartItems((items) => items.filter((item) => item.perfume.id !== id));
+  };
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.perfume.price * item.quantity, 0);
+  const shipping = subtotal > 0 ? 4.99 : 0;
+  const total = subtotal + shipping;
+
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800">
+          <ShoppingBag className="w-10 h-10 text-zinc-600" />
+        </div>
+        <h2 className="text-xl mb-2">{t("cart.empty")}</h2>
+        <p className="text-sm text-zinc-400 mb-8 text-center">{t("cart.emptySub")}</p>
+        <button
+          onClick={() => navigate("/")}
+          className="bg-white text-black px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
+        >
+          {t("cart.start")}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-black text-white pb-8">
+      <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
+        <h1 className="text-2xl mb-1">{t("cart.title")}</h1>
+        <p className="text-sm text-zinc-400">{cartItems.length} {t("cart.items")}</p>
+      </div>
+
+      <div className="px-4 sm:px-6 lg:px-8 mb-6">
+        <div className="space-y-4">
+          {cartItems.map((item) => (
+            <div key={item.perfume.id} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
+              <div className="w-24 h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl overflow-hidden flex-shrink-0">
+                <img src={item.perfume.image} alt={item.perfume.name} className="w-full h-full object-cover" />
+              </div>
+              <div className="flex-1 flex flex-col">
+                <div className="flex-1">
+                  <h3 className="font-medium mb-1">{item.perfume.name}</h3>
+                  <p className="text-sm text-zinc-400 mb-2">{item.perfume.brand} · {item.perfume.size}</p>
+                  <p className="text-lg font-medium">{fmt(item.perfume.price)}</p>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center bg-zinc-800 rounded-xl px-1">
+                    <button onClick={() => updateQuantity(item.perfume.id, -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.perfume.id, 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  <button onClick={() => removeItem(item.perfume.id)} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 sm:px-6 lg:px-8 mb-6">
+        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 flex gap-3">
+          <input type="text" placeholder={t("cart.promo")} className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500" />
+          <button className="bg-white text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-all">
+            {t("cart.apply")}
+          </button>
+        </div>
+      </div>
+
+      <div className="px-4 sm:px-6 lg:px-8 mb-6">
+        <div className="bg-zinc-900 rounded-3xl p-6 border border-zinc-800">
+          <h3 className="font-medium mb-4">{t("cart.summary")}</h3>
+          <div className="space-y-3 mb-4">
+            <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.subtotal")}</span><span className="font-medium">{fmt(subtotal)}</span></div>
+            <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.shipping")}</span><span className="font-medium">{fmt(shipping)}</span></div>
+            <div className="border-t border-zinc-800 pt-3">
+              <div className="flex justify-between"><span className="font-medium">{t("cart.total")}</span><span className="text-xl font-medium">{fmt(total)}</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="px-4 sm:px-6 lg:px-8">
+        <button
+          onClick={() => navigate("/checkout")}
+          className="w-full bg-white text-black rounded-2xl py-4 font-medium hover:bg-zinc-100 transition-all"
+        >
+          {t("cart.checkout")}
+        </button>
+      </div>
+    </div>
+  );
+}

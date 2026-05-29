@@ -1,0 +1,66 @@
+.light-mode body,
+.light-mode .bg-black {
+  background-color: #f8f8f8 !important;
+  color: #18181b !important;
+}
+
+.light-mode .text-white {
+  color: #18181b !important;
+}
+
+.light-mode .text-zinc-400,
+.light-mode .text-zinc-500,
+.light-mode .text-zinc-600 {
+  color: #52525b !important;
+}
+
+.light-mode .bg-zinc-900,
+.light-mode .bg-zinc-900\/95,
+.light-mode .bg-zinc-950\/95,
+.light-mode .bg-zinc-800 {
+  background-color: #ffffff !important;
+}
+
+.light-mode .border-zinc-800,
+.light-mode .border-zinc-700 {
+  border-color: #e4e4e7 !important;
+}
+
+.light-mode .bg-gradient-to-br,
+.light-mode .bg-gradient-to-r {
+  background-image: none !important;
+  background-color: #f4f4f5 !important;
+}
+
+.promo-strip {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.promo-track {
+  display: flex;
+  width: max-content;
+  min-width: 200%;
+  will-change: transform;
+  animation: promo-marquee 26s linear infinite;
+}
+
+.promo-track span {
+  display: block;
+  min-width: auto;
+  white-space: nowrap;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.01em;
+  color: #d4d4d8;
+}
+
+@keyframes promo-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
