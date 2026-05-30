@@ -1,24 +1,9 @@
 from decimal import Decimal
-from django.core.management.base import BaseCommand
-from shop.models import Category, Product
+
+from django.db import migrations
 
 
-CATEGORIES = [
-    ("Oriental", "oriental"),
-    ("Woody", "woody"),
-    ("Floral", "floral"),
-    ("Fresh", "fresh"),
-    ("Citrus", "citrus"),
-    ("Amber", "amber"),
-    ("Musk", "musk"),
-    ("Luxury", "luxury"),
-    ("Night", "night"),
-    ("Daily", "daily"),
-    ("Office", "office"),
-    ("Gift", "gift"),
-]
-
-PRODUCTS = [
+DEFAULT_PRODUCTS = [
     {
         "name": "Midnight Essence",
         "slug": "midnight-essence",
@@ -88,32 +73,41 @@ PRODUCTS = [
 ]
 
 
-class Command(BaseCommand):
-    help = "Seed categories and products"
+def seed_products(apps, schema_editor):
+    Category = apps.get_model("shop", "Category")
+    Product = apps.get_model("shop", "Product")
 
-    def handle(self, *args, **options):
-        category_map = {}
-        for name, slug in CATEGORIES:
-            obj, _ = Category.objects.update_or_create(slug=slug, defaults={"name": name})
-            category_map[slug] = obj
+    category_map = {category.slug: category for category in Category.objects.all()}
+    for item in DEFAULT_PRODUCTS:
+        category = category_map.get(item["category"])
+        if category is None:
+            continue
+        Product.objects.update_or_create(
+            slug=item["slug"],
+            defaults={
+                "name": item["name"],
+                "brand": item["brand"],
+                "category": category,
+                "description": item["description"],
+                "price": item["price"],
+                "old_price": item["old_price"],
+                "stock": item["stock"],
+                "image_url": item["image_url"],
+                "is_active": True,
+            },
+        )
 
-        count = 0
-        for item in PRODUCTS:
-            category = category_map[item["category"]]
-            Product.objects.update_or_create(
-                slug=item["slug"],
-                defaults={
-                    "name": item["name"],
-                    "brand": item["brand"],
-                    "category": category,
-                    "description": item["description"],
-                    "price": item["price"],
-                    "old_price": item["old_price"],
-                    "stock": item["stock"],
-                    "image_url": item["image_url"],
-                    "is_active": True,
-                },
-            )
-            count += 1
 
-        self.stdout.write(self.style.SUCCESS(f"Seed completed: {len(CATEGORIES)} categories, {count} products."))
+def unseed_products(apps, schema_editor):
+    Product = apps.get_model("shop", "Product")
+    Product.objects.filter(slug__in=[item["slug"] for item in DEFAULT_PRODUCTS]).delete()
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("shop", "0005_seed_default_categories"),
+    ]
+
+    operations = [
+        migrations.RunPython(seed_products, unseed_products),
+    ]

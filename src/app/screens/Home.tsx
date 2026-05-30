@@ -146,7 +146,7 @@ export function Home() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(perfume.id);
+                    toggleFavorite(perfume.id, perfume.slug);
                     setPulseFavorite(perfume.id);
                     setTimeout(() => setPulseFavorite(null), 180);
                   }}
@@ -172,7 +172,7 @@ export function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(perfume.id, 1);
+                      addToCart(perfume.id, 1, perfume.slug);
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
@@ -201,7 +201,7 @@ export function Home() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(perfume.id);
+                    toggleFavorite(perfume.id, perfume.slug);
                     setPulseFavorite(perfume.id);
                     setTimeout(() => setPulseFavorite(null), 180);
                   }}
@@ -223,7 +223,7 @@ export function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(perfume.id, 1);
+                      addToCart(perfume.id, 1, perfume.slug);
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}

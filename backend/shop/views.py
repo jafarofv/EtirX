@@ -10,12 +10,18 @@ from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
-from .models import Category, Product, Order, OrderItem, ContactMessage, UserProfile
+from django.utils import timezone
+from .models import Category, Product, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption
+from .notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
     ProductSerializer,
+    UserFavoriteSerializer,
+    UserCartItemSerializer,
     OrderCreateSerializer,
     OrderSerializer,
+    PromoCodeValidateSerializer,
+    PromoCodeSerializer,
     ContactMessageSerializer,
     RegisterSerializer,
     LoginSerializer,
@@ -27,6 +33,35 @@ from .serializers import (
 
 def generate_order_code() -> str:
     return "AX-" + "".join(random.choices(string.digits, k=8))
+
+
+def resolve_product_from_payload(payload):
+    product = None
+    product_id = payload.get("product_id")
+    product_slug = (payload.get("product_slug") or "").strip()
+    if product_id is not None:
+        product = Product.objects.filter(id=product_id, is_active=True).first()
+    if product is None and product_slug:
+        product = Product.objects.filter(slug=product_slug, is_active=True).first()
+    return product
+
+
+def normalize_promo_code(value: str) -> str:
+    return (value or "").strip().upper()
+
+
+def validate_promo_for_user(promo: PromoCode, user, subtotal: Decimal) -> str | None:
+    if user is None or not user.is_authenticated:
+        return "Promokoddan istifad? etm?k ???n daxil olun."
+    if not promo.is_active_now():
+        return "Promokod aktiv deyil v? ya m?dd?ti bitib."
+    if subtotal < promo.min_subtotal:
+        return f"Bu promokod ???n minimum sifari? m?bl??i {promo.min_subtotal} ₼-dir."
+    if promo.max_total_uses is not None and promo.redemptions.count() >= promo.max_total_uses:
+        return "Bu promokodun istifad? limiti bitib."
+    if promo.max_uses_per_user and promo.redemptions.filter(user=user).count() >= promo.max_uses_per_user:
+        return "Bu promokod bu hesabda art?q istifad? olunub."
+    return None
 
 
 class CategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -60,8 +95,46 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
         serializer.is_valid(raise_exception=True)
         payload = serializer.validated_data
         shipping_fee = payload.get("shipping_fee", Decimal("0.00"))
+        promo_code_value = normalize_promo_code(payload.get("promo_code", ""))
+        resolved_items = []
+        subtotal = Decimal("0.00")
+
+        for item in payload["items"]:
+            product = None
+            product_id = item.get("product_id")
+            product_slug = (item.get("product_slug") or "").strip()
+            if product_id is not None:
+                product = Product.objects.filter(id=product_id, is_active=True).first()
+            if product is None and product_slug:
+                product = Product.objects.filter(slug=product_slug, is_active=True).first()
+            if product is None:
+                identifier = product_slug or product_id or "unknown"
+                return Response(
+                    {"detail": f"Product not found for item: {identifier}."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            quantity = item["quantity"]
+            unit_price = product.price
+            subtotal += unit_price * quantity
+            resolved_items.append((product, quantity, unit_price))
 
         with transaction.atomic():
+            promo = None
+            discount_amount = Decimal("0.00")
+            if promo_code_value:
+                if not request.user.is_authenticated:
+                    return Response(
+                        {"detail": "Promokoddan istifadə etmək üçün daxil olun."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                promo = PromoCode.objects.select_for_update().filter(code=promo_code_value).first()
+                if promo is None:
+                    return Response({"detail": "Promokod tapılmadı."}, status=status.HTTP_400_BAD_REQUEST)
+                promo_error = validate_promo_for_user(promo, request.user, subtotal)
+                if promo_error:
+                    return Response({"detail": promo_error}, status=status.HTTP_400_BAD_REQUEST)
+                discount_amount = promo.calculate_discount(subtotal)
+
             order = Order.objects.create(
                 code=generate_order_code(),
                 user=request.user if request.user.is_authenticated else None,
@@ -69,16 +142,12 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
                 phone=payload["phone"],
                 address=payload["address"],
                 notes=payload.get("notes", ""),
+                promo_code=promo.code if promo else "",
+                discount_amount=discount_amount,
                 shipping_fee=shipping_fee,
                 payment_method="cash_on_delivery",
             )
-
-            subtotal = Decimal("0.00")
-            for item in payload["items"]:
-                product = Product.objects.get(id=item["product_id"], is_active=True)
-                quantity = item["quantity"]
-                unit_price = product.price
-                subtotal += unit_price * quantity
+            for product, quantity, unit_price in resolved_items:
                 OrderItem.objects.create(
                     order=order,
                     product=product,
@@ -87,8 +156,13 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
                 )
 
             order.subtotal = subtotal
-            order.total = subtotal + shipping_fee
+            order.total = subtotal + shipping_fee - discount_amount
+            if order.total < 0:
+                order.total = Decimal("0.00")
             order.save(update_fields=["subtotal", "total"])
+            if promo:
+                PromoRedemption.objects.create(promo_code=promo, user=request.user, order=order)
+            transaction.on_commit(lambda: send_order_notification_async(order))
 
         response_serializer = OrderSerializer(order)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
@@ -111,6 +185,110 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
 class ContactMessageViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
+
+
+class UserFavoriteView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        favorites = request.user.favorites.select_related("product", "product__category").all()
+        return Response(
+            UserFavoriteSerializer(favorites, many=True).data
+        )
+
+    def post(self, request):
+        bulk_items = request.data.get("items")
+        if isinstance(bulk_items, list):
+            request.user.favorites.all().delete()
+            created_items = []
+            for raw_item in bulk_items:
+                product = resolve_product_from_payload(raw_item if isinstance(raw_item, dict) else {})
+                if product is None:
+                    continue
+                favorite = request.user.favorites.create(product=product)
+                created_items.append(favorite)
+            return Response(UserFavoriteSerializer(created_items, many=True).data, status=status.HTTP_201_CREATED)
+
+        product = resolve_product_from_payload(request.data)
+        if product is None:
+            return Response({"detail": "Product not found."}, status=status.HTTP_400_BAD_REQUEST)
+        favorite, _ = request.user.favorites.get_or_create(product=product)
+        return Response(UserFavoriteSerializer(favorite).data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request):
+        product = resolve_product_from_payload(request.data)
+        if product is None:
+            request.user.favorites.all().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        request.user.favorites.filter(product=product).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class UserCartView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        cart_items = request.user.cart_items.select_related("product", "product__category").all()
+        return Response(UserCartItemSerializer(cart_items, many=True).data)
+
+    def post(self, request):
+        bulk_items = request.data.get("items")
+        if isinstance(bulk_items, list):
+            request.user.cart_items.all().delete()
+            created_items = []
+            for raw_item in bulk_items:
+                product = resolve_product_from_payload(raw_item if isinstance(raw_item, dict) else {})
+                if product is None:
+                    continue
+                quantity = int(raw_item.get("quantity", 1))
+                item = request.user.cart_items.create(product=product, quantity=quantity)
+                created_items.append(item)
+            return Response(UserCartItemSerializer(created_items, many=True).data, status=status.HTTP_201_CREATED)
+
+        product = resolve_product_from_payload(request.data)
+        if product is None:
+            return Response({"detail": "Product not found."}, status=status.HTTP_400_BAD_REQUEST)
+        quantity = int(request.data.get("quantity", 1))
+        item, created = request.user.cart_items.get_or_create(product=product, defaults={"quantity": quantity})
+        if not created:
+            item.quantity = quantity
+            item.save(update_fields=["quantity", "updated_at"])
+        return Response(UserCartItemSerializer(item).data, status=status.HTTP_201_CREATED)
+
+    def delete(self, request):
+        product = resolve_product_from_payload(request.data)
+        if product is None:
+            request.user.cart_items.all().delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        request.user.cart_items.filter(product=product).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class PromoCodeValidateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = PromoCodeValidateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        payload = serializer.validated_data
+        code = normalize_promo_code(payload["code"])
+        subtotal = payload.get("subtotal", Decimal("0.00"))
+        promo = PromoCode.objects.filter(code=code).first()
+        if promo is None:
+            return Response({"detail": "Promokod tapılmadı."}, status=status.HTTP_400_BAD_REQUEST)
+        promo_error = validate_promo_for_user(promo, request.user, subtotal)
+        if promo_error:
+            return Response({"detail": promo_error}, status=status.HTTP_400_BAD_REQUEST)
+
+        discount_amount = promo.calculate_discount(subtotal)
+        return Response(
+            {
+                "valid": True,
+                "promo": PromoCodeSerializer(promo).data,
+                "discount_amount": str(discount_amount),
+                "message": "Promokod aktivdir.",
+            }
+        )
 
 
 class RegisterView(APIView):

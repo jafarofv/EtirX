@@ -1,4 +1,3 @@
-import { perfumes } from "../data/perfumes";
 import { getProductBySlug, getProducts, type ApiProduct } from "./api";
 
 export type CatalogProduct = {
@@ -22,31 +21,14 @@ export type CatalogProduct = {
   };
 };
 
-function fromLocal() {
-  return perfumes.map((p) => ({
-    id: p.id,
-    slug: String(p.id),
-    name: p.name,
-    brand: p.brand,
-    description: p.description,
-    price: p.price,
-    originalPrice: p.originalPrice,
-    rating: p.rating,
-    reviews: p.reviews,
-    image: p.image,
-    category: p.category,
-    size: p.size,
-    inStock: p.inStock,
-    notes: p.notes,
-  }));
-}
-
 function fromApi(items: ApiProduct[]) {
-  const localById = new Map(perfumes.map((p) => [p.id, p] as const));
-  const localByName = new Map(perfumes.map((p) => [p.name.toLowerCase(), p] as const));
+  const splitNotes = (value: string) =>
+    value
+      .split(",")
+      .map((item) => item.trim())
+      .filter(Boolean);
 
   return items.map((p) => {
-    const local = localById.get(p.id) ?? localByName.get(p.name.toLowerCase());
     return {
       id: p.id,
       slug: p.slug,
@@ -55,33 +37,27 @@ function fromApi(items: ApiProduct[]) {
       description: p.description,
       price: Number(p.price),
       originalPrice: p.old_price ? Number(p.old_price) : undefined,
-      rating: local?.rating ?? 4.8,
-      reviews: local?.reviews ?? 0,
+      rating: 4.8,
+      reviews: 0,
       image: p.image_url,
       category: p.category?.name ?? "General",
-      size: local?.size ?? "100ml",
+      size: "100ml",
       inStock: p.stock > 0,
-      notes: local?.notes ?? { top: [], heart: [], base: [] },
+      notes: {
+        top: splitNotes(p.top_notes),
+        heart: splitNotes(p.heart_notes),
+        base: splitNotes(p.base_notes),
+      },
     } satisfies CatalogProduct;
   });
 }
 
 export async function loadCatalogProducts(): Promise<CatalogProduct[]> {
-  try {
-    const apiProducts = await getProducts();
-    if (!apiProducts.length) return fromLocal();
-    return fromApi(apiProducts);
-  } catch {
-    return fromLocal();
-  }
+  const apiProducts = await getProducts();
+  return fromApi(apiProducts);
 }
 
 export async function loadCatalogProductBySlug(slug: string): Promise<CatalogProduct | null> {
-  try {
-    const apiProduct = await getProductBySlug(slug);
-    return fromApi([apiProduct])[0] ?? null;
-  } catch {
-    const local = fromLocal();
-    return local.find((p) => p.slug === slug) ?? local.find((p) => String(p.id) === slug) ?? null;
-  }
+  const apiProduct = await getProductBySlug(slug);
+  return fromApi([apiProduct])[0] ?? null;
 }

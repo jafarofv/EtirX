@@ -13,6 +13,7 @@ import {
   type AuthUser,
   type UserOrder,
 } from "../lib/auth";
+import { syncStoredCollections } from "../lib/storage";
 
 function useAuthState() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -62,6 +63,41 @@ export function Profile() {
 
   const isLoggedIn = Boolean(user);
   const title = useMemo(() => (isLoggedIn ? t("profile.myAccount") : t("profile.loginRegister")), [isLoggedIn, t]);
+  const fmt = (value: string) => `${Number(value).toFixed(2)} AZN`;
+
+  const statusLabel = (status: string) => {
+    switch (status) {
+      case "new":
+        return "Gözləyir";
+      case "confirmed":
+        return "Təsdiqləndi";
+      case "shipped":
+        return "Göndərildi";
+      case "delivered":
+        return "Təslim edildi";
+      case "cancelled":
+        return "Ləğv edildi";
+      default:
+        return status;
+    }
+  };
+
+  const statusStyle = (status: string) => {
+    switch (status) {
+      case "new":
+        return "bg-amber-500/10 text-amber-300 border-amber-500/20";
+      case "confirmed":
+        return "bg-blue-500/10 text-blue-300 border-blue-500/20";
+      case "shipped":
+        return "bg-purple-500/10 text-purple-300 border-purple-500/20";
+      case "delivered":
+        return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
+      case "cancelled":
+        return "bg-red-500/10 text-red-300 border-red-500/20";
+      default:
+        return "bg-zinc-800 text-zinc-300 border-zinc-700";
+    }
+  };
 
   const onRegister = async () => {
     setError(null);
@@ -89,6 +125,7 @@ export function Profile() {
       setUser(created);
       setPassword("");
       setSuccess(t("profile.accountCreated"));
+      await syncStoredCollections();
       await loadOrders();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("profile.registerFailed"));
@@ -106,6 +143,7 @@ export function Profile() {
       setUser(logged);
       setPassword("");
       setSuccess(t("profile.loginSuccess"));
+      await syncStoredCollections();
       await loadOrders();
     } catch (e) {
       setError(e instanceof Error ? e.message : t("profile.badLogin"));
@@ -153,16 +191,72 @@ export function Profile() {
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6">
           <h2 className="text-lg mb-3">{t("profile.myOrders")}</h2>
-          <div className="space-y-3">
+          <div className="space-y-4">
             {orders.length === 0 && <p className="text-sm text-zinc-500">{t("profile.noOrders")}</p>}
             {orders.map((o) => (
-              <div key={o.code} className="bg-zinc-800/70 rounded-xl p-3 border border-zinc-700">
-                <div className="flex items-center justify-between text-sm">
-                  <span>#{o.code}</span>
-                  <span className="uppercase text-zinc-400">{o.status}</span>
+              <div key={o.code} className="bg-black/40 rounded-[20px] p-4 border border-zinc-800">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div>
+                    <div className="flex items-center gap-3 flex-wrap mb-2">
+                      <span className="text-sm text-zinc-500">#{o.code}</span>
+                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${statusStyle(o.status)}`}>
+                        {statusLabel(o.status)}
+                      </span>
+                    </div>
+                    <p className="text-sm text-zinc-400">{new Date(o.created_at).toLocaleString()}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider">{t("profile.total")}</p>
+                    <p className="text-xl font-medium">{fmt(o.total)}</p>
+                  </div>
                 </div>
-                <p className="text-xs text-zinc-500 mt-1">{new Date(o.created_at).toLocaleString()}</p>
-                <p className="text-sm mt-1">{t("profile.total")}: {o.total} \u20BC</p>
+
+                <div className="flex items-center gap-2 mb-3 overflow-hidden">
+                  {o.items.slice(0, 3).map((item) => (
+                    <div key={`${o.code}-${item.product}`} className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
+                      <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                  {o.items.length > 3 && (
+                    <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xs text-zinc-300 shrink-0">
+                      +{o.items.length - 3}
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {o.items.map((item) => (
+                    <div key={`${o.code}-${item.product}-row`} className="flex items-center justify-between gap-3 text-sm">
+                      <span className="text-zinc-300 truncate">
+                        {item.product_name} <span className="text-zinc-500">x{item.quantity}</span>
+                      </span>
+                      <span className="text-zinc-400">{fmt(item.unit_price)}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-800 text-sm">
+                  <div className="bg-zinc-900/60 rounded-xl p-3">
+                    <p className="text-zinc-500 text-xs mb-1">Status</p>
+                    <p className="font-medium">{statusLabel(o.status)}</p>
+                  </div>
+                  <div className="bg-zinc-900/60 rounded-xl p-3">
+                    <p className="text-zinc-500 text-xs mb-1">{t("cart.shipping")}</p>
+                    <p className="font-medium">{fmt(o.shipping_fee)}</p>
+                  </div>
+                  {!!o.promo_code && (
+                    <div className="bg-zinc-900/60 rounded-xl p-3">
+                      <p className="text-zinc-500 text-xs mb-1">{t("checkout.promo")}</p>
+                      <p className="font-medium">{o.promo_code}</p>
+                    </div>
+                  )}
+                  {Number(o.discount_amount || "0") > 0 && (
+                    <div className="bg-zinc-900/60 rounded-xl p-3">
+                      <p className="text-zinc-500 text-xs mb-1">Endirim</p>
+                      <p className="font-medium text-emerald-400">-{fmt(o.discount_amount)}</p>
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>

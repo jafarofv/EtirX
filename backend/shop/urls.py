@@ -5,6 +5,9 @@ from .views import (
     ProductViewSet,
     OrderViewSet,
     ContactMessageViewSet,
+    UserFavoriteView,
+    UserCartView,
+    PromoCodeValidateView,
     RegisterView,
     LoginView,
     MeView,
@@ -22,5 +25,8 @@ urlpatterns = [
     path("auth/login/", LoginView.as_view()),
     path("auth/me/", MeView.as_view()),
     path("auth/logout/", LogoutView.as_view()),
+    path("me/favorites/", UserFavoriteView.as_view()),
+    path("me/cart/", UserCartView.as_view()),
+    path("promo-codes/validate/", PromoCodeValidateView.as_view()),
     path("", include(router.urls)),
 ]

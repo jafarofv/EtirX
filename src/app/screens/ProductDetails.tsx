@@ -54,7 +54,7 @@ export function ProductDetails() {
           </button>
           <button
             onClick={() => {
-              setFavorite(toggleFavorite(perfume.id));
+              setFavorite(toggleFavorite(perfume.id, perfume.slug));
               setPulseFavorite(true);
               setTimeout(() => setPulseFavorite(false), 180);
             }}
@@ -144,7 +144,7 @@ export function ProductDetails() {
             </div>
             <button
               onClick={() => {
-                addToCart(perfume.id, quantity);
+                addToCart(perfume.id, quantity, perfume.slug);
                 setPulseCart(true);
                 setTimeout(() => setPulseCart(false), 180);
               }}
@@ -157,19 +157,30 @@ export function ProductDetails() {
 
           <div className="mb-8">
             <h3 className="text-sm font-medium mb-3">{t("product.notes")}</h3>
-            <div className="space-y-3">
-              <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-                <p className="text-xs text-zinc-500 mb-2">{t("product.topNotes")}</p>
-                <p className="text-sm">{perfume.notes.top.join(", ") || "-"}</p>
-              </div>
-              <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-                <p className="text-xs text-zinc-500 mb-2">{t("product.heartNotes")}</p>
-                <p className="text-sm">{perfume.notes.heart.join(", ") || "-"}</p>
-              </div>
-              <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-                <p className="text-xs text-zinc-500 mb-2">{t("product.baseNotes")}</p>
-                <p className="text-sm">{perfume.notes.base.join(", ") || "-"}</p>
-              </div>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { label: t("product.topNotes"), items: perfume.notes.top },
+                { label: t("product.heartNotes"), items: perfume.notes.heart },
+                { label: t("product.baseNotes"), items: perfume.notes.base },
+              ].map((section) => (
+                <div key={section.label} className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+                  <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">{section.label}</p>
+                  {section.items.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {section.items.map((note) => (
+                        <span
+                          key={`${section.label}-${note}`}
+                          className="px-3 py-1.5 rounded-full bg-zinc-800 border border-zinc-700 text-xs text-zinc-200"
+                        >
+                          {note}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-zinc-400">-</p>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 

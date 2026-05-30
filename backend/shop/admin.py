@@ -1,8 +1,115 @@
 from django.contrib import admin
-from .models import Category, Product, Order, OrderItem, ContactMessage
+from .models import (
+    Category,
+    Product,
+    Order,
+    OrderItem,
+    ContactMessage,
+    UserProfile,
+    UserFavorite,
+    UserCartItem,
+    PromoCode,
+    PromoRedemption,
+)
 
-admin.site.register(Category)
-admin.site.register(Product)
-admin.site.register(Order)
+
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ("name", "brand", "category", "price", "stock", "is_active", "created_at")
+    list_filter = ("is_active", "category", "brand")
+    search_fields = ("name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes")
+    ordering = ("-created_at",)
+    list_editable = ("price", "stock", "is_active")
+    prepopulated_fields = {"slug": ("name",)}
+    fieldsets = (
+        (None, {
+            "fields": ("name", "slug", "brand", "category", "price", "old_price", "stock", "image_url", "is_active")
+        }),
+        ("Description", {
+            "fields": ("description",)
+        }),
+        ("Fragrance Notes", {
+            "fields": ("top_notes", "heart_notes", "base_notes"),
+        }),
+    )
+
+
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ("name", "slug")
+    search_fields = ("name", "slug")
+    prepopulated_fields = {"slug": ("name",)}
+
+
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+    readonly_fields = ("product", "quantity", "unit_price")
+    can_delete = False
+
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ("code", "full_name", "phone", "status", "payment_method", "promo_code", "discount_amount", "total", "created_at")
+    list_filter = ("status", "payment_method", "created_at")
+    search_fields = ("code", "full_name", "phone", "address")
+    ordering = ("-created_at",)
+    readonly_fields = ("code", "subtotal", "shipping_fee", "discount_amount", "total", "created_at")
+    inlines = [OrderItemInline]
+    actions = ["bulk_delete_orders"]
+
+    @admin.action(description="Delete selected orders")
+    def bulk_delete_orders(self, request, queryset):
+        count = queryset.count()
+        queryset.delete()
+        self.message_user(request, f"{count} order(s) deleted successfully.")
+
+
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "created_at")
+    search_fields = ("name", "email", "message")
+    ordering = ("-created_at",)
+
+
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "phone")
+    search_fields = ("user__username", "user__email", "phone", "address")
+    ordering = ("user__username",)
+
+
+class UserFavoriteAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "created_at")
+    search_fields = ("user__username", "user__email", "product__name", "product__slug")
+    list_filter = ("created_at",)
+    ordering = ("-created_at",)
+
+
+class UserCartItemAdmin(admin.ModelAdmin):
+    list_display = ("user", "product", "quantity", "updated_at")
+    search_fields = ("user__username", "user__email", "product__name", "product__slug")
+    list_filter = ("updated_at",)
+    ordering = ("-updated_at",)
+
+
+class PromoCodeAdmin(admin.ModelAdmin):
+    list_display = ("code", "discount_type", "discount_value", "active", "min_subtotal", "max_total_uses", "max_uses_per_user", "starts_at", "ends_at", "created_at")
+    list_filter = ("active", "discount_type", "created_at")
+    search_fields = ("code", "title", "description")
+    ordering = ("-created_at",)
+    list_editable = ("discount_value", "active", "min_subtotal", "max_total_uses", "max_uses_per_user", "starts_at", "ends_at")
+    prepopulated_fields = {"code": ("title",)}
+
+
+class PromoRedemptionAdmin(admin.ModelAdmin):
+    list_display = ("promo_code", "user", "order", "created_at")
+    search_fields = ("promo_code__code", "user__username", "user__email", "order__code")
+    list_filter = ("created_at", "promo_code")
+    ordering = ("-created_at",)
+
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Product, ProductAdmin)
+admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem)
-admin.site.register(ContactMessage)
+admin.site.register(ContactMessage, ContactMessageAdmin)
+admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.register(UserFavorite, UserFavoriteAdmin)
+admin.site.register(UserCartItem, UserCartItemAdmin)
+admin.site.register(PromoCode, PromoCodeAdmin)
+admin.site.register(PromoRedemption, PromoRedemptionAdmin)

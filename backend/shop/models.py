@@ -1,5 +1,8 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 class Category(models.Model):
@@ -16,6 +19,9 @@ class Product(models.Model):
     slug = models.SlugField(unique=True)
     brand = models.CharField(max_length=100, blank=True)
     description = models.TextField(blank=True)
+    top_notes = models.TextField(blank=True)
+    heart_notes = models.TextField(blank=True)
+    base_notes = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     stock = models.PositiveIntegerField(default=0)
@@ -42,6 +48,8 @@ class Order(models.Model):
     phone = models.CharField(max_length=30)
     address = models.TextField()
     notes = models.TextField(blank=True)
+    promo_code = models.CharField(max_length=50, blank=True)
+    discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=30, default="cash_on_delivery")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -51,6 +59,73 @@ class Order(models.Model):
 
     def __str__(self):
         return self.code
+
+
+class PromoCode(models.Model):
+    DISCOUNT_TYPE_PERCENT = "percent"
+    DISCOUNT_TYPE_FIXED = "fixed"
+    DISCOUNT_TYPE_CHOICES = [
+        (DISCOUNT_TYPE_PERCENT, "Percent"),
+        (DISCOUNT_TYPE_FIXED, "Fixed"),
+    ]
+
+    code = models.CharField(max_length=40, unique=True)
+    title = models.CharField(max_length=120, blank=True)
+    description = models.TextField(blank=True)
+    discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES, default=DISCOUNT_TYPE_PERCENT)
+    discount_value = models.DecimalField(max_digits=10, decimal_places=2)
+    min_subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    active = models.BooleanField(default=True)
+    max_total_uses = models.PositiveIntegerField(null=True, blank=True)
+    max_uses_per_user = models.PositiveIntegerField(default=1)
+    starts_at = models.DateTimeField(null=True, blank=True)
+    ends_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("-created_at",)
+
+    def save(self, *args, **kwargs):
+        self.code = (self.code or "").strip().upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.code
+
+    def is_active_now(self) -> bool:
+        now = timezone.now()
+        if not self.active:
+            return False
+        if self.starts_at and now < self.starts_at:
+            return False
+        if self.ends_at and now > self.ends_at:
+            return False
+        return True
+
+    def calculate_discount(self, subtotal: Decimal) -> Decimal:
+        subtotal = Decimal(subtotal)
+        if subtotal <= 0:
+            return Decimal("0.00")
+        if subtotal < self.min_subtotal:
+            return Decimal("0.00")
+        if self.discount_type == self.DISCOUNT_TYPE_FIXED:
+            return min(Decimal(self.discount_value), subtotal).quantize(Decimal("0.01"))
+        percent = max(Decimal("0"), min(Decimal(self.discount_value), Decimal("100")))
+        return ((subtotal * percent) / Decimal("100")).quantize(Decimal("0.01"))
+
+
+class PromoRedemption(models.Model):
+    promo_code = models.ForeignKey(PromoCode, on_delete=models.CASCADE, related_name="redemptions")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="promo_redemptions")
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="promo_redemption")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("promo_code", "user")
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.promo_code.code}"
 
 
 class OrderItem(models.Model):
@@ -74,3 +149,31 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+
+class UserFavorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorites")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="user_favorites")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "product")
+        ordering = ("-created_at",)
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.product.name}"
+
+
+class UserCartItem(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart_items")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="user_cart_items")
+    quantity = models.PositiveIntegerField(default=1)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("user", "product")
+        ordering = ("-updated_at",)
+
+    def __str__(self):
+        return f"{self.user.username} -> {self.product.name} x{self.quantity}"

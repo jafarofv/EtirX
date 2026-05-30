@@ -4,6 +4,7 @@ import { Heart, Star, ShoppingBag } from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
+import { syncStoredCollections } from "../lib/storage";
 
 export function Favorites() {
   const navigate = useNavigate();
@@ -25,6 +26,7 @@ export function Favorites() {
     if (!hydrated) return;
     localStorage.setItem("favorites", JSON.stringify(favorites.map((f) => f.id)));
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
+    void syncStoredCollections();
   }, [favorites, hydrated]);
 
   const removeFavorite = (id: number) => {
@@ -64,10 +66,10 @@ export function Favorites() {
                 <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
                   <img src={perfume.image} alt={perfume.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFavorite(perfume.id);
-                    }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFavorite(perfume.id);
+                      }}
                     className="absolute top-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-all border border-zinc-700"
                   >
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
@@ -93,7 +95,7 @@ export function Favorites() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToCart(perfume.id, 1);
+                        addToCart(perfume.id, 1, perfume.slug);
                       }}
                       className="bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all"
                     >

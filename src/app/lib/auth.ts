@@ -1,6 +1,8 @@
 const TOKEN_KEY = "auth-token";
 
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+const API_BASE = import.meta.env.DEV
+  ? "/api"
+  : import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
 export type AuthUser = {
   full_name: string;
@@ -105,13 +107,15 @@ export type UserOrder = {
   phone: string;
   address: string;
   notes: string;
+  promo_code: string;
+  discount_amount: string;
   payment_method: string;
   status: string;
   subtotal: string;
   shipping_fee: string;
   total: string;
   created_at: string;
-  items: Array<{ product: number; product_name: string; quantity: number; unit_price: string }>;
+  items: Array<{ product: number; product_name: string; product_image: string; quantity: number; unit_price: string }>;
 };
 
 export async function getMyOrders() {

@@ -4,6 +4,8 @@ import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import { useI18n } from "../i18n";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { getAuthToken } from "../lib/auth";
+import { syncStoredCollections } from "../lib/storage";
+import { validatePromoCode } from "../lib/api";
 
 interface CartItem {
   perfume: CatalogProduct;
@@ -13,7 +15,7 @@ interface CartItem {
 function loadRows() {
   try {
     const raw = localStorage.getItem("cart-items");
-    return (raw ? JSON.parse(raw) : []) as Array<{ id: number; quantity: number }>;
+    return (raw ? JSON.parse(raw) : []) as Array<{ id: number; quantity: number; slug?: string }>;
   } catch {
     return [];
   }
@@ -27,6 +29,7 @@ export function Cart() {
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState<string | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
+  const [promoDiscount, setPromoDiscount] = useState(0);
   const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
 
   useEffect(() => {
@@ -38,6 +41,7 @@ export function Cart() {
         .filter((i): i is CartItem => Boolean(i.perfume));
       setCartItems(items);
       setPromoCode(localStorage.getItem("checkout-promo-code") ?? "");
+      setPromoDiscount(0);
       setHydrated(true);
     })();
   }, []);
@@ -46,10 +50,45 @@ export function Cart() {
     if (!hydrated) return;
     localStorage.setItem(
       "cart-items",
-      JSON.stringify(cartItems.map((i) => ({ id: i.perfume.id, quantity: i.quantity })))
+      JSON.stringify(cartItems.map((i) => ({ id: i.perfume.id, quantity: i.quantity, slug: i.perfume.slug })))
     );
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
+    void syncStoredCollections();
   }, [cartItems, hydrated]);
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.perfume.price * item.quantity, 0);
+  const shipping = 0;
+  const total = subtotal + shipping - promoDiscount;
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const code = promoCode.trim();
+    if (!code) {
+      setPromoDiscount(0);
+      return;
+    }
+    if (!getAuthToken()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
+        if (cancelled) return;
+        localStorage.setItem("checkout-promo-code", result.promo.code);
+        setPromoCode(result.promo.code);
+        setPromoDiscount(Number(result.discount_amount));
+        setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`);
+        setPromoErr(null);
+      } catch (err) {
+        if (cancelled) return;
+        localStorage.removeItem("checkout-promo-code");
+        setPromoDiscount(0);
+        setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [hydrated, promoCode, subtotal]);
 
   const updateQuantity = (id: number, delta: number) => {
     setCartItems((items) =>
@@ -66,10 +105,6 @@ export function Cart() {
   const removeItem = (id: number) => {
     setCartItems((items) => items.filter((item) => item.perfume.id !== id));
   };
-
-  const subtotal = cartItems.reduce((sum, item) => sum + item.perfume.price * item.quantity, 0);
-  const shipping = 0;
-  const total = subtotal + shipping;
 
   if (cartItems.length === 0) {
     return (
@@ -106,7 +141,7 @@ export function Cart() {
               <div className="flex-1 flex flex-col">
                 <div className="flex-1">
                   <h3 className="font-medium mb-1">{item.perfume.name}</h3>
-                  <p className="text-sm text-zinc-400 mb-2">{item.perfume.brand} · {item.perfume.size}</p>
+                  <p className="text-sm text-zinc-400 mb-2">{item.perfume.brand} Â· {item.perfume.size}</p>
                   <p className="text-lg font-medium">{fmt(item.perfume.price)}</p>
                 </div>
                 <div className="flex items-center justify-between">
@@ -139,26 +174,37 @@ export function Cart() {
                 setPromoCode(e.target.value);
                 setPromoErr(null);
                 setPromoMsg(null);
+                setPromoDiscount(0);
               }}
               placeholder={t("cart.promo")}
               className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500"
             />
             <button
-              onClick={() => {
+              onClick={async () => {
                 setPromoErr(null);
                 setPromoMsg(null);
                 const code = promoCode.trim();
                 if (!code) {
                   localStorage.removeItem("checkout-promo-code");
                   setPromoMsg(t("cart.promoCleared"));
+                  setPromoDiscount(0);
                   return;
                 }
                 if (!getAuthToken()) {
                   setPromoErr(t("cart.promoLoginRequired"));
                   return;
                 }
-                localStorage.setItem("checkout-promo-code", code);
-                setPromoMsg(t("cart.promoApplied"));
+                try {
+                  const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
+                  localStorage.setItem("checkout-promo-code", result.promo.code);
+                  setPromoCode(result.promo.code);
+                  setPromoDiscount(Number(result.discount_amount));
+                  setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`);
+                } catch (err) {
+                  localStorage.removeItem("checkout-promo-code");
+                  setPromoDiscount(0);
+                  setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
+                }
               }}
               className="bg-white text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-all"
             >
@@ -175,6 +221,12 @@ export function Cart() {
           <h3 className="font-medium mb-4">{t("cart.summary")}</h3>
           <div className="space-y-3 mb-4">
             <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.subtotal")}</span><span className="font-medium">{fmt(subtotal)}</span></div>
+            {promoDiscount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-400">{t("checkout.promo")}</span>
+                <span className="font-medium text-emerald-400">-{fmt(promoDiscount)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.shipping")}</span><span className="font-medium text-zinc-400">{t("cart.shippingAtCheckout")}</span></div>
             <div className="border-t border-zinc-800 pt-3">
               <div className="flex justify-between"><span className="font-medium">{t("cart.total")}</span><span className="text-xl font-medium">{fmt(total)}</span></div>
@@ -194,5 +246,6 @@ export function Cart() {
     </div>
   );
 }
+
 
 

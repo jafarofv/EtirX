@@ -1,6 +1,6 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
-import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu } from "lucide-react";
+import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu, MessageCircle, Instagram, Star } from "lucide-react";
 import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
 import { getCartCount, getFavoritesCount } from "../lib/storage";
@@ -39,6 +39,35 @@ export function Layout() {
     { to: "/sertler", label: t("menu.terms") },
   ];
   const promoLines = [t("promo.line1"), t("promo.line2"), t("promo.line3")];
+  const socialLinks = [
+    { href: "https://wa.me/994000000000", label: "WhatsApp", kind: "whatsapp" },
+    { href: "https://instagram.com/etirx.az", label: "Instagram", kind: "instagram" },
+    { href: "https://www.tiktok.com/@etirx.az", label: "TikTok", kind: "tiktok" },
+  ];
+  const showReviews = location.pathname === "/" || location.pathname.startsWith("/product/");
+  const reviews = [
+    {
+      name: "Aysel M.",
+      handle: "@aysel_m",
+      time: "2 saat əvvəl",
+      rating: 5,
+      text: "Qoxu həqiqətən premium hiss verir. Qablaşdırma və çatdırılma da çox səliqəli idi.",
+    },
+    {
+      name: "Rəşad K.",
+      handle: "@rashadk",
+      time: "Dünən",
+      rating: 5,
+      text: "Sifariş prosesi rahat oldu, WhatsApp-da tez cavab verdilər. Ətir seçimi də çox yaxşıdır.",
+    },
+    {
+      name: "Lalə N.",
+      handle: "@lale_n",
+      time: "3 gün əvvəl",
+      rating: 5,
+      text: "Ətir təsviri ilə gələn məhsul tam uyğun idi. Xüsusi notlar da dəqiq yazılıb, çox faydalıdır.",
+    },
+  ];
   const langFlags: Record<Language, string> = {
     az: "\uD83C\uDDE6\uD83C\uDDFF",
     en: "\uD83C\uDDEC\uD83C\uDDE7",
@@ -255,6 +284,109 @@ export function Layout() {
             </div>
           </div>
           <Outlet />
+          {showReviews && (
+            <section className="px-4 sm:px-6 lg:px-8 py-10 md:py-14">
+              <div className="max-w-6xl mx-auto">
+                <div className="flex items-end justify-between gap-4 mb-5">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-zinc-500 mb-2">{t("reviews.badge")}</p>
+                    <h2 className="text-2xl sm:text-3xl">{t("reviews.title")}</h2>
+                    <p className="text-sm text-zinc-400 mt-2">{t("reviews.subtitle")}</p>
+                  </div>
+                </div>
+                <div className="grid gap-4 md:grid-cols-3">
+                  {reviews.map((review, index) => (
+                    <article
+                      key={review.handle}
+                      className={`rounded-[28px] border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg ${
+                        index === 1 ? "md:-translate-y-3" : ""
+                      }`}
+                    >
+                      <div className="flex items-start gap-4 mb-4">
+                        <div className="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center font-semibold">
+                          {review.name.charAt(0)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <p className="font-medium leading-tight">{review.name}</p>
+                              <p className="text-xs text-zinc-500">{review.handle}</p>
+                            </div>
+                            <div className="flex items-center gap-1 text-amber-400 shrink-0">
+                              {Array.from({ length: review.rating }).map((_, i) => (
+                                <Star key={`${review.handle}-${i}`} className="w-3.5 h-3.5 fill-current" />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute -left-1 -top-2 text-3xl text-zinc-800">"</span>
+                        <p className="relative text-sm text-zinc-300 leading-7 pl-4">{review.text}</p>
+                      </div>
+                      <div className="mt-4 flex items-center justify-between text-xs text-zinc-500">
+                        <span>{review.time}</span>
+                        <span className="px-2.5 py-1 rounded-full border border-zinc-800 bg-zinc-900/80">Instagram</span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+          <footer className="border-t border-zinc-800 bg-zinc-950 px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+            <div className="grid gap-8 md:grid-cols-[1.1fr_1.4fr_1fr]">
+              <div>
+                <Link to="/" className="inline-flex items-center gap-3 mb-4">
+                  <img src="/logo.png" alt="EtirX" className="h-12 w-12 object-cover" />
+                  <span className="text-lg font-medium">{t("brand.name")}</span>
+                </Link>
+                <p className="text-sm text-zinc-400 leading-6 max-w-sm">{t("footer.about")}</p>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium mb-4">{t("footer.pages")}</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <Link to="/" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("nav.home")}</Link>
+                  <Link to="/favorites" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("nav.favorites")}</Link>
+                  <Link to="/cart" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("nav.cart")}</Link>
+                  <Link to="/profile" className="text-sm text-zinc-400 hover:text-white transition-colors">{t("nav.profile")}</Link>
+                  {extraPages.map((page) => (
+                    <Link key={`footer-${page.to}`} to={page.to} className="text-sm text-zinc-400 hover:text-white transition-colors">
+                      {page.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium mb-4">{t("footer.follow")}</h3>
+                <div className="flex gap-2">
+                  {socialLinks.map((item) => {
+                    return (
+                      <a
+                        key={item.label}
+                        href={item.href}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={item.label}
+                        className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-zinc-600 hover:bg-zinc-800 transition-all"
+                      >
+                        {item.kind === "whatsapp" && <MessageCircle className="w-5 h-5 text-emerald-400" />}
+                        {item.kind === "instagram" && <Instagram className="w-5 h-5 text-pink-300" />}
+                        {item.kind === "tiktok" && <span className="text-sm font-semibold text-white">♪</span>}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-zinc-800 flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between text-xs text-zinc-500">
+              <p>© 2026 EtirX. {t("footer.rights")}</p>
+              <p className="text-zinc-400">{t("footer.slogan")}</p>
+            </div>
+          </footer>
         </div>
 
       {/* Bottom Navigation */}

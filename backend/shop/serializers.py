@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, Product, Order, OrderItem, ContactMessage, UserProfile
+from .models import Category, Product, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -16,13 +16,30 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            "id", "name", "slug", "brand", "description", "price", "old_price",
+            "id", "name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes", "price", "old_price",
             "stock", "image_url", "is_active", "category"
         ]
 
 
+class UserFavoriteSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = UserFavorite
+        fields = ["id", "product", "created_at"]
+
+
+class UserCartItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
+
+    class Meta:
+        model = UserCartItem
+        fields = ["id", "product", "quantity", "created_at", "updated_at"]
+
+
 class OrderItemInputSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
+    product_slug = serializers.SlugField(required=False, allow_blank=True)
     quantity = serializers.IntegerField(min_value=1)
 
 
@@ -31,6 +48,7 @@ class OrderCreateSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=30)
     address = serializers.CharField()
     notes = serializers.CharField(required=False, allow_blank=True)
+    promo_code = serializers.CharField(required=False, allow_blank=True)
     shipping_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     items = OrderItemInputSerializer(many=True)
 
@@ -42,10 +60,11 @@ class OrderCreateSerializer(serializers.Serializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
+    product_image = serializers.CharField(source="product.image_url", read_only=True)
 
     class Meta:
         model = OrderItem
-        fields = ["product", "product_name", "quantity", "unit_price"]
+        fields = ["product", "product_name", "product_image", "quantity", "unit_price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -54,8 +73,22 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            "code", "full_name", "phone", "address", "notes", "payment_method",
-            "status", "subtotal", "shipping_fee", "total", "created_at", "items"
+            "code", "full_name", "phone", "address", "notes", "promo_code", "discount_amount",
+            "payment_method", "status", "subtotal", "shipping_fee", "total", "created_at", "items"
+        ]
+
+
+class PromoCodeValidateSerializer(serializers.Serializer):
+    code = serializers.CharField()
+    subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
+
+
+class PromoCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        fields = [
+            "id", "code", "title", "description", "discount_type", "discount_value", "min_subtotal",
+            "active", "max_total_uses", "max_uses_per_user", "starts_at", "ends_at", "created_at",
         ]
 
 
