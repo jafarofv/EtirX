@@ -29,9 +29,9 @@ const dict: Dict = {
   "theme.dark": { az: "Tünd", en: "Dark", ru: "Тёмная" },
   "theme.light": { az: "Açıq", en: "Light", ru: "Светлая" },
 
-  "promo.line1": { az: "YENI30 promokodu ilə 30% endirim", en: "30% off with code YENI30", ru: "Скидка 30% по коду YENI30" },
-  "promo.line2": { az: "Bu gün sifariş et", en: "Order today", ru: "Закажите сегодня" },
-  "promo.line3": { az: "Pulsuz qapıda ödəniş", en: "Cash on delivery available", ru: "Оплата при получении" },
+  "promo.line1": { az: "ETIRX10 • -10%", en: "ETIRX10 • -10%", ru: "ETIRX10 • -10%" },
+  "promo.line2": { az: "Qapıda ödəniş", en: "Cash on delivery", ru: "Оплата при получении" },
+  "promo.line3": { az: "100% Premium ətirlər", en: "100% Premium perfumes", ru: "100% Премиальная парфюмерия" },
 
   "footer.about": { az: "Seçilmiş premium ətirlər, rahat sifariş və sürətli çatdırılma üçün EtirX.", en: "EtirX brings curated premium fragrances, easy ordering and fast delivery.", ru: "EtirX предлагает избранные премиальные ароматы, удобный заказ и быструю доставку." },
   "footer.pages": { az: "Əsas səhifələr", en: "Main pages", ru: "Основные страницы" },
@@ -54,8 +54,8 @@ const dict: Dict = {
   "home.tab.unisex": { az: "Uniseks", en: "Unisex", ru: "Унисекс" },
   "home.tab.sale": { az: "Endirim", en: "Sale", ru: "Скидки" },
   "home.offer.badge": { az: "Məhdud təklif", en: "Limited Offer", ru: "Ограниченное предложение" },
-  "home.offer.title": { az: "İlk sifarişə 20% endirim", en: "Get 20% Off", ru: "Скидка 20%" },
-  "home.offer.desc": { az: "İlk alış-verişiniz üçün", en: "On your first purchase", ru: "На первый заказ" },
+  "home.offer.title": { az: "ETIRX10 promokodu ilə 10% endirim", en: "10% off with ETIRX10", ru: "Скидка 10% по коду ETIRX10" },
+  "home.offer.desc": { az: "İlk alış-verişiniz üçün", en: "For your first purchase", ru: "Для вашей первой покупки" },
   "home.offer.cta": { az: "İndi al", en: "Shop Now", ru: "Купить сейчас" },
   "common.sale": { az: "Endirim", en: "Sale", ru: "Скидка" },
 

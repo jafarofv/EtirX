@@ -6,6 +6,7 @@ import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { getAuthToken } from "../lib/auth";
 import { syncStoredCollections } from "../lib/storage";
 import { validatePromoCode } from "../lib/api";
+import { Seo } from "../components/Seo";
 
 interface CartItem {
   perfume: CatalogProduct;
@@ -126,6 +127,7 @@ export function Cart() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8">
+      <Seo title="Səbət | ƏtirX" description="Səbət səhifəsi." path="/cart" noindex />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
         <h1 className="text-2xl mb-1">{t("cart.title")}</h1>
         <p className="text-sm text-zinc-400">{cartItems.length} {t("cart.items")}</p>
@@ -237,7 +239,13 @@ export function Cart() {
 
       <div className="px-4 sm:px-6 lg:px-8">
         <button
-          onClick={() => navigate("/checkout")}
+          onClick={() => {
+            if (!getAuthToken()) {
+              navigate("/profile", { state: { next: "/checkout", mode: "register" } });
+              return;
+            }
+            navigate("/checkout");
+          }}
           className="w-full bg-white text-black rounded-2xl py-4 font-medium hover:bg-zinc-100 transition-all"
         >
           {t("cart.checkout")}

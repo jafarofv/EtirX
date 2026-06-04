@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, Product, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode
+from .models import Category, Product, ProductImage, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -12,12 +12,32 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField()
+
+    def get_images(self, obj: Product):
+        request = self.context.get("request")
+        urls: list[str] = []
+        for img in obj.images.all():
+            value = None
+            if getattr(img, "image_file", None):
+                try:
+                    value = img.image_file.url
+                except Exception:
+                    value = None
+            if not value and img.image_url:
+                value = img.image_url
+            if value:
+                if request is not None and value.startswith("/"):
+                    value = request.build_absolute_uri(value)
+                urls.append(value)
+        return urls
 
     class Meta:
         model = Product
         fields = [
             "id", "name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes", "price", "old_price",
-            "stock", "image_url", "is_active", "category"
+            "volume_ml", "gender", "stock", "image_url", "images", "is_active", "is_new_arrival", "is_best_seller", "category", "categories"
         ]
 
 

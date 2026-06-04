@@ -10,19 +10,31 @@ from .models import (
     UserCartItem,
     PromoCode,
     PromoRedemption,
+    FragranceNote,
+    ProductImage,
 )
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    fields = ("sort_order", "image_file", "image_url")
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "category", "price", "stock", "is_active", "created_at")
-    list_filter = ("is_active", "category", "brand")
+    list_display = ("name", "brand", "category", "gender", "volume_ml", "is_new_arrival", "is_best_seller", "price", "stock", "is_active", "created_at")
+    list_filter = ("is_active", "is_new_arrival", "is_best_seller", "category", "brand")
     search_fields = ("name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes")
     ordering = ("-created_at",)
     list_editable = ("price", "stock", "is_active")
     prepopulated_fields = {"slug": ("name",)}
     fieldsets = (
         (None, {
-            "fields": ("name", "slug", "brand", "category", "price", "old_price", "stock", "image_url", "is_active")
+            "fields": (
+                "name", "slug", "brand", "categories",
+                "gender", "volume_ml",
+                "is_new_arrival", "is_best_seller",
+                "price", "old_price", "stock", "is_active"
+            )
         }),
         ("Description", {
             "fields": ("description",)
@@ -31,6 +43,25 @@ class ProductAdmin(admin.ModelAdmin):
             "fields": ("top_notes", "heart_notes", "base_notes"),
         }),
     )
+    filter_horizontal = ("categories",)
+    inlines = [ProductImageInline]
+    exclude = ("category", "image_url")
+
+    def save_model(self, request, obj, form, change):
+        # Keep legacy required FK in sync while hiding it from admin form.
+        if not obj.category_id:
+            fallback = Category.objects.order_by("id").first()
+            if fallback:
+                obj.category = fallback
+        super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        obj = form.instance
+        first_multi = obj.categories.order_by("id").first()
+        if first_multi and obj.category_id != first_multi.id:
+            obj.category = first_multi
+            obj.save(update_fields=["category"])
 
 
 class CategoryAdmin(admin.ModelAdmin):
@@ -103,6 +134,13 @@ class PromoRedemptionAdmin(admin.ModelAdmin):
     list_filter = ("created_at", "promo_code")
     ordering = ("-created_at",)
 
+
+class FragranceNoteAdmin(admin.ModelAdmin):
+    list_display = ("name_az", "key", "family", "created_at")
+    search_fields = ("name_az", "key", "family")
+    list_filter = ("family",)
+    ordering = ("name_az",)
+
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(Order, OrderAdmin)
@@ -113,3 +151,4 @@ admin.site.register(UserFavorite, UserFavoriteAdmin)
 admin.site.register(UserCartItem, UserCartItemAdmin)
 admin.site.register(PromoCode, PromoCodeAdmin)
 admin.site.register(PromoRedemption, PromoRedemptionAdmin)
+admin.site.register(FragranceNote, FragranceNoteAdmin)

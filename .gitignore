@@ -1,5 +1,4 @@
 # Environment files
-.env
 .env.*
 !.env.example
 
@@ -15,7 +14,6 @@ pnpm-debug.log*
 # Python / Django
 __pycache__/
 *.py[cod]
-*.sqlite3
 backend/.venv/
 backend/venv/
 .venv/

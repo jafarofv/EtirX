@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import { addToCart } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { syncStoredCollections } from "../lib/storage";
+import { Seo } from "../components/Seo";
 
 export function Favorites() {
   const navigate = useNavigate();
@@ -53,6 +54,7 @@ export function Favorites() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8">
+      <Seo title="Seçilənlər | ƏtirX" description="Seçilən məhsullar səhifəsi." path="/favorites" noindex />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
         <h1 className="text-2xl mb-1">{t("favorites.title")}</h1>
         <p className="text-sm text-zinc-400">{favorites.length} {t("shop.count")}</p>

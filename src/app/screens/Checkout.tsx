@@ -6,6 +6,7 @@ import { createOrder, validatePromoCode } from "../lib/api";
 import { getAuthToken, getMe, updateMe } from "../lib/auth";
 import { loadCatalogProducts } from "../lib/catalog";
 import { clearCart } from "../lib/storage";
+import { Seo } from "../components/Seo";
 
 type DeliveryMethod = {
   id: "city_courier" | "metro_drop" | "azerpost" | "pickup";
@@ -60,6 +61,10 @@ export function Checkout() {
 
   useEffect(() => {
     let mounted = true;
+    if (!getAuthToken()) {
+      navigate("/profile", { state: { next: "/checkout", mode: "register" } });
+      return;
+    }
     const guestRaw = localStorage.getItem("guest-checkout-info");
     const savedPromo = localStorage.getItem("checkout-promo-code");
     if (savedPromo && mounted) setPromoCode(savedPromo);
@@ -98,7 +103,7 @@ export function Checkout() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     localStorage.setItem(
@@ -250,6 +255,7 @@ export function Checkout() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8">
+      <Seo title="Checkout | ƏtirX" description="Sifarişin rəsmiləşdirilməsi." path="/checkout" noindex />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
         <div className="flex items-center gap-4 mb-6">
           <button

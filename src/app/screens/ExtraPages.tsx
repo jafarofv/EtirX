@@ -3,10 +3,19 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
 import { getCategories, getProducts, type ApiCategory, type ApiProduct } from "../lib/api";
 import { useI18n } from "../i18n";
+import { Seo } from "../components/Seo";
 
 function ProductGrid({ items }: { items: ApiProduct[] }) {
   const { t } = useI18n();
   const fmt = (v: string | number) => `${Number(v).toFixed(2)} \u20BC`;
+  const latestId = Math.max(...items.map((i) => i.id), 0);
+  const hasSlug = (p: ApiProduct, slug: string) => (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
+  const badgeFor = (p: ApiProduct) => {
+    if (p.old_price) return t("common.sale");
+    if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2) return "Yeni";
+    if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return "Çox Satılan";
+    return null;
+  };
 
   if (items.length === 0) {
     return <p className="text-zinc-400">{t("shop.noProducts")}</p>;
@@ -20,12 +29,16 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
           to={`/product/${p.slug}`}
           className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
         >
-          <div className="aspect-[4/5] overflow-hidden">
-            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+          <div className="aspect-[4/5] overflow-hidden relative">
+            <img src={(p.images && p.images.length > 0 ? p.images[0] : p.image_url)} alt={p.name} className="w-full h-full object-cover" />
+            {badgeFor(p) && <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{badgeFor(p)}</div>}
           </div>
           <div className="p-3">
             <p className="text-sm text-zinc-400">{p.brand}</p>
             <h3 className="font-medium text-sm truncate">{p.name}</h3>
+            <p className="text-xs text-zinc-500 mt-0.5">
+              {(p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks")} • {p.volume_ml ?? 100}ml • {p.stock} ədəd
+            </p>
             <p className="mt-1 font-medium">{fmt(p.price)}</p>
           </div>
         </Link>
@@ -52,6 +65,7 @@ export function ShopPage() {
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
 
   useEffect(() => {
     (async () => {
@@ -72,7 +86,18 @@ export function ShopPage() {
   const visibleItems = useMemo(() => {
     return items
       .filter((i) => (brand === "all" ? true : i.brand === brand))
-      .filter((i) => i.name.toLowerCase().includes(query.toLowerCase()) || i.brand.toLowerCase().includes(query.toLowerCase()))
+      .filter((i) => {
+        const q = query.toLowerCase();
+        return (
+          i.name.toLowerCase().includes(q) ||
+          i.brand.toLowerCase().includes(q) ||
+          i.description.toLowerCase().includes(q) ||
+          (i.top_notes ?? "").toLowerCase().includes(q) ||
+          (i.heart_notes ?? "").toLowerCase().includes(q) ||
+          (i.base_notes ?? "").toLowerCase().includes(q) ||
+          i.category.name.toLowerCase().includes(q)
+        );
+      })
       .sort((a, b) => {
         if (sortBy === "priceAsc") return Number(a.price) - Number(b.price);
         if (sortBy === "priceDesc") return Number(b.price) - Number(a.price);
@@ -83,6 +108,11 @@ export function ShopPage() {
 
   return (
     <PageWrap title={t("shop.title")} subtitle={`${visibleItems.length} ${t("shop.count")}`}>
+      <Seo
+        title="Ətirlər | ƏtirX"
+        description="Marka, not və qiymətə görə premium ətirləri sıralayın və seçin."
+        path="/perfumes"
+      />
       <div className="grid sm:grid-cols-3 gap-3 mb-4">
         <input
           value={query}
@@ -105,6 +135,18 @@ export function ShopPage() {
           <option value="name">{t("shop.sort.name")}</option>
         </select>
       </div>
+      <p className="text-xs text-zinc-500 mb-2">Notlara görə də axtara bilərsiniz (məs: oud, rose, vanilla)</p>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {noteHints.map((note) => (
+          <button
+            key={`shop-note-${note}`}
+            onClick={() => setQuery(note)}
+            className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+          >
+            #{note}
+          </button>
+        ))}
+      </div>
       {loading ? <p className="text-zinc-400">{t("shop.loading")}</p> : <ProductGrid items={visibleItems} />}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
@@ -113,56 +155,90 @@ export function ShopPage() {
 
 export function CategoriesPage() {
   const { t } = useI18n();
-  const [categories, setCategories] = useState<ApiCategory[]>([]);
+  const categories = [
+    { name: "Yeni Gələnlər", slug: "yeni-gelenler", desc: "Son əlavə edilən ən yeni ətir modelləri." },
+    { name: "Qadın", slug: "qadin", desc: "Qadınlar üçün zərif və cazibədar seçimlər." },
+    { name: "Kişi", slug: "kisiler", desc: "Kişi üçün güclü və xarakterli ətirlər." },
+    { name: "Uniseks", slug: "uniseks", desc: "Hər kəs üçün uyğun universal qoxular." },
+    { name: "Endirim", slug: "endirim", desc: "Xüsusi endirimdə olan sərfəli seçimlər." },
+    { name: "Ən Çox Satanlar", slug: "en-cox-satanlar", desc: "Müştərilərin ən çox seçdiyi bestseller ətirlər." },
+    { name: "Niş Ətirlər", slug: "nis-etirler", desc: "Xüsusi və fərqli qoxu sevənlər üçün premium niş kolleksiya." },
+    { name: "Gündəlik İstifadə", slug: "gundelik-istifade", desc: "Hər gün rahat istifadə üçün balanslı və yüngül seçimlər." },
+    { name: "Axşam və Tədbir", slug: "axsam-ve-tedbir", desc: "Daha intensiv, yadda qalan və təsirli axşam qoxuları." },
+    { name: "Yay Ətirləri", slug: "yay-etirleri", desc: "Təravətli, sitrus və yüngül notlarla yay ruhu." },
+    { name: "Qış Ətirləri", slug: "qis-etirleri", desc: "İsti, ədviyyəli və qalıcı notlarla qış kolleksiyası." },
+    { name: "Uzunmüddətli Qalıcılıq", slug: "uzunmuddetli-qaliciliq", desc: "Daha uzun qalan performanslı ətir seçimləri." },
+    { name: "Hədiyyəlik Setlər", slug: "hediyyelik-setler", desc: "Xüsusi günlər üçün hazır hədiyyəlik set təklifləri." },
+    { name: "Premium Seçimlər", slug: "premium-secimler", desc: "Ən yüksək segmentdən seçilmiş premium ətirlər." },
+  ];
+
+  return (
+    <PageWrap title={t("categories.title")} subtitle={t("categories.subtitle")}>
+      <Seo
+        title="Kateqoriyalar | ƏtirX"
+        description="Niş, gündəlik, axşam, ofis, yay, qış və digər peşəkar ətir kateqoriyalarını kəşf edin."
+        path="/categories"
+      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {categories.map((c) => (
+          <Link key={c.slug} to={`/kateqoriya/${c.slug}`} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-600 transition-all">
+            <h3 className="text-lg font-medium mb-1">{c.name}</h3>
+            <p className="text-sm text-zinc-400">{c.desc}</p>
+          </Link>
+        ))}
+      </div>
+    </PageWrap>
+  );
+}
+
+export function CategoryLandingPage() {
+  const { slug } = useParams();
+  const [items, setItems] = useState<ApiProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const map: Record<string, { title: string; q?: string }> = {
+    "yeni-gelenler": { title: "Yeni Gələnlər", q: "new" },
+    qadin: { title: "Qadın", q: "women" },
+    kisiler: { title: "Kişi", q: "men" },
+    uniseks: { title: "Uniseks", q: "unisex" },
+    endirim: { title: "Endirim", q: "sale" },
+    "en-cox-satanlar": { title: "Ən Çox Satanlar", q: "best seller" },
+    "nis-etirler": { title: "Niş Ətirlər", q: "niche" },
+    "gundelik-istifade": { title: "Gündəlik İstifadə", q: "daily" },
+    "axsam-ve-tedbir": { title: "Axşam və Tədbir", q: "evening" },
+    "yay-etirleri": { title: "Yay Ətirləri", q: "summer" },
+    "qis-etirleri": { title: "Qış Ətirləri", q: "winter" },
+    "uzunmuddetli-qaliciliq": { title: "Uzunmüddətli Qalıcılıq", q: "long lasting" },
+    "hediyyelik-setler": { title: "Hədiyyəlik Setlər", q: "gift set" },
+    "premium-secimler": { title: "Premium Seçimlər", q: "premium" },
+  };
+
+  const current = map[slug ?? ""] ?? { title: "Kateqoriya" };
 
   useEffect(() => {
     (async () => {
       try {
-        setCategories(await getCategories());
+        const data = await getProducts(current.q ? { q: current.q } : undefined);
+        setItems(data);
       } catch {
-        setCategories([]);
+        setError("Məhsullar yüklənmədi.");
+        setItems([]);
+      } finally {
+        setLoading(false);
       }
     })();
-  }, []);
-
-  const categoryDescriptions: Record<string, string> = {
-    oriental: "Şərq notları, oud və amber akordları",
-    woody: "Ağac notları və dərin, qalıcı qoxular",
-    floral: "Çiçək notları ilə zərif və yumşaq ətirlər",
-    fresh: "Təravətli, yüngül və gündəlik istifadə üçün",
-    citrus: "Sitrus əsaslı canlandırıcı kompozisiyalar",
-    amber: "İsti və cazibədar amber ailəsi",
-    musk: "Musk əsaslı hamar və təmiz qoxular",
-    luxury: "Premium və seçilmiş niş kolleksiya",
-    night: "Axşam tədbirləri üçün daha intensiv ətirlər",
-    daily: "Gündəlik istifadə üçün balanslı seçimlər",
-    office: "Ofis mühiti üçün yüngül və zərif notlar",
-    gift: "Hədiyyə üçün populyar və sevilən seçimlər",
-  };
+  }, [current.q]);
 
   return (
-    <PageWrap title={t("categories.title")} subtitle={t("categories.subtitle")}>
-      <div className="mb-6">
-        <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-          {categories.map((category) => (
-            <Link
-              key={`chip-${category.slug}`}
-              to={`/category/${category.slug}`}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all bg-zinc-900 text-zinc-300 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-600"
-            >
-              <span>{category.name}</span>
-            </Link>
-          ))}
-        </div>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((c) => (
-          <Link key={`${c.name}-${c.slug}`} to={`/category/${c.slug}`} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-600 transition-all">
-            <h3 className="text-lg font-medium mb-1">{c.name}</h3>
-            <p className="text-sm text-zinc-400">{categoryDescriptions[c.slug] ?? "Seçilmiş ətir kateqoriyası"}</p>
-          </Link>
-        ))}
-      </div>
+    <PageWrap title={current.title} subtitle={`${items.length} məhsul`}>
+      <Seo
+        title={`${current.title} | ƏtirX`}
+        description={`${current.title} kateqoriyasında premium ətirləri araşdırın.`}
+        path={`/kateqoriya/${slug ?? ""}`}
+      />
+      {loading ? <p className="text-zinc-400">Yüklənir...</p> : <ProductGrid items={items} />}
+      {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
 }
@@ -190,6 +266,11 @@ export function CategoryPage() {
 
   return (
     <PageWrap title={`${t("category.title")}: ${slug ?? ""}`} subtitle={`${items.length} ${t("shop.count")}`}>
+      <Seo
+        title={`${slug ?? ""} | Kateqoriya | ƏtirX`}
+        description="Seçilmiş kateqoriyada premium ətirləri araşdırın və sifariş edin."
+        path={`/category/${slug ?? ""}`}
+      />
       {loading ? <p className="text-zinc-400">{t("shop.loading")}</p> : <ProductGrid items={items} />}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
@@ -205,6 +286,7 @@ export function SearchPage() {
   const [items, setItems] = useState<ApiProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
 
   useEffect(() => {
     (async () => {
@@ -234,6 +316,23 @@ export function SearchPage() {
 
   return (
     <PageWrap title={`${t("search.title")}: ${params.get("q") ?? ""}`} subtitle={`${visibleItems.length} ${t("search.results")}`}>
+      <Seo
+        title={`Axtarış: ${params.get("q") ?? ""} | ƏtirX`}
+        description="Ətir adları, marka və notlara görə nəticələr."
+        path={`/search?q=${encodeURIComponent(params.get("q") ?? "")}`}
+      />
+      <p className="text-xs text-zinc-500 mb-2">Notlara görə də axtara bilərsiniz</p>
+      <div className="flex flex-wrap gap-2 mb-4">
+        {noteHints.map((note) => (
+          <Link
+            key={`search-note-${note}`}
+            to={`/search?q=${encodeURIComponent(note)}`}
+            className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+          >
+            #{note}
+          </Link>
+        ))}
+      </div>
       <div className="mb-4">
         <select
           value={categoryFilter}
@@ -418,6 +517,16 @@ export function FAQPage() {
 
   return (
     <PageWrap title={t("faq.title")} subtitle={t("faq.subtitle")}>
+      <Seo
+        title="FAQ | ƏtirX"
+        description="Sifariş, çatdırılma, ödəniş və məhsullarla bağlı tez-tez verilən suallar."
+        path="/faq"
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [],
+        }}
+      />
       <div className="space-y-6">
         {sections.map((section) => (
           <section key={section.title}>
@@ -464,6 +573,11 @@ export function ContactPage() {
   ];
   return (
     <PageWrap title={t("contact.title")} subtitle={t("contact.subtitle")}>
+      <Seo
+        title="Əlaqə | ƏtirX"
+        description="WhatsApp, Instagram və TikTok üzərindən ƏtirX ilə əlaqə saxlayın."
+        path="/elaqe"
+      />
       <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
           <div className="flex items-start gap-3">

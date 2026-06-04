@@ -15,6 +15,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
+    categories = models.ManyToManyField(Category, blank=True, related_name="products_multi")
     name = models.CharField(max_length=150)
     slug = models.SlugField(unique=True)
     brand = models.CharField(max_length=100, blank=True)
@@ -24,6 +25,10 @@ class Product(models.Model):
     base_notes = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    is_new_arrival = models.BooleanField(default=False)
+    is_best_seller = models.BooleanField(default=False)
+    volume_ml = models.PositiveIntegerField(default=100)
+    gender = models.CharField(max_length=20, default="uniseks")
     stock = models.PositiveIntegerField(default=0)
     image_url = models.URLField(blank=True)
     is_active = models.BooleanField(default=True)
@@ -31,6 +36,43 @@ class Product(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
+    image_url = models.URLField(blank=True)
+    image_file = models.FileField(upload_to="product-images/", blank=True)
+    sort_order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ("sort_order", "id")
+
+    def __str__(self):
+        return f"{self.product.name} image {self.id}"
+
+
+class FragranceNote(models.Model):
+    FAMILY_CHOICES = [
+        ("wood", "Wood"),
+        ("citrus", "Citrus"),
+        ("floral", "Floral"),
+        ("amber", "Amber"),
+        ("musk", "Musk"),
+        ("spicy", "Spicy"),
+        ("fresh", "Fresh"),
+        ("default", "Default"),
+    ]
+
+    key = models.SlugField(unique=True)
+    name_az = models.CharField(max_length=120)
+    family = models.CharField(max_length=20, choices=FAMILY_CHOICES, default="default")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("name_az",)
+
+    def __str__(self):
+        return self.name_az
 
 
 class Order(models.Model):

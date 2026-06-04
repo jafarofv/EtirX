@@ -11,8 +11,15 @@ export type CatalogProduct = {
   rating: number;
   reviews: number;
   image: string;
+  images: string[];
   category: string;
+  categorySlugs: string[];
+  categoryNames: string[];
+  isNewArrival: boolean;
+  isBestSeller: boolean;
   size: string;
+  gender: string;
+  stock: number;
   inStock: boolean;
   notes: {
     top: string[];
@@ -39,9 +46,16 @@ function fromApi(items: ApiProduct[]) {
       originalPrice: p.old_price ? Number(p.old_price) : undefined,
       rating: 4.8,
       reviews: 0,
-      image: p.image_url,
+      image: (p.images && p.images.length > 0 ? p.images[0] : p.image_url),
+      images: p.images && p.images.length > 0 ? p.images : (p.image_url ? [p.image_url] : []),
       category: p.category?.name ?? "General",
-      size: "100ml",
+      categorySlugs: Array.from(new Set([p.category?.slug, ...(p.categories ?? []).map((c) => c.slug)].filter(Boolean) as string[])),
+      categoryNames: Array.from(new Set([p.category?.name, ...(p.categories ?? []).map((c) => c.name)].filter(Boolean) as string[])),
+      isNewArrival: Boolean(p.is_new_arrival),
+      isBestSeller: Boolean(p.is_best_seller),
+      size: `${p.volume_ml ?? 100}ml`,
+      gender: p.gender ?? "uniseks",
+      stock: p.stock,
       inStock: p.stock > 0,
       notes: {
         top: splitNotes(p.top_notes),

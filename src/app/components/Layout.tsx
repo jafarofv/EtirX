@@ -1,9 +1,10 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
-import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu, MessageCircle, Instagram, Star } from "lucide-react";
+import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu, MessageCircle, Instagram, Star, ChevronRight } from "lucide-react";
 import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
 import { getCartCount, getFavoritesCount } from "../lib/storage";
+import { Seo } from "./Seo";
 
 export function Layout() {
   const navigate = useNavigate();
@@ -73,6 +74,7 @@ export function Layout() {
     en: "\uD83C\uDDEC\uD83C\uDDE7",
     ru: "\uD83C\uDDF7\uD83C\uDDFA",
   };
+  const logoSrc = theme === "light" ? "/logo-light.png" : "/logo-dark.png";
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -120,6 +122,32 @@ export function Layout() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white">
+      <Seo
+        title="ƏtirX | Premium Ətir Mağazası"
+        description="ƏtirX-də premium qadın, kişi və uniseks ətirləri notlara görə axtarın, seçin və qapıda ödənişlə sifariş edin."
+        path={`${location.pathname}${location.search}`}
+        lang={language}
+        jsonLd={[
+          {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "ƏtirX",
+            url: typeof window !== "undefined" ? window.location.origin : "",
+            logo: typeof window !== "undefined" ? `${window.location.origin}/logo-dark.png` : "",
+          },
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            name: "ƏtirX",
+            url: typeof window !== "undefined" ? window.location.origin : "",
+            potentialAction: {
+              "@type": "SearchAction",
+              target: `${typeof window !== "undefined" ? window.location.origin : ""}/search?q={search_term_string}`,
+              "query-input": "required name=search_term_string",
+            },
+          },
+        ]}
+      />
       <div className="w-full min-h-screen flex flex-col relative">
         <div className="promo-strip overflow-hidden border-b border-zinc-800 bg-zinc-900">
           <div className="promo-track">
@@ -138,7 +166,7 @@ export function Layout() {
               className="inline-flex items-center"
               aria-label="EtirX home"
             >
-              <img src="/logo.png" alt="EtirX" className="h-14 w-14 object-cover" />
+              <img src={logoSrc} alt="EtirX" className="h-14 w-14 object-cover" />
             </button>
             <nav className="flex items-center gap-2">
               <div ref={langDesktopRef} className="relative mr-2">
@@ -225,7 +253,7 @@ export function Layout() {
           <div className="md:hidden sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
             <div className="px-4 py-2.5 flex items-center justify-between">
               <button onClick={() => navigate("/")} className="inline-flex items-center" aria-label="EtirX home">
-                <img src="/logo.png" alt="EtirX" className="h-12 w-12 object-cover" />
+                <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
               </button>
               <div className="flex items-center gap-2">
                 <div ref={langMobileRef} className="relative">
@@ -334,11 +362,11 @@ export function Layout() {
               </div>
             </section>
           )}
-          <footer className="border-t border-zinc-800 bg-zinc-950 px-4 sm:px-6 lg:px-8 py-10 md:py-12">
+          <footer className="site-footer border-t border-zinc-800 bg-zinc-950 px-4 sm:px-6 lg:px-8 py-10 md:py-12">
             <div className="grid gap-8 md:grid-cols-[1.1fr_1.4fr_1fr]">
               <div>
                 <Link to="/" className="inline-flex items-center gap-3 mb-4">
-                  <img src="/logo.png" alt="EtirX" className="h-12 w-12 object-cover" />
+                  <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
                   <span className="text-lg font-medium">{t("brand.name")}</span>
                 </Link>
                 <p className="text-sm text-zinc-400 leading-6 max-w-sm">{t("footer.about")}</p>
@@ -432,7 +460,7 @@ export function Layout() {
             />
             <aside
               ref={drawerRef}
-              className="fixed top-0 right-0 h-full w-[85%] max-w-sm z-[60] bg-zinc-950 border-l border-zinc-800 transition-transform duration-300 translate-x-0"
+              className="menu-drawer fixed top-0 right-0 h-full w-[85%] max-w-sm z-[60] bg-zinc-950 border-l border-zinc-800 transition-transform duration-300 translate-x-0"
             >
               <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
                 <p className="font-medium">{t("menu.title")}</p>
@@ -443,15 +471,16 @@ export function Layout() {
                   {t("menu.close")}
                 </button>
               </div>
-              <div className="p-3 space-y-1 overflow-y-auto h-[calc(100%-57px)]">
+              <div className="p-3 space-y-2 overflow-y-auto h-[calc(100%-57px)]">
                 {extraPages.map((page) => (
                   <Link
                     key={`drawer-${page.to}`}
                     to={page.to}
                     onClick={() => setIsPagesOpen(false)}
-                    className="block px-3 py-3 text-sm rounded-lg text-zinc-200 hover:bg-zinc-800"
+                    className="group flex items-center justify-between px-3.5 py-3 text-sm rounded-xl text-zinc-200 border border-zinc-800/80 bg-gradient-to-r from-zinc-900 to-zinc-950 hover:from-zinc-800 hover:to-zinc-900 transition-all"
                   >
-                    {page.label}
+                    <span className="font-medium tracking-wide">{page.label}</span>
+                    <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 ))}
               </div>

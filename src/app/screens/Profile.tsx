@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { User, Mail, Lock, LogOut, Shield, Phone, MapPin, ChevronRight, ArrowLeft } from "lucide-react";
 import { useI18n } from "../i18n";
 import {
@@ -14,6 +14,7 @@ import {
   type UserOrder,
 } from "../lib/auth";
 import { syncStoredCollections } from "../lib/storage";
+import { Seo } from "../components/Seo";
 
 function useAuthState() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -43,10 +44,15 @@ function useAuthState() {
 
 export function Profile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useI18n();
   const { user, setUser, orders, loadOrders, refresh } = useAuthState();
 
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register">(
+    location.state && typeof location.state === "object" && "mode" in location.state && location.state.mode === "register"
+      ? "register"
+      : "login"
+  );
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -56,6 +62,10 @@ export function Profile() {
   const [success, setSuccess] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const nextPath =
+    location.state && typeof location.state === "object" && "next" in location.state && typeof location.state.next === "string"
+      ? location.state.next
+      : null;
 
   useEffect(() => {
     refresh();
@@ -127,6 +137,7 @@ export function Profile() {
       setSuccess(t("profile.accountCreated"));
       await syncStoredCollections();
       await loadOrders();
+      if (nextPath) navigate(nextPath);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("profile.registerFailed"));
     } finally {
@@ -145,6 +156,7 @@ export function Profile() {
       setSuccess(t("profile.loginSuccess"));
       await syncStoredCollections();
       await loadOrders();
+      if (nextPath) navigate(nextPath);
     } catch (e) {
       setError(e instanceof Error ? e.message : t("profile.badLogin"));
     } finally {
@@ -161,6 +173,7 @@ export function Profile() {
   if (isLoggedIn && user) {
     return (
       <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+        <Seo title="Profil | ƏtirX" description="İstifadəçi profil səhifəsi." path="/profile" noindex />
         <h1 className="text-2xl mb-6">{title}</h1>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-4">
@@ -278,6 +291,7 @@ export function Profile() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+      <Seo title="Giriş / Qeydiyyat | ƏtirX" description="İstifadəçi girişi və qeydiyyat." path="/profile" noindex />
       <h1 className="text-2xl mb-6">{title}</h1>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
@@ -367,6 +381,7 @@ export function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+      <Seo title="Profili redaktə et | ƏtirX" description="Profil məlumatlarını yenilə." path="/profile/edit" noindex />
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate("/profile")} className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />
@@ -415,6 +430,7 @@ export function ChangePasswordPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+      <Seo title="Şifrəni dəyiş | ƏtirX" description="Hesab şifrəsini yenilə." path="/profile/password" noindex />
       <div className="flex items-center gap-3 mb-6">
         <button onClick={() => navigate("/profile")} className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
           <ArrowLeft className="w-5 h-5" />

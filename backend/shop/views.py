@@ -4,6 +4,7 @@ from decimal import Decimal
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import permissions
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -70,7 +71,7 @@ class CategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = Product.objects.filter(is_active=True).select_related("category").order_by("-id")
+    queryset = Product.objects.filter(is_active=True).select_related("category").prefetch_related("categories", "images").order_by("-id")
     serializer_class = ProductSerializer
     lookup_field = "slug"
 
@@ -79,10 +80,21 @@ class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
         category_slug = self.request.query_params.get("category")
         q = self.request.query_params.get("q")
         if category_slug:
-            qs = qs.filter(category__slug=category_slug)
+            qs = qs.filter(Q(category__slug=category_slug) | Q(categories__slug=category_slug))
         if q:
-            qs = qs.filter(name__icontains=q)
-        return qs
+            q = q.strip()
+            if q:
+                qs = qs.filter(
+                    Q(name__icontains=q)
+                    | Q(brand__icontains=q)
+                    | Q(description__icontains=q)
+                    | Q(top_notes__icontains=q)
+                    | Q(heart_notes__icontains=q)
+                    | Q(base_notes__icontains=q)
+                    | Q(category__name__icontains=q)
+                    | Q(categories__name__icontains=q)
+                )
+        return qs.distinct()
 
 
 class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):

@@ -4,6 +4,8 @@ import { ArrowLeft, Heart, Star, ShoppingBag, Minus, Plus, Truck, MessageCircle,
 import { useI18n } from "../i18n";
 import { addToCart, isFavorite, toggleFavorite } from "../lib/storage";
 import { loadCatalogProductBySlug, type CatalogProduct } from "../lib/catalog";
+import { Seo } from "../components/Seo";
+import { noteChipClass, noteToAz } from "../lib/noteMeta";
 
 export function ProductDetails() {
   const navigate = useNavigate();
@@ -14,6 +16,8 @@ export function ProductDetails() {
   const [pulseFavorite, setPulseFavorite] = useState(false);
   const [pulseCart, setPulseCart] = useState(false);
   const [perfume, setPerfume] = useState<CatalogProduct | null>(null);
+  const [activeImage, setActiveImage] = useState("");
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
 
   useEffect(() => {
@@ -24,6 +28,7 @@ export function ProductDetails() {
       }
       const found = await loadCatalogProductBySlug(slug);
       setPerfume(found);
+      setActiveImage(found?.images?.[0] ?? found?.image ?? "");
       if (found) setFavorite(isFavorite(found.id));
     })();
   }, [slug]);
@@ -36,15 +41,50 @@ export function ProductDetails() {
     );
   }
 
-  const gender = /women|qadin/i.test(`${perfume.name} ${perfume.description}`)
-    ? "Qadın"
-    : /men|kisi/i.test(`${perfume.name} ${perfume.description}`)
-      ? "Kişi"
+  const gender =
+    perfume.gender === "qadin"
+      ? "Qadın"
+      : perfume.gender === "kisi"
+        ? "Kişi"
       : "Uniseks";
+
+  const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
+  const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
+  const goNextImage = () => {
+    if (gallery.length <= 1) return;
+    const next = (activeIndex + 1) % gallery.length;
+    setActiveImage(gallery[next]);
+  };
+  const goPrevImage = () => {
+    if (gallery.length <= 1) return;
+    const prev = (activeIndex - 1 + gallery.length) % gallery.length;
+    setActiveImage(gallery[prev]);
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="fixed top-0 left-0 right-0 z-10 bg-black/50 backdrop-blur-xl">
+      <Seo
+        title={`${perfume.name} | ${perfume.brand} | ƏtirX`}
+        description={`${perfume.description} Top notlar: ${perfume.notes.top.map(noteToAz).join(", ")}.`}
+        path={`/product/${perfume.slug}`}
+        image={perfume.image}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "Product",
+          name: perfume.name,
+          brand: perfume.brand,
+          description: perfume.description,
+          image: perfume.image,
+          sku: String(perfume.id),
+          offers: {
+            "@type": "Offer",
+            priceCurrency: "AZN",
+            price: perfume.price.toFixed(2),
+            availability: "https://schema.org/InStock",
+          },
+        }}
+      />
+      <div className="fixed top-[28px] md:top-[24px] left-0 right-0 z-10 bg-black/50 backdrop-blur-xl">
         <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate(-1)}
@@ -66,11 +106,37 @@ export function ProductDetails() {
       </div>
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24">
-        <div className="aspect-[3/4] lg:aspect-[4/5] lg:max-h-[720px] bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden rounded-b-3xl lg:rounded-3xl">
-          <img src={perfume.image} alt={perfume.name} className="w-full h-full object-cover" />
+        <div>
+          <div
+            className="aspect-square lg:aspect-square lg:max-h-[720px] bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden rounded-b-3xl lg:rounded-3xl"
+            onTouchStart={(e) => setTouchStartX(e.changedTouches[0].clientX)}
+            onTouchEnd={(e) => {
+              if (touchStartX === null) return;
+              const diff = e.changedTouches[0].clientX - touchStartX;
+              if (Math.abs(diff) < 35) return;
+              if (diff < 0) goNextImage();
+              else goPrevImage();
+              setTouchStartX(null);
+            }}
+          >
+            <img src={activeImage || perfume.image} alt={perfume.name} className="w-full h-full object-contain" />
+          </div>
+          {gallery.length > 1 && (
+            <div className="px-4 sm:px-0 mt-3 pb-2 flex gap-2 overflow-x-auto">
+              {gallery.map((img, idx) => (
+                <button
+                  key={`${perfume.id}-img-${idx}`}
+                  onClick={() => setActiveImage(img)}
+                  className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-white" : "border-zinc-700"}`}
+                >
+                  <img src={img} alt={`${perfume.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="bg-black px-4 sm:px-6 lg:px-0 py-8 -mt-8 lg:mt-0 rounded-t-[40px] lg:rounded-none relative z-10">
+        <div className={`bg-black px-4 sm:px-6 lg:px-0 py-8 ${perfume.images.length > 1 ? "mt-0" : "-mt-8"} lg:mt-0 rounded-t-[40px] lg:rounded-none relative z-10`}>
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
@@ -96,7 +162,9 @@ export function ProductDetails() {
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.stock")}</p>
-              <p className="text-xs sm:text-sm font-medium text-green-500">{t("product.inStock")}</p>
+              <p className={`text-xs sm:text-sm font-medium ${perfume.stock > 0 ? "text-green-500" : "text-red-500"}`}>
+                {perfume.stock > 0 ? `${perfume.stock} ədəd` : "Stokda yoxdur"}
+              </p>
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">Cins</p>
@@ -170,9 +238,9 @@ export function ProductDetails() {
                       {section.items.map((note) => (
                         <span
                           key={`${section.label}-${note}`}
-                          className="px-3 py-1.5 rounded-full bg-zinc-800 border border-zinc-700 text-xs text-zinc-200"
+                          className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs ${noteChipClass(note)}`}
                         >
-                          {note}
+                          {noteToAz(note)}
                         </span>
                       ))}
                     </div>

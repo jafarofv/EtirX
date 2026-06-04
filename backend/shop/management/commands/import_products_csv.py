@@ -3,8 +3,9 @@ from decimal import Decimal, InvalidOperation
 
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
+from django.utils.text import slugify
 
-from shop.models import Category, Product
+from shop.models import Category, Product, ProductImage
 
 
 class Command(BaseCommand):
@@ -22,19 +23,7 @@ class Command(BaseCommand):
         csv_path = options["csv_path"]
         dry_run = options["dry_run"]
 
-        required_columns = {
-            "category_name",
-            "category_slug",
-            "name",
-            "slug",
-            "brand",
-            "description",
-            "price",
-            "old_price",
-            "stock",
-            "image_url",
-            "is_active",
-        }
+        required_columns = {"name", "price", "stock"}
 
         try:
             with open(csv_path, "r", encoding="utf-8-sig", newline="") as fh:
@@ -72,29 +61,98 @@ class Command(BaseCommand):
             except ValueError as exc:
                 raise CommandError(f"Invalid integer value: {value}") from exc
 
+        def parse_gender(raw):
+            value = (raw or "").strip().lower()
+            if value in {"qadin", "qadın", "female", "women", "woman"}:
+                return "qadin"
+            if value in {"kisi", "kişi", "male", "men", "man"}:
+                return "kisi"
+            return "uniseks"
+
         with transaction.atomic():
             for row in rows:
-                category, _ = Category.objects.update_or_create(
-                    slug=row["category_slug"].strip(),
-                    defaults={"name": row["category_name"].strip()},
-                )
+                category_names_raw = (row.get("category_names") or "").strip()
+                category_name_single = (row.get("category_name") or "").strip()
+                category_slug_single = (row.get("category_slug") or "").strip()
+
+                category_names = [x.strip() for x in category_names_raw.split(",") if x.strip()]
+                if not category_names and category_name_single:
+                    category_names = [category_name_single]
+
+                categories = []
+                for name in category_names:
+                    slug = slugify(name) or name.lower().replace(" ", "-")
+                    cat, _ = Category.objects.update_or_create(slug=slug, defaults={"name": name})
+                    categories.append(cat)
+
+                if not categories:
+                    # Legacy fallback if only slug provided; otherwise default category.
+                    if category_slug_single:
+                        fallback_name = category_name_single or category_slug_single.replace("-", " ").title()
+                        cat, _ = Category.objects.update_or_create(slug=category_slug_single, defaults={"name": fallback_name})
+                        categories = [cat]
+                    else:
+                        cat, _ = Category.objects.update_or_create(
+                            slug="gundelik-istifade",
+                            defaults={"name": "Gündəlik İstifadə"},
+                        )
+                        categories = [cat]
+
+                raw_slug = (row.get("slug") or "").strip()
+                base_slug = raw_slug or (row.get("name") or "").strip().lower().replace(" ", "-")
+                product_slug = base_slug
+                if not product_slug:
+                    raise CommandError("Slug yaradıla bilmədi. 'name' və ya 'slug' olmalıdır.")
 
                 product_defaults = {
-                    "name": row["name"].strip(),
-                    "brand": row["brand"].strip(),
-                    "category": category,
-                    "description": row["description"].strip(),
+                    "name": (row.get("name") or "").strip(),
+                    "brand": (row.get("brand") or "").strip(),
+                    "category": categories[0],
+                    "description": (row.get("description") or "").strip(),
+                    "top_notes": (row.get("top_notes") or "").strip(),
+                    "heart_notes": (row.get("heart_notes") or "").strip(),
+                    "base_notes": (row.get("base_notes") or "").strip(),
                     "price": parse_decimal(row["price"]) or Decimal("0"),
-                    "old_price": parse_decimal(row["old_price"]),
+                    "old_price": parse_decimal(row.get("old_price")),
+                    "volume_ml": parse_int(row.get("volume_ml")) or 100,
+                    "gender": parse_gender(row.get("gender")),
                     "stock": parse_int(row["stock"]),
-                    "image_url": row["image_url"].strip(),
-                    "is_active": parse_bool(row["is_active"]),
+                    "image_url": (row.get("image_url") or "").strip(),
+                    "is_new_arrival": parse_bool(row.get("is_new_arrival")),
+                    "is_best_seller": parse_bool(row.get("is_best_seller")),
+                    "is_active": parse_bool(row.get("is_active", "true")),
                 }
 
-                _, is_created = Product.objects.update_or_create(
-                    slug=row["slug"].strip(),
+                product, is_created = Product.objects.update_or_create(
+                    slug=product_slug,
                     defaults=product_defaults,
                 )
+                product.categories.set(categories)
+
+                image_urls_raw = (row.get("image_urls") or "").strip()
+                image_files_raw = (row.get("image_files") or "").strip()
+                if image_urls_raw:
+                    urls = [u.strip() for u in image_urls_raw.split(",") if u.strip()]
+                    if urls:
+                        ProductImage.objects.filter(product=product).delete()
+                        ProductImage.objects.bulk_create(
+                            [ProductImage(product=product, image_url=url, sort_order=i) for i, url in enumerate(urls)]
+                        )
+                elif image_files_raw:
+                    files = [f.strip().lstrip("/\\") for f in image_files_raw.split(",") if f.strip()]
+                    if files:
+                        ProductImage.objects.filter(product=product).delete()
+                        ProductImage.objects.bulk_create(
+                            [
+                                ProductImage(
+                                    product=product,
+                                    image_url=f"/media/product-images/{fname}",
+                                    sort_order=i,
+                                )
+                                for i, fname in enumerate(files)
+                            ]
+                        )
+
                 if is_created:
                     created += 1
                 else:

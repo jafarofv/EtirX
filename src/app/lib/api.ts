@@ -1,8 +1,6 @@
 import { getAuthToken } from "./auth";
 
-const API_BASE = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getAuthToken();
@@ -88,10 +86,16 @@ export type ApiProduct = {
   base_notes: string;
   price: string;
   old_price: string | null;
+  volume_ml?: number;
+  gender?: string;
   stock: number;
   image_url: string;
+  images?: string[];
   is_active: boolean;
+  is_new_arrival?: boolean;
+  is_best_seller?: boolean;
   category: { id: number; name: string; slug: string };
+  categories?: Array<{ id: number; name: string; slug: string }>;
 };
 
 export type ApiCategory = {
