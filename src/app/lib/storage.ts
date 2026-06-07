@@ -1,8 +1,6 @@
 import { getAuthToken } from "./auth";
+import { API_BASE } from "./config";
 
-const API_BASE = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 const COLLECTIONS_VERSION = "3";
 const COLLECTIONS_VERSION_KEY = "collections-version";
 

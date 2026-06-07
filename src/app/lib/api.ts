@@ -1,6 +1,5 @@
 import { getAuthToken } from "./auth";
-
-const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+import { API_BASE, extractApiErrorMessage } from "./config";
 
 async function request<T>(path: string, init?: RequestInit, retryWithoutToken = true): Promise<T> {
   const token = getAuthToken();
@@ -21,44 +20,14 @@ async function request<T>(path: string, init?: RequestInit, retryWithoutToken = 
     });
     if (!retryRes.ok) {
       const bodyText = await retryRes.text();
-      let message = bodyText || `API error: ${retryRes.status}`;
-      try {
-        const parsed = JSON.parse(bodyText) as Record<string, unknown>;
-        if (typeof parsed.detail === "string") {
-          message = parsed.detail;
-        } else {
-          const firstKey = Object.keys(parsed)[0];
-          const firstVal = parsed[firstKey];
-          if (Array.isArray(firstVal) && typeof firstVal[0] === "string") {
-            message = firstVal[0];
-          }
-        }
-      } catch {
-        // keep plain text
-      }
-      throw new Error(message);
+      throw new Error(extractApiErrorMessage(bodyText, retryRes.status));
     }
     if (retryRes.status === 204) return undefined as T;
     return retryRes.json() as Promise<T>;
   }
   if (!res.ok) {
     const bodyText = await res.text();
-    let message = bodyText || `API error: ${res.status}`;
-    try {
-      const parsed = JSON.parse(bodyText) as Record<string, unknown>;
-      if (typeof parsed.detail === "string") {
-        message = parsed.detail;
-      } else {
-        const firstKey = Object.keys(parsed)[0];
-        const firstVal = parsed[firstKey];
-        if (Array.isArray(firstVal) && typeof firstVal[0] === "string") {
-          message = firstVal[0];
-        }
-      }
-    } catch {
-      // keep plain text
-    }
-    throw new Error(message);
+    throw new Error(extractApiErrorMessage(bodyText, res.status));
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;

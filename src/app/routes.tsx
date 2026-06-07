@@ -1,4 +1,5 @@
-﻿import { createBrowserRouter } from "react-router";
+﻿import { createBrowserRouter, Navigate, Outlet, useLocation } from "react-router";
+import { getAuthToken } from "./lib/auth";
 import { Layout } from "./components/Layout";
 import { Home } from "./screens/Home";
 import { ProductDetails } from "./screens/ProductDetails";
@@ -22,6 +23,14 @@ import {
   TermsPage,
 } from "./screens/ExtraPages";
 
+function RequireAuth() {
+  const location = useLocation();
+  if (!getAuthToken()) {
+    return <Navigate to="/profile" replace state={{ next: location.pathname }} />;
+  }
+  return <Outlet />;
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -31,8 +40,13 @@ export const router = createBrowserRouter([
       { path: "cart", Component: Cart },
       { path: "favorites", Component: Favorites },
       { path: "profile", Component: Profile },
-      { path: "profile/edit", Component: EditProfilePage },
-      { path: "profile/password", Component: ChangePasswordPage },
+      {
+        Component: RequireAuth,
+        children: [
+          { path: "profile/edit", Component: EditProfilePage },
+          { path: "profile/password", Component: ChangePasswordPage },
+        ],
+      },
       { path: "checkout", Component: Checkout },
       { path: "product/:slug", Component: ProductDetails },
       { path: "perfumes", Component: ShopPage },

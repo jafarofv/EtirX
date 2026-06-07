@@ -6,6 +6,7 @@ import { addToCart, isFavorite, toggleFavorite } from "../lib/storage";
 import { loadCatalogProductBySlug, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
+import { WHATSAPP_URL } from "../lib/config";
 
 export function ProductDetails() {
   const navigate = useNavigate();
@@ -35,6 +36,16 @@ export function ProductDetails() {
     })();
   }, [slug]);
 
+  // Keep the displayed image in sync with the selected variant.
+  // Must run on every render (BEFORE the early return below) so the hook order stays stable.
+  useEffect(() => {
+    if (!perfume) return;
+    const list = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
+    const selected = list.find((variant) => variant.id === selectedVariantId) ?? list[0];
+    const nextImage = selected?.imageUrl || perfume.images[0] || perfume.image;
+    if (nextImage) setActiveImage(nextImage);
+  }, [perfume, selectedVariantId]);
+
   if (!perfume) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -54,12 +65,6 @@ export function ProductDetails() {
   const selectedVariant = variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
-
-  useEffect(() => {
-    if (!selectedVariant) return;
-    const nextImage = selectedVariant.imageUrl || perfume.images[0] || perfume.image;
-    if (nextImage) setActiveImage(nextImage);
-  }, [perfume, selectedVariantId]);
 
   const goNextImage = () => {
     if (gallery.length <= 1) return;
@@ -241,7 +246,7 @@ export function ProductDetails() {
               <p className="text-sm text-zinc-400">Məhsulu təhvil alanda nağd və ya kartla ödəniş et.</p>
             </div>
             <a
-              href="https://wa.me/994000000000"
+              href={WHATSAPP_URL}
               target="_blank"
               rel="noreferrer"
               className="block bg-emerald-700/20 rounded-2xl p-4 border border-emerald-600/40 hover:bg-emerald-700/30 transition-all"

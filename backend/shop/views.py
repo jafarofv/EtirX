@@ -1,10 +1,9 @@
-import random
-import string
+import secrets
 from decimal import Decimal
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import Q
+from django.db.models import F, Q
 from rest_framework import permissions
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
@@ -32,8 +31,12 @@ from .serializers import (
 )
 
 
+ORDER_CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+
+
 def generate_order_code() -> str:
-    return "AX-" + "".join(random.choices(string.digits, k=8))
+    # High-entropy, unambiguous code so order lookup-by-code cannot be enumerated.
+    return "AX-" + "".join(secrets.choice(ORDER_CODE_ALPHABET) for _ in range(10))
 
 
 def resolve_product_from_payload(payload):
@@ -70,15 +73,15 @@ def normalize_promo_code(value: str) -> str:
 
 def validate_promo_for_user(promo: PromoCode, user, subtotal: Decimal) -> str | None:
     if user is None or not user.is_authenticated:
-        return "Promokoddan istifad? etm?k ???n daxil olun."
+        return "Promokoddan istifadə etmək üçün daxil olun."
     if not promo.is_active_now():
-        return "Promokod aktiv deyil v? ya m?dd?ti bitib."
+        return "Promokod aktiv deyil və ya müddəti bitib."
     if subtotal < promo.min_subtotal:
-        return f"Bu promokod ???n minimum sifari? m?bl??i {promo.min_subtotal} ₼-dir."
+        return f"Bu promokod üçün minimum sifariş məbləği {promo.min_subtotal} ₼-dir."
     if promo.max_total_uses is not None and promo.redemptions.count() >= promo.max_total_uses:
-        return "Bu promokodun istifad? limiti bitib."
+        return "Bu promokodun istifadə limiti bitib."
     if promo.max_uses_per_user and promo.redemptions.filter(user=user).count() >= promo.max_uses_per_user:
-        return "Bu promokod bu hesabda art?q istifad? olunub."
+        return "Bu promokod bu hesabda artıq istifadə olunub."
     return None
 
 
@@ -145,6 +148,20 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
             resolved_items.append((product, variant, quantity, unit_price))
 
         with transaction.atomic():
+            # Lock stock rows and verify availability before creating the order.
+            for product, variant, quantity, unit_price in resolved_items:
+                if variant is not None:
+                    locked = ProductVariant.objects.select_for_update().get(pk=variant.pk)
+                    available, label = locked.stock, f"{product.name} ({variant.label})"
+                else:
+                    locked = Product.objects.select_for_update().get(pk=product.pk)
+                    available, label = locked.stock, product.name
+                if available < quantity:
+                    return Response(
+                        {"detail": f"Stokda kifayət qədər məhsul yoxdur: {label} (qalıq: {available})."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
             promo = None
             discount_amount = Decimal("0.00")
             if promo_code_value:
@@ -181,6 +198,10 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
                     quantity=quantity,
                     unit_price=unit_price,
                 )
+                if variant is not None:
+                    ProductVariant.objects.filter(pk=variant.pk).update(stock=F("stock") - quantity)
+                else:
+                    Product.objects.filter(pk=product.pk).update(stock=F("stock") - quantity)
 
             order.subtotal = subtotal
             order.total = subtotal + shipping_fee - discount_amount
