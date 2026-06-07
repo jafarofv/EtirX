@@ -2,15 +2,45 @@ import { getAuthToken } from "./auth";
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
+async function request<T>(path: string, init?: RequestInit, retryWithoutToken = true): Promise<T> {
   const token = getAuthToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Token ${token}` } : {}),
+  };
   const res = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Token ${token}` } : {}),
-    },
+    headers,
     ...init,
   });
+  if (res.status === 401 && token && retryWithoutToken) {
+    const retryHeaders = { ...headers };
+    delete retryHeaders.Authorization;
+    const retryRes = await fetch(`${API_BASE}${path}`, {
+      headers: retryHeaders,
+      ...init,
+    });
+    if (!retryRes.ok) {
+      const bodyText = await retryRes.text();
+      let message = bodyText || `API error: ${retryRes.status}`;
+      try {
+        const parsed = JSON.parse(bodyText) as Record<string, unknown>;
+        if (typeof parsed.detail === "string") {
+          message = parsed.detail;
+        } else {
+          const firstKey = Object.keys(parsed)[0];
+          const firstVal = parsed[firstKey];
+          if (Array.isArray(firstVal) && typeof firstVal[0] === "string") {
+            message = firstVal[0];
+          }
+        }
+      } catch {
+        // keep plain text
+      }
+      throw new Error(message);
+    }
+    if (retryRes.status === 204) return undefined as T;
+    return retryRes.json() as Promise<T>;
+  }
   if (!res.ok) {
     const bodyText = await res.text();
     let message = bodyText || `API error: ${res.status}`;
@@ -52,7 +82,7 @@ export async function createOrder(payload: {
   notes?: string;
   promo_code?: string;
   shipping_fee?: string;
-  items: Array<{ product_id: number; product_slug?: string; quantity: number }>;
+  items: Array<{ product_id: number; product_slug?: string; variant_id?: number; quantity: number }>;
 }) {
   return request<{
     code: string;
@@ -68,7 +98,7 @@ export async function createOrder(payload: {
     shipping_fee: string;
     total: string;
     created_at: string;
-    items: Array<{ product: number; product_name: string; product_image: string; quantity: number; unit_price: string }>;
+    items: Array<{ product: number; product_name: string; product_image: string; variant_label: string; variant_type: string; quantity: number; unit_price: string }>;
   }>("/orders/", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -91,6 +121,28 @@ export type ApiProduct = {
   stock: number;
   image_url: string;
   images?: string[];
+  variants?: Array<{
+    id: number;
+    variant_type: string;
+    label: string;
+    size_ml: number | null;
+    price: string;
+    stock: number;
+    image_url: string;
+    is_active: boolean;
+    sort_order: number;
+  }>;
+  default_variant?: {
+    id: number | null;
+    variant_type: string;
+    label: string;
+    size_ml: number | null;
+    price: string;
+    stock: number;
+    image_url: string;
+    is_active: boolean;
+    sort_order: number;
+  };
   is_active: boolean;
   is_new_arrival?: boolean;
   is_best_seller?: boolean;

@@ -115,7 +115,7 @@ export type UserOrder = {
   shipping_fee: string;
   total: string;
   created_at: string;
-  items: Array<{ product: number; product_name: string; product_image: string; quantity: number; unit_price: string }>;
+  items: Array<{ product: number; product_name: string; product_image: string; variant_label: string; variant_type: string; quantity: number; unit_price: string }>;
 };
 
 export async function getMyOrders() {

@@ -16,6 +16,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
     if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return "Çox Satılan";
     return null;
   };
+  const hasStock = (p: ApiProduct) => (p.variants ?? []).some((variant) => variant.is_active && variant.stock > 0) || p.stock > 0;
 
   if (items.length === 0) {
     return <p className="text-zinc-400">{t("shop.noProducts")}</p>;
@@ -37,7 +38,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
             <p className="text-sm text-zinc-400">{p.brand}</p>
             <h3 className="font-medium text-sm truncate">{p.name}</h3>
             <p className="text-xs text-zinc-500 mt-0.5">
-              {(p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks")} • {p.volume_ml ?? 100}ml • {p.stock} ədəd
+              {(p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks")} • {p.volume_ml ?? 100}ml • {hasStock(p) ? t("product.inStock") : t("product.outOfStock")}
             </p>
             <p className="mt-1 font-medium">{fmt(p.price)}</p>
           </div>

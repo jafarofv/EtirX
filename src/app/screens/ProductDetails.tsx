@@ -16,6 +16,7 @@ export function ProductDetails() {
   const [pulseFavorite, setPulseFavorite] = useState(false);
   const [pulseCart, setPulseCart] = useState(false);
   const [perfume, setPerfume] = useState<CatalogProduct | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState("");
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
@@ -28,7 +29,8 @@ export function ProductDetails() {
       }
       const found = await loadCatalogProductBySlug(slug);
       setPerfume(found);
-      setActiveImage(found?.images?.[0] ?? found?.image ?? "");
+      setSelectedVariantId(found?.defaultVariant.id ?? found?.variants?.[0]?.id ?? null);
+      setActiveImage(found?.defaultVariant.imageUrl || found?.images?.[0] || found?.image || "");
       if (found) setFavorite(isFavorite(found.id));
     })();
   }, [slug]);
@@ -48,8 +50,17 @@ export function ProductDetails() {
         ? "Kişi"
       : "Uniseks";
 
+  const variants = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
+  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
+
+  useEffect(() => {
+    if (!selectedVariant) return;
+    const nextImage = selectedVariant.imageUrl || perfume.images[0] || perfume.image;
+    if (nextImage) setActiveImage(nextImage);
+  }, [perfume, selectedVariantId]);
+
   const goNextImage = () => {
     if (gallery.length <= 1) return;
     const next = (activeIndex + 1) % gallery.length;
@@ -158,17 +169,59 @@ export function ProductDetails() {
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.size")}</p>
-              <p className="text-xs sm:text-sm font-medium">{perfume.size}</p>
+              <p className="text-xs sm:text-sm font-medium">
+                {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
+              </p>
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.stock")}</p>
-              <p className={`text-xs sm:text-sm font-medium ${perfume.stock > 0 ? "text-green-500" : "text-red-500"}`}>
-                {perfume.stock > 0 ? `${perfume.stock} ədəd` : "Stokda yoxdur"}
+              <p className={`text-xs sm:text-sm font-medium ${selectedVariant?.stock > 0 ? "text-green-500" : "text-red-500"}`}>
+                {selectedVariant?.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
               </p>
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">Cins</p>
               <p className="text-xs sm:text-sm font-medium">{gender}</p>
+            </div>
+          </div>
+
+          <div className="mb-8">
+            <h3 className="text-sm font-medium mb-3">{t("product.saleType")}</h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {variants.map((variant) => {
+                const isSelected = selectedVariant?.id === variant.id;
+                const isPremium = variant.variantType === "premium";
+                return (
+                  <button
+                    key={variant.id ?? `${variant.label}-${variant.sizeMl}`}
+                    type="button"
+                    onClick={() => {
+                      setSelectedVariantId(variant.id);
+                      if (variant.imageUrl) setActiveImage(variant.imageUrl);
+                    }}
+                    className={`rounded-2xl border p-4 text-left transition-all ${
+                      isSelected ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-medium">
+                          {isPremium ? t("product.premiumPack") : `${variant.label} ${t("product.gramSale")}`}
+                        </p>
+                        <p className="text-xs text-zinc-500 mt-1">
+                          {isPremium ? t("product.originalPackaging") : `${variant.sizeMl ?? variant.label}`}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{fmt(variant.price)}</p>
+                        <p className={`text-xs mt-1 ${variant.stock > 0 ? "text-green-400" : "text-red-400"}`}>
+                          {variant.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -212,10 +265,19 @@ export function ProductDetails() {
             </div>
             <button
               onClick={() => {
-                addToCart(perfume.id, quantity, perfume.slug);
+                if (!selectedVariant) return;
+                addToCart(perfume.id, quantity, perfume.slug, {
+                  id: selectedVariant.id,
+                  label: selectedVariant.label,
+                  variantType: selectedVariant.variantType,
+                  sizeMl: selectedVariant.sizeMl,
+                  price: selectedVariant.price,
+                  imageUrl: selectedVariant.imageUrl,
+                });
                 setPulseCart(true);
                 setTimeout(() => setPulseCart(false), 180);
               }}
+              disabled={!selectedVariant || selectedVariant.stock <= 0}
               className={`flex-1 bg-white text-black rounded-2xl py-4 font-medium flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all ${pulseCart ? "scale-105" : ""}`}
             >
               <ShoppingBag className="w-5 h-5" />

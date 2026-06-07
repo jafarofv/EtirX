@@ -4,22 +4,14 @@ import { Trash2, Plus, Minus, ShoppingBag } from "lucide-react";
 import { useI18n } from "../i18n";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { getAuthToken } from "../lib/auth";
-import { syncStoredCollections } from "../lib/storage";
+import { getCartRows, syncStoredCollections } from "../lib/storage";
 import { validatePromoCode } from "../lib/api";
 import { Seo } from "../components/Seo";
 
 interface CartItem {
   perfume: CatalogProduct;
+  variant: CatalogProduct["defaultVariant"];
   quantity: number;
-}
-
-function loadRows() {
-  try {
-    const raw = localStorage.getItem("cart-items");
-    return (raw ? JSON.parse(raw) : []) as Array<{ id: number; quantity: number; slug?: string }>;
-  } catch {
-    return [];
-  }
 }
 
 export function Cart() {
@@ -37,9 +29,21 @@ export function Cart() {
     (async () => {
       const products = await loadCatalogProducts();
       const byId = new Map(products.map((p) => [p.id, p] as const));
-      const items = loadRows()
-        .map((i) => ({ perfume: byId.get(i.id), quantity: i.quantity }))
-        .filter((i): i is CartItem => Boolean(i.perfume));
+      const variantById = new Map(
+        products.flatMap((p) => [
+          ...p.variants.map((variant) => [variant.id, { perfume: p, variant }] as const),
+          [p.defaultVariant.id ?? p.id, { perfume: p, variant: p.defaultVariant }] as const,
+        ])
+      );
+      const items = getCartRows()
+        .map((i) => {
+          const perfume = byId.get(i.id);
+          if (!perfume) return null;
+          const resolved = i.variantId ? variantById.get(i.variantId) : undefined;
+          const variant = resolved?.variant ?? perfume.defaultVariant;
+          return { perfume, variant, quantity: i.quantity };
+        })
+        .filter((i): i is CartItem => Boolean(i?.perfume && i.variant));
       setCartItems(items);
       setPromoCode(localStorage.getItem("checkout-promo-code") ?? "");
       setPromoDiscount(0);
@@ -51,13 +55,25 @@ export function Cart() {
     if (!hydrated) return;
     localStorage.setItem(
       "cart-items",
-      JSON.stringify(cartItems.map((i) => ({ id: i.perfume.id, quantity: i.quantity, slug: i.perfume.slug })))
+      JSON.stringify(
+        cartItems.map((i) => ({
+          id: i.perfume.id,
+          quantity: i.quantity,
+          slug: i.perfume.slug,
+          variantId: i.variant.id,
+          variantLabel: i.variant.label,
+          variantType: i.variant.variantType,
+          variantSizeMl: i.variant.sizeMl,
+          variantPrice: i.variant.price,
+          variantImage: i.variant.imageUrl,
+        }))
+      )
     );
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
     void syncStoredCollections();
   }, [cartItems, hydrated]);
 
-  const subtotal = cartItems.reduce((sum, item) => sum + item.perfume.price * item.quantity, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = 0;
   const total = subtotal + shipping - promoDiscount;
 
@@ -95,7 +111,7 @@ export function Cart() {
     setCartItems((items) =>
       items
         .map((item) =>
-          item.perfume.id === id
+          (item.variant.id ?? item.perfume.id) === id
             ? { ...item, quantity: Math.max(0, item.quantity + delta) }
             : item
         )
@@ -104,7 +120,7 @@ export function Cart() {
   };
 
   const removeItem = (id: number) => {
-    setCartItems((items) => items.filter((item) => item.perfume.id !== id));
+    setCartItems((items) => items.filter((item) => (item.variant.id ?? item.perfume.id) !== id));
   };
 
   if (cartItems.length === 0) {
@@ -136,27 +152,29 @@ export function Cart() {
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
         <div className="space-y-4">
           {cartItems.map((item) => (
-            <div key={item.perfume.id} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
+            <div key={`${item.perfume.id}-${item.variant.id ?? "default"}`} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
               <div className="w-24 h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl overflow-hidden flex-shrink-0">
-                <img src={item.perfume.image} alt={item.perfume.name} className="w-full h-full object-cover" />
+                <img src={item.variant.imageUrl || item.perfume.image} alt={item.perfume.name} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 flex flex-col">
                 <div className="flex-1">
                   <h3 className="font-medium mb-1">{item.perfume.name}</h3>
-                  <p className="text-sm text-zinc-400 mb-2">{item.perfume.brand} · {item.perfume.size}</p>
-                  <p className="text-lg font-medium">{fmt(item.perfume.price)}</p>
+                  <p className="text-sm text-zinc-400 mb-2">
+                    {item.perfume.brand} · {item.variant.variantType === "premium" ? t("product.premiumPack") : `${item.variant.label} ${t("product.gramSale")}`}
+                  </p>
+                  <p className="text-lg font-medium">{fmt(item.variant.price)}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center bg-zinc-800 rounded-xl px-1">
-                    <button onClick={() => updateQuantity(item.perfume.id, -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button onClick={() => updateQuantity(item.variant.id ?? item.perfume.id, -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.perfume.id, 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button onClick={() => updateQuantity(item.variant.id ?? item.perfume.id, 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <button onClick={() => removeItem(item.perfume.id)} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
+                  <button onClick={() => removeItem(item.variant.id ?? item.perfume.id)} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>

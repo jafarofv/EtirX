@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
-from .models import Category, Product, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption
+from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption
 from .notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
@@ -47,6 +47,23 @@ def resolve_product_from_payload(payload):
     return product
 
 
+def resolve_variant_from_payload(payload):
+    variant_id = payload.get("variant_id")
+    if variant_id is not None:
+        variant = (
+            ProductVariant.objects.select_related("product")
+            .filter(id=variant_id, is_active=True, product__is_active=True)
+            .first()
+        )
+        if variant is not None:
+            return variant
+
+    product = resolve_product_from_payload(payload)
+    if product is None:
+        return None
+    return product.variants.filter(is_active=True).order_by("sort_order", "id").first()
+
+
 def normalize_promo_code(value: str) -> str:
     return (value or "").strip().upper()
 
@@ -71,7 +88,7 @@ class CategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
 
 
 class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = Product.objects.filter(is_active=True).select_related("category").prefetch_related("categories", "images").order_by("-id")
+    queryset = Product.objects.filter(is_active=True).select_related("category").prefetch_related("categories", "images", "variants").order_by("-id")
     serializer_class = ProductSerializer
     lookup_field = "slug"
 
@@ -98,7 +115,7 @@ class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
 
 
 class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = Order.objects.all().prefetch_related("items__product")
+    queryset = Order.objects.all().prefetch_related("items__product", "items__variant")
     serializer_class = OrderSerializer
     lookup_field = "code"
 
@@ -112,23 +129,20 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
         subtotal = Decimal("0.00")
 
         for item in payload["items"]:
-            product = None
-            product_id = item.get("product_id")
-            product_slug = (item.get("product_slug") or "").strip()
-            if product_id is not None:
-                product = Product.objects.filter(id=product_id, is_active=True).first()
-            if product is None and product_slug:
-                product = Product.objects.filter(slug=product_slug, is_active=True).first()
+            variant = resolve_variant_from_payload(item)
+            product = variant.product if variant is not None else resolve_product_from_payload(item)
             if product is None:
+                product_id = item.get("product_id")
+                product_slug = (item.get("product_slug") or "").strip()
                 identifier = product_slug or product_id or "unknown"
                 return Response(
                     {"detail": f"Product not found for item: {identifier}."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
             quantity = item["quantity"]
-            unit_price = product.price
+            unit_price = variant.price if variant is not None else product.price
             subtotal += unit_price * quantity
-            resolved_items.append((product, quantity, unit_price))
+            resolved_items.append((product, variant, quantity, unit_price))
 
         with transaction.atomic():
             promo = None
@@ -159,10 +173,11 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
                 shipping_fee=shipping_fee,
                 payment_method="cash_on_delivery",
             )
-            for product, quantity, unit_price in resolved_items:
+            for product, variant, quantity, unit_price in resolved_items:
                 OrderItem.objects.create(
                     order=order,
                     product=product,
+                    variant=variant,
                     quantity=quantity,
                     unit_price=unit_price,
                 )
@@ -188,7 +203,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
     def my_orders(self, request):
         orders = (
             Order.objects.filter(user=request.user)
-            .prefetch_related("items__product")
+            .prefetch_related("items__product", "items__variant")
             .order_by("-created_at")
         )
         return Response(OrderSerializer(orders, many=True).data)
@@ -240,7 +255,7 @@ class UserCartView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        cart_items = request.user.cart_items.select_related("product", "product__category").all()
+        cart_items = request.user.cart_items.select_related("product", "product__category", "variant").all()
         return Response(UserCartItemSerializer(cart_items, many=True).data)
 
     def post(self, request):
@@ -249,30 +264,48 @@ class UserCartView(APIView):
             request.user.cart_items.all().delete()
             created_items = []
             for raw_item in bulk_items:
-                product = resolve_product_from_payload(raw_item if isinstance(raw_item, dict) else {})
+                variant = resolve_variant_from_payload(raw_item if isinstance(raw_item, dict) else {})
+                product = variant.product if variant is not None else resolve_product_from_payload(raw_item if isinstance(raw_item, dict) else {})
                 if product is None:
                     continue
                 quantity = int(raw_item.get("quantity", 1))
-                item = request.user.cart_items.create(product=product, quantity=quantity)
+                item = request.user.cart_items.create(product=product, variant=variant, quantity=quantity)
                 created_items.append(item)
             return Response(UserCartItemSerializer(created_items, many=True).data, status=status.HTTP_201_CREATED)
 
-        product = resolve_product_from_payload(request.data)
+        variant = resolve_variant_from_payload(request.data)
+        product = variant.product if variant is not None else resolve_product_from_payload(request.data)
         if product is None:
             return Response({"detail": "Product not found."}, status=status.HTTP_400_BAD_REQUEST)
         quantity = int(request.data.get("quantity", 1))
-        item, created = request.user.cart_items.get_or_create(product=product, defaults={"quantity": quantity})
+        if variant is None:
+            item = request.user.cart_items.filter(product=product, variant__isnull=True).first()
+            if item is None:
+                item = request.user.cart_items.create(product=product, quantity=quantity)
+                return Response(UserCartItemSerializer(item).data, status=status.HTTP_201_CREATED)
+            item.quantity = quantity
+            item.save(update_fields=["quantity", "updated_at"])
+            return Response(UserCartItemSerializer(item).data, status=status.HTTP_201_CREATED)
+
+        item, created = request.user.cart_items.get_or_create(
+            variant=variant,
+            defaults={"product": product, "quantity": quantity},
+        )
         if not created:
             item.quantity = quantity
             item.save(update_fields=["quantity", "updated_at"])
         return Response(UserCartItemSerializer(item).data, status=status.HTTP_201_CREATED)
 
     def delete(self, request):
-        product = resolve_product_from_payload(request.data)
-        if product is None:
-            request.user.cart_items.all().delete()
+        variant = resolve_variant_from_payload(request.data)
+        if variant is None:
+            product = resolve_product_from_payload(request.data)
+            if product is None:
+                request.user.cart_items.all().delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            request.user.cart_items.filter(product=product, variant__isnull=True).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
-        request.user.cart_items.filter(product=product).delete()
+        request.user.cart_items.filter(variant=variant).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

@@ -51,6 +51,32 @@ class ProductImage(models.Model):
         return f"{self.product.name} image {self.id}"
 
 
+class ProductVariant(models.Model):
+    VARIANT_TYPE_PREMIUM = "premium"
+    VARIANT_TYPE_GRAM = "gram"
+    VARIANT_TYPE_CHOICES = [
+        (VARIANT_TYPE_PREMIUM, "Premium"),
+        (VARIANT_TYPE_GRAM, "Gram"),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="variants")
+    variant_type = models.CharField(max_length=20, choices=VARIANT_TYPE_CHOICES, default=VARIANT_TYPE_PREMIUM)
+    label = models.CharField(max_length=120)
+    size_ml = models.PositiveIntegerField(null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=0)
+    image_url = models.URLField(blank=True)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ("sort_order", "id")
+
+    def __str__(self):
+        return f"{self.product.name} - {self.label}"
+
+
 class FragranceNote(models.Model):
     FAMILY_CHOICES = [
         ("wood", "Wood"),
@@ -173,6 +199,7 @@ class PromoRedemption(models.Model):
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    variant = models.ForeignKey("ProductVariant", on_delete=models.SET_NULL, null=True, blank=True, related_name="order_items")
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
@@ -209,13 +236,14 @@ class UserFavorite(models.Model):
 class UserCartItem(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="cart_items")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="user_cart_items")
+    variant = models.ForeignKey("ProductVariant", on_delete=models.CASCADE, null=True, blank=True, related_name="user_cart_items")
     quantity = models.PositiveIntegerField(default=1)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ("user", "product")
+        unique_together = ("user", "variant")
         ordering = ("-updated_at",)
 
     def __str__(self):
-        return f"{self.user.username} -> {self.product.name} x{self.quantity}"
+        return f"{self.user.username} -> {self.product.name} ({self.variant.label if self.variant else 'default'}) x{self.quantity}"

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Heart, Star, ShoppingBag } from "lucide-react";
 import { useI18n } from "../i18n";
-import { addToCart } from "../lib/storage";
+import { addToCart, getFavoriteIds } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { syncStoredCollections } from "../lib/storage";
 import { Seo } from "../components/Seo";
@@ -17,7 +17,7 @@ export function Favorites() {
   useEffect(() => {
     (async () => {
       const products = await loadCatalogProducts();
-      const favoriteIds: number[] = JSON.parse(localStorage.getItem("favorites") ?? "[]");
+      const favoriteIds = getFavoriteIds();
       setFavorites(products.filter((p) => favoriteIds.includes(p.id)));
       setHydrated(true);
     })();
@@ -97,7 +97,14 @@ export function Favorites() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToCart(perfume.id, 1, perfume.slug);
+                        addToCart(perfume.id, 1, perfume.slug, perfume.defaultVariant ? {
+                          id: perfume.defaultVariant.id,
+                          label: perfume.defaultVariant.label,
+                          variantType: perfume.defaultVariant.variantType,
+                          sizeMl: perfume.defaultVariant.sizeMl,
+                          price: perfume.defaultVariant.price,
+                          imageUrl: perfume.defaultVariant.imageUrl,
+                        } : undefined);
                       }}
                       className="bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all"
                     >

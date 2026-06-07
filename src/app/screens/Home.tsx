@@ -222,7 +222,14 @@ export function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(perfume.id, 1, perfume.slug);
+                      addToCart(perfume.id, 1, perfume.slug, perfume.defaultVariant ? {
+                        id: perfume.defaultVariant.id,
+                        label: perfume.defaultVariant.label,
+                        variantType: perfume.defaultVariant.variantType,
+                        sizeMl: perfume.defaultVariant.sizeMl,
+                        price: perfume.defaultVariant.price,
+                        imageUrl: perfume.defaultVariant.imageUrl,
+                      } : undefined);
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
@@ -283,7 +290,14 @@ export function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(perfume.id, 1, perfume.slug);
+                      addToCart(perfume.id, 1, perfume.slug, perfume.defaultVariant ? {
+                        id: perfume.defaultVariant.id,
+                        label: perfume.defaultVariant.label,
+                        variantType: perfume.defaultVariant.variantType,
+                        sizeMl: perfume.defaultVariant.sizeMl,
+                        price: perfume.defaultVariant.price,
+                        imageUrl: perfume.defaultVariant.imageUrl,
+                      } : undefined);
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}

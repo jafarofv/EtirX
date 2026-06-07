@@ -238,14 +238,16 @@ export function Profile() {
                 </div>
 
                 <div className="space-y-2">
-                  {o.items.map((item) => (
-                    <div key={`${o.code}-${item.product}-row`} className="flex items-center justify-between gap-3 text-sm">
-                      <span className="text-zinc-300 truncate">
-                        {item.product_name} <span className="text-zinc-500">x{item.quantity}</span>
-                      </span>
-                      <span className="text-zinc-400">{fmt(item.unit_price)}</span>
-                    </div>
-                  ))}
+                      {o.items.map((item) => (
+                    <div key={`${o.code}-${item.product}-${item.variant_label || "variant"}-${item.unit_price}`} className="flex items-center justify-between gap-3 text-sm">
+                          <span className="text-zinc-300 truncate">
+                        {item.product_name}
+                        {item.variant_label ? <span className="text-zinc-500"> • {item.variant_label}</span> : null}
+                        <span className="text-zinc-500"> x{item.quantity}</span>
+                          </span>
+                          <span className="text-zinc-400">{fmt(item.unit_price)}</span>
+                        </div>
+                      ))}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-800 text-sm">

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, Product, ProductImage, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode
+from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -13,6 +13,8 @@ class CategorySerializer(serializers.ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
+    variants = serializers.SerializerMethodField()
+    default_variant = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
 
     def get_images(self, obj: Product):
@@ -33,12 +35,70 @@ class ProductSerializer(serializers.ModelSerializer):
                 urls.append(value)
         return urls
 
+    def get_variants(self, obj: Product):
+        request = self.context.get("request")
+        variants = []
+        for variant in obj.variants.filter(is_active=True).order_by("sort_order", "id"):
+            image_url = variant.image_url or obj.image_url
+            if request is not None and image_url.startswith("/"):
+                image_url = request.build_absolute_uri(image_url)
+            variants.append(
+                {
+                    "id": variant.id,
+                    "variant_type": variant.variant_type,
+                    "label": variant.label,
+                    "size_ml": variant.size_ml,
+                    "price": str(variant.price),
+                    "stock": variant.stock,
+                    "image_url": image_url,
+                    "is_active": variant.is_active,
+                    "sort_order": variant.sort_order,
+                }
+            )
+        return variants
+
+    def get_default_variant(self, obj: Product):
+        variant = obj.variants.filter(is_active=True).order_by("sort_order", "id").first()
+        if variant is None:
+            return {
+                "id": None,
+                "variant_type": "premium",
+                "label": "Premium",
+                "size_ml": obj.volume_ml,
+                "price": str(obj.price),
+                "stock": obj.stock,
+                "image_url": obj.image_url,
+                "is_active": True,
+                "sort_order": 0,
+            }
+        image_url = variant.image_url or obj.image_url
+        request = self.context.get("request")
+        if request is not None and image_url.startswith("/"):
+            image_url = request.build_absolute_uri(image_url)
+        return {
+            "id": variant.id,
+            "variant_type": variant.variant_type,
+            "label": variant.label,
+            "size_ml": variant.size_ml,
+            "price": str(variant.price),
+            "stock": variant.stock,
+            "image_url": image_url,
+            "is_active": variant.is_active,
+            "sort_order": variant.sort_order,
+        }
+
     class Meta:
         model = Product
         fields = [
             "id", "name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes", "price", "old_price",
-            "volume_ml", "gender", "stock", "image_url", "images", "is_active", "is_new_arrival", "is_best_seller", "category", "categories"
+            "volume_ml", "gender", "stock", "image_url", "images", "variants", "default_variant", "is_active", "is_new_arrival", "is_best_seller", "category", "categories"
         ]
+
+
+class ProductVariantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProductVariant
+        fields = ["id", "variant_type", "label", "size_ml", "price", "stock", "image_url", "is_active", "sort_order"]
 
 
 class UserFavoriteSerializer(serializers.ModelSerializer):
@@ -51,15 +111,17 @@ class UserFavoriteSerializer(serializers.ModelSerializer):
 
 class UserCartItemSerializer(serializers.ModelSerializer):
     product = ProductSerializer(read_only=True)
+    variant = ProductVariantSerializer(read_only=True)
 
     class Meta:
         model = UserCartItem
-        fields = ["id", "product", "quantity", "created_at", "updated_at"]
+        fields = ["id", "product", "variant", "quantity", "created_at", "updated_at"]
 
 
 class OrderItemInputSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     product_slug = serializers.SlugField(required=False, allow_blank=True)
+    variant_id = serializers.IntegerField(required=False, allow_null=True)
     quantity = serializers.IntegerField(min_value=1)
 
 
@@ -80,11 +142,31 @@ class OrderCreateSerializer(serializers.Serializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source="product.name", read_only=True)
-    product_image = serializers.CharField(source="product.image_url", read_only=True)
+    product_image = serializers.SerializerMethodField()
+    variant_label = serializers.SerializerMethodField()
+    variant_type = serializers.SerializerMethodField()
+
+    def get_product_image(self, obj: OrderItem):
+        request = self.context.get("request")
+        variant = getattr(obj, "variant", None)
+        value = ""
+        if variant and variant.image_url:
+            value = variant.image_url
+        elif obj.product and obj.product.image_url:
+            value = obj.product.image_url
+        if request is not None and value.startswith("/"):
+            value = request.build_absolute_uri(value)
+        return value
+
+    def get_variant_label(self, obj: OrderItem):
+        return obj.variant.label if obj.variant else ""
+
+    def get_variant_type(self, obj: OrderItem):
+        return obj.variant.variant_type if obj.variant else ""
 
     class Meta:
         model = OrderItem
-        fields = ["product", "product_name", "product_image", "quantity", "unit_price"]
+        fields = ["product", "product_name", "product_image", "variant_label", "variant_type", "quantity", "unit_price"]
 
 
 class OrderSerializer(serializers.ModelSerializer):

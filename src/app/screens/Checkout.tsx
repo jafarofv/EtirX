@@ -5,7 +5,7 @@ import { useI18n } from "../i18n";
 import { createOrder, validatePromoCode } from "../lib/api";
 import { getAuthToken, getMe, updateMe } from "../lib/auth";
 import { loadCatalogProducts } from "../lib/catalog";
-import { clearCart } from "../lib/storage";
+import { clearCart, getCartRows } from "../lib/storage";
 import { Seo } from "../components/Seo";
 
 type DeliveryMethod = {
@@ -29,7 +29,13 @@ type PlacedOrder = {
   shipping_fee: string;
   total: string;
   created_at: string;
-  items: Array<{ product: number; product_name: string; product_image: string; quantity: number; unit_price: string }>;
+  items: Array<{ product: number; product_name: string; product_image: string; variant_label: string; variant_type: string; quantity: number; unit_price: string }>;
+};
+
+type CheckoutItem = {
+  perfume: Awaited<ReturnType<typeof loadCatalogProducts>>[number];
+  variant: Awaited<ReturnType<typeof loadCatalogProducts>>[number]["defaultVariant"];
+  quantity: number;
 };
 
 export function Checkout() {
@@ -44,10 +50,12 @@ export function Checkout() {
   const [promoCode, setPromoCode] = useState("");
   const [promoMsg, setPromoMsg] = useState<string | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
+  const [promoDiscount, setPromoDiscount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [profileHadAddress, setProfileHadAddress] = useState(false);
+  const [cartItems, setCartItems] = useState<CheckoutItem[]>([]);
 
   const deliveryMethods: DeliveryMethod[] = [
     { id: "city_courier", label: t("checkout.delivery.cityCourier"), eta: t("checkout.delivery.cityCourierEta"), fee: 0 },
@@ -58,6 +66,9 @@ export function Checkout() {
   const [selectedDelivery, setSelectedDelivery] = useState<DeliveryMethod["id"] | null>(null);
   const selectedMethod = deliveryMethods.find((m) => m.id === selectedDelivery) ?? null;
   const requiresAddress = selectedDelivery === "city_courier";
+  const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
+  const shipping = selectedMethod?.fee ?? 0;
+  const total = subtotal + shipping - promoDiscount;
 
   useEffect(() => {
     let mounted = true;
@@ -81,6 +92,32 @@ export function Checkout() {
         // ignore guest draft parse errors
       }
     }
+
+    (async () => {
+      try {
+        const products = await loadCatalogProducts();
+        if (!mounted) return;
+        const byId = new Map(products.map((p) => [p.id, p] as const));
+        const variantById = new Map(
+          products.flatMap((p) => [
+            ...p.variants.map((variant) => [variant.id, { perfume: p, variant }] as const),
+            [p.defaultVariant.id ?? p.id, { perfume: p, variant: p.defaultVariant }] as const,
+          ])
+        );
+        const items = getCartRows()
+          .map((row) => {
+            const perfume = byId.get(row.id);
+            if (!perfume) return null;
+            const resolved = row.variantId ? variantById.get(row.variantId) : undefined;
+            const variant = resolved?.variant ?? perfume.defaultVariant;
+            return { perfume, variant, quantity: row.quantity };
+          })
+          .filter((item): item is CheckoutItem => Boolean(item?.perfume && item.variant));
+        setCartItems(items);
+      } catch {
+        if (mounted) setCartItems([]);
+      }
+    })();
 
     (async () => {
       if (!getAuthToken()) {
@@ -192,7 +229,7 @@ export function Checkout() {
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">{t("cart.summary")}</p>
                 <div className="space-y-3">
                   {(order?.items ?? []).map((item) => (
-                    <div key={`${item.product}-${item.product_name}`} className="flex items-center gap-3 text-sm">
+                    <div key={`${item.product}-${item.variant_label || "variant"}-${item.unit_price}`} className="flex items-center gap-3 text-sm">
                       <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
                         <img
                           src={item.product_image}
@@ -202,7 +239,10 @@ export function Checkout() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-3">
-                          <span className="text-zinc-200 block truncate">{item.product_name}</span>
+                          <span className="text-zinc-200 block truncate">
+                            {item.product_name}
+                            {item.variant_label ? <span className="text-zinc-500"> • {item.variant_label}</span> : null}
+                          </span>
                           <span className="font-medium shrink-0">{fmt(item.unit_price)}</span>
                         </div>
                         <p className="text-xs text-zinc-500 mt-1">x{item.quantity}</p>
@@ -297,6 +337,7 @@ export function Checkout() {
                   setPromoCode(e.target.value);
                   setPromoErr(null);
                   setPromoMsg(null);
+                  setPromoDiscount(0);
                 }}
                 placeholder={t("checkout.promo")}
                 className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
@@ -309,6 +350,7 @@ export function Checkout() {
                   const code = promoCode.trim();
                   if (!code) {
                     localStorage.removeItem("checkout-promo-code");
+                    setPromoDiscount(0);
                     setPromoMsg(t("cart.promoCleared"));
                     return;
                   }
@@ -317,20 +359,14 @@ export function Checkout() {
                     return;
                   }
                   try {
-                    const raw = localStorage.getItem("cart-items");
-                    const parsed: Array<{ id: number; quantity: number; slug?: string }> = raw ? JSON.parse(raw) : [];
-                    const catalog = await loadCatalogProducts();
-                    const byId = new Map(catalog.map((p) => [p.id, p] as const));
-                    const subtotal = parsed.reduce((sum, item) => {
-                      const product = byId.get(item.id);
-                      return product ? sum + product.price * item.quantity : sum;
-                    }, 0);
                     const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
                     localStorage.setItem("checkout-promo-code", result.promo.code);
                     setPromoCode(result.promo.code);
+                    setPromoDiscount(Number(result.discount_amount));
                     setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${Number(result.discount_amount).toFixed(2)} \u20BC`);
                   } catch (err) {
                     localStorage.removeItem("checkout-promo-code");
+                    setPromoDiscount(0);
                     setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
                   }
                 }}
@@ -418,25 +454,22 @@ export function Checkout() {
             }
             try {
               setSubmitting(true);
-              const raw = localStorage.getItem("cart-items");
-              const parsed: Array<{ id: number; quantity: number; slug?: string }> = raw ? JSON.parse(raw) : [];
-              if (parsed.length === 0) {
+              if (cartItems.length === 0) {
                 setError(t("cart.empty"));
                 return;
               }
-              const catalog = await loadCatalogProducts();
-              const byId = new Map(catalog.map((p) => [p.id, p] as const));
               const result = await createOrder({
                 full_name: fullName,
                 phone,
                 address: requiresAddress ? address : address || t("checkout.defaultAddress"),
                 notes: promoCode.trim() ? `${notes}\nPromo: ${promoCode.trim()}`.trim() : notes,
                 promo_code: promoCode.trim() || undefined,
-                shipping_fee: selectedMethod.fee.toFixed(2),
-                items: parsed.map((i) => ({
-                  product_id: i.id,
-                  product_slug: i.slug ?? byId.get(i.id)?.slug,
-                  quantity: i.quantity,
+                shipping_fee: shipping.toFixed(2),
+                items: cartItems.map((item) => ({
+                  product_id: item.perfume.id,
+                  product_slug: item.perfume.slug,
+                  variant_id: item.variant.id ?? undefined,
+                  quantity: item.quantity,
                 })),
               });
               if (isLoggedIn && !profileHadAddress && address.trim()) {

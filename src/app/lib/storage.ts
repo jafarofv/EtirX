@@ -3,8 +3,20 @@ import { getAuthToken } from "./auth";
 const API_BASE = import.meta.env.DEV
   ? "/api"
   : import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+const COLLECTIONS_VERSION = "3";
+const COLLECTIONS_VERSION_KEY = "collections-version";
 
-export type CartRow = { id: number; quantity: number; slug?: string };
+export type CartRow = {
+  id: number;
+  quantity: number;
+  slug?: string;
+  variantId?: number;
+  variantLabel?: string;
+  variantType?: string;
+  variantSizeMl?: number | null;
+  variantPrice?: number;
+  variantImage?: string;
+};
 
 async function syncJson(path: string, body: unknown, method: "POST" | "DELETE" = "POST") {
   const token = getAuthToken();
@@ -23,6 +35,28 @@ async function syncJson(path: string, body: unknown, method: "POST" | "DELETE" =
   }
 }
 
+function isValidCartRow(value: unknown): value is CartRow {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      typeof (value as CartRow).id === "number" &&
+      typeof (value as CartRow).quantity === "number" &&
+      (typeof (value as CartRow).slug === "string" || typeof (value as CartRow).slug === "undefined")
+      && (typeof (value as CartRow).variantId === "number" || typeof (value as CartRow).variantId === "undefined")
+  );
+}
+
+function migrateCollectionsIfNeeded() {
+  const storedVersion = localStorage.getItem(COLLECTIONS_VERSION_KEY);
+  if (storedVersion === COLLECTIONS_VERSION) return;
+  localStorage.setItem(COLLECTIONS_VERSION_KEY, COLLECTIONS_VERSION);
+  localStorage.removeItem("cart-items");
+  localStorage.removeItem("favorites");
+  window.dispatchEvent(new CustomEvent("app-storage-updated"));
+}
+
+migrateCollectionsIfNeeded();
+
 export async function syncStoredCollections() {
   try {
     const cart = getCartRows();
@@ -34,6 +68,7 @@ export async function syncStoredCollections() {
           items: cart.map((row) => ({
             product_id: row.id,
             product_slug: row.slug,
+            variant_id: row.variantId,
             quantity: row.quantity,
           })),
         },
@@ -55,32 +90,65 @@ export function clearCart() {
 export function getCartRows(): CartRow[] {
   try {
     const raw = localStorage.getItem("cart-items");
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter(isValidCartRow) : [];
   } catch {
     return [];
   }
 }
 
-export function addToCart(productId: number, quantity = 1, slug?: string) {
+export function addToCart(
+  productId: number,
+  quantity = 1,
+  slug?: string,
+  variant?: {
+    id: number | null;
+    label: string;
+    variantType: string;
+    sizeMl: number | null;
+    price: number;
+    imageUrl: string;
+  }
+) {
   const rows = getCartRows();
-  const existing = rows.find((r) => r.id === productId);
+  const variantKey = variant?.id ?? null;
+  const existing = rows.find((r) => (variantKey !== null ? r.variantId === variantKey : r.id === productId && !r.variantId));
   if (existing) {
     existing.quantity += quantity;
     if (slug && !existing.slug) existing.slug = slug;
+    if (variant && variantKey !== null) {
+      existing.variantId = variantKey;
+      existing.variantLabel = variant.label;
+      existing.variantType = variant.variantType;
+      existing.variantSizeMl = variant.sizeMl;
+      existing.variantPrice = variant.price;
+      existing.variantImage = variant.imageUrl;
+    }
   } else {
-    rows.push({ id: productId, quantity, slug });
+    rows.push({
+      id: productId,
+      quantity,
+      slug,
+      variantId: variantKey ?? undefined,
+      variantLabel: variant?.label,
+      variantType: variant?.variantType,
+      variantSizeMl: variant?.sizeMl,
+      variantPrice: variant?.price,
+      variantImage: variant?.imageUrl,
+    });
   }
   localStorage.setItem("cart-items", JSON.stringify(rows));
   window.dispatchEvent(new CustomEvent("app-storage-updated"));
   void syncJson("/me/cart/", {
-    items: rows.map((row) => ({ product_id: row.id, product_slug: row.slug, quantity: row.quantity })),
+    items: rows.map((row) => ({ product_id: row.id, product_slug: row.slug, variant_id: row.variantId, quantity: row.quantity })),
   }, "POST");
 }
 
 export function getFavoriteIds(): number[] {
   try {
     const raw = localStorage.getItem("favorites");
-    return raw ? JSON.parse(raw) : [];
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? parsed.filter((value): value is number => typeof value === "number") : [];
   } catch {
     return [];
   }

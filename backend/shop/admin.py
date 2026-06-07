@@ -2,6 +2,7 @@ from django.contrib import admin
 from .models import (
     Category,
     Product,
+    ProductVariant,
     Order,
     OrderItem,
     ContactMessage,
@@ -18,6 +19,12 @@ class ProductImageInline(admin.TabularInline):
     model = ProductImage
     extra = 1
     fields = ("sort_order", "image_file", "image_url")
+
+
+class ProductVariantInline(admin.TabularInline):
+    model = ProductVariant
+    extra = 4
+    fields = ("variant_type", "label", "size_ml", "price", "stock", "image_url", "sort_order", "is_active")
 
 
 class ProductAdmin(admin.ModelAdmin):
@@ -44,7 +51,7 @@ class ProductAdmin(admin.ModelAdmin):
         }),
     )
     filter_horizontal = ("categories",)
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, ProductVariantInline]
     exclude = ("category", "image_url")
 
     def save_model(self, request, obj, form, change):
@@ -73,7 +80,7 @@ class CategoryAdmin(admin.ModelAdmin):
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     extra = 0
-    readonly_fields = ("product", "quantity", "unit_price")
+    readonly_fields = ("product", "variant", "quantity", "unit_price")
     can_delete = False
 
 
@@ -113,8 +120,8 @@ class UserFavoriteAdmin(admin.ModelAdmin):
 
 
 class UserCartItemAdmin(admin.ModelAdmin):
-    list_display = ("user", "product", "quantity", "updated_at")
-    search_fields = ("user__username", "user__email", "product__name", "product__slug")
+    list_display = ("user", "product", "variant", "quantity", "updated_at")
+    search_fields = ("user__username", "user__email", "product__name", "product__slug", "variant__label")
     list_filter = ("updated_at",)
     ordering = ("-updated_at",)
 
@@ -143,6 +150,7 @@ class FragranceNoteAdmin(admin.ModelAdmin):
 
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
+admin.site.register(ProductVariant)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(OrderItem)
 admin.site.register(ContactMessage, ContactMessageAdmin)

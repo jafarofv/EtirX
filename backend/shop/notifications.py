@@ -59,7 +59,7 @@ def _post_json(url: str, payload: dict, headers: dict | None = None) -> None:
 
 def build_order_message(order) -> str:
     items = "\n".join(
-        f"- {item.product.name} x{item.quantity} ({item.unit_price} \u20BC)"
+        f"- {item.product.name}{f' / {item.variant.label}' if getattr(item, 'variant', None) else ''} x{item.quantity} ({item.unit_price} \u20BC)"
         for item in order.items.all()
     )
     return (
