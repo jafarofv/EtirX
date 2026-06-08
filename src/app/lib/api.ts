@@ -141,6 +141,20 @@ export async function getCategories() {
   return request<ApiCategory[]>("/categories/");
 }
 
+export type ApiCampaign = {
+  code: string;
+  title: string;
+  description: string;
+  discount_type: string;
+  discount_value: string;
+  min_subtotal: string;
+  ends_at: string | null;
+};
+
+export async function getCampaigns() {
+  return request<ApiCampaign[]>("/promo-codes/");
+}
+
 export type ApiDeliveryMethod = {
   code: string;
   label: string;

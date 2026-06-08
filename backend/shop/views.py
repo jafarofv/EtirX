@@ -23,6 +23,7 @@ from .serializers import (
     OrderSerializer,
     PromoCodeValidateSerializer,
     PromoCodeSerializer,
+    PublicPromoCodeSerializer,
     ContactMessageSerializer,
     RegisterSerializer,
     LoginSerializer,
@@ -377,6 +378,20 @@ class PromoCodeValidateView(APIView):
                 "message": "Promokod aktivdir.",
             }
         )
+
+
+class PublicPromoCodeListView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        now = timezone.now()
+        promos = (
+            PromoCode.objects.filter(active=True)
+            .filter(Q(starts_at__isnull=True) | Q(starts_at__lte=now))
+            .filter(Q(ends_at__isnull=True) | Q(ends_at__gte=now))
+            .order_by("-created_at")
+        )
+        return Response(PublicPromoCodeSerializer(promos, many=True).data)
 
 
 class RegisterView(APIView):

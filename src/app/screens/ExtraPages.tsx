@@ -1,7 +1,7 @@
 ﻿import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
-import { getCategories, getProducts, type ApiCategory, type ApiProduct } from "../lib/api";
+import { getCampaigns, getCategories, getProducts, type ApiCampaign, type ApiCategory, type ApiProduct } from "../lib/api";
 import { WHATSAPP_URL } from "../lib/config";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
@@ -357,18 +357,41 @@ export function SearchPage() {
 
 export function CampaignsPage() {
   const { t } = useI18n();
+  const [campaigns, setCampaigns] = useState<ApiCampaign[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getCampaigns()
+      .then(setCampaigns)
+      .catch(() => setCampaigns([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <PageWrap title={t("campaigns.title")} subtitle={t("campaigns.subtitle")}>
-      <div className="space-y-3">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <p className="text-lg font-medium">YENI30</p>
-          <p className="text-zinc-400">{t("campaigns.code1")}</p>
+      {loading ? (
+        <p className="text-zinc-400">{t("shop.loading")}</p>
+      ) : campaigns.length === 0 ? (
+        <p className="text-zinc-400">Hazırda aktiv kampaniya yoxdur.</p>
+      ) : (
+        <div className="space-y-3">
+          {campaigns.map((c) => (
+            <div key={c.code} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-lg font-medium">{c.code}</p>
+                <span className="text-sm font-medium text-emerald-400">
+                  {c.discount_type === "percent" ? `-${Number(c.discount_value)}%` : `-${Number(c.discount_value)} ₼`}
+                </span>
+              </div>
+              {c.title && <p className="text-zinc-300 mt-1">{c.title}</p>}
+              {c.description && <p className="text-zinc-400 text-sm mt-0.5">{c.description}</p>}
+              {Number(c.min_subtotal) > 0 && (
+                <p className="text-xs text-zinc-500 mt-1">Minimum sifariş: {Number(c.min_subtotal)} ₼</p>
+              )}
+            </div>
+          ))}
         </div>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <p className="text-lg font-medium">FREEDELIVERY</p>
-          <p className="text-zinc-400">{t("campaigns.code2")}</p>
-        </div>
-      </div>
+      )}
     </PageWrap>
   );
 }
