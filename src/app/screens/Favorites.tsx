@@ -81,10 +81,12 @@ export function Favorites() {
                   )}
                 </div>
                 <div className="p-4">
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <Star className="w-3 h-3 fill-white text-white" />
-                    <span className="text-xs font-medium">{perfume.rating}</span>
-                  </div>
+                  {perfume.reviews > 0 && (
+                    <div className="flex items-center gap-1 mb-1.5">
+                      <Star className="w-3 h-3 fill-white text-white" />
+                      <span className="text-xs font-medium">{perfume.rating}</span>
+                    </div>
+                  )}
                   <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
                   <p className="text-xs text-zinc-400 mb-2">{perfume.size}</p>
                   <div className="flex items-center justify-between">

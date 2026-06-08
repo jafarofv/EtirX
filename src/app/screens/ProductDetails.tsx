@@ -157,13 +157,15 @@ export function ProductDetails() {
             <div>
               <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
               <h1 className="text-2xl mb-2">{perfume.name}</h1>
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <Star className="w-4 h-4 fill-white text-white" />
-                  <span className="text-sm font-medium">{perfume.rating}</span>
+              {perfume.reviews > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    <Star className="w-4 h-4 fill-white text-white" />
+                    <span className="text-sm font-medium">{perfume.rating}</span>
+                  </div>
+                  <span className="text-sm text-zinc-500">({perfume.reviews} {t("product.reviews")})</span>
                 </div>
-                <span className="text-sm text-zinc-500">({perfume.reviews} {t("product.reviews")})</span>
-              </div>
+              )}
             </div>
             <div className="text-right">
               <p className="text-2xl font-medium">{fmt(perfume.price)}</p>

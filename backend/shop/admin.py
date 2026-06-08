@@ -29,11 +29,11 @@ class ProductVariantInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "category", "gender", "volume_ml", "is_new_arrival", "is_best_seller", "price", "stock", "is_active", "created_at")
+    list_display = ("name", "brand", "category", "gender", "volume_ml", "is_new_arrival", "is_best_seller", "price", "stock", "rating", "review_count", "is_active", "created_at")
     list_filter = ("is_active", "is_new_arrival", "is_best_seller", "category", "brand")
     search_fields = ("name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes")
     ordering = ("-created_at",)
-    list_editable = ("price", "stock", "is_active")
+    list_editable = ("price", "stock", "rating", "is_active")
     prepopulated_fields = {"slug": ("name",)}
     fieldsets = (
         (None, {
@@ -41,7 +41,7 @@ class ProductAdmin(admin.ModelAdmin):
                 "name", "slug", "brand", "categories",
                 "gender", "volume_ml",
                 "is_new_arrival", "is_best_seller",
-                "price", "old_price", "stock", "is_active"
+                "price", "old_price", "stock", "rating", "review_count", "is_active"
             )
         }),
         ("Description", {

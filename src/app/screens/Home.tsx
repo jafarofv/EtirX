@@ -200,11 +200,13 @@ export function Home() {
                 {getBadge(perfume) && <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 rounded-full text-xs font-medium">{getBadge(perfume)}</div>}
               </div>
               <div className="p-5">
-                <div className="flex items-center gap-1 mb-2">
-                  <Star className="w-4 h-4 fill-white text-white" />
-                  <span className="text-sm font-medium">{perfume.rating}</span>
-                  <span className="text-xs text-zinc-500">({perfume.reviews})</span>
-                </div>
+                {perfume.reviews > 0 && (
+                  <div className="flex items-center gap-1 mb-2">
+                    <Star className="w-4 h-4 fill-white text-white" />
+                    <span className="text-sm font-medium">{perfume.rating}</span>
+                    <span className="text-xs text-zinc-500">({perfume.reviews})</span>
+                  </div>
+                )}
                 <h3 className="font-medium mb-1">{perfume.name}</h3>
                 <p className="text-sm text-zinc-400 mb-3">{perfume.brand}</p>
                 <div className="flex flex-wrap gap-1.5 mb-3">
@@ -269,10 +271,12 @@ export function Home() {
                 {getBadge(perfume) && <div className="absolute top-3 right-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{getBadge(perfume)}</div>}
               </div>
               <div className="p-4">
-                <div className="flex items-center gap-1 mb-1.5">
-                  <Star className="w-3 h-3 fill-white text-white" />
-                  <span className="text-xs font-medium">{perfume.rating}</span>
-                </div>
+                {perfume.reviews > 0 && (
+                  <div className="flex items-center gap-1 mb-1.5">
+                    <Star className="w-3 h-3 fill-white text-white" />
+                    <span className="text-xs font-medium">{perfume.rating}</span>
+                  </div>
+                )}
                 <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
                 <p className="text-xs text-zinc-400 mb-2">{perfume.brand}</p>
                 <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">

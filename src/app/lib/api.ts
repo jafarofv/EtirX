@@ -90,6 +90,8 @@ export type ApiProduct = {
   volume_ml?: number;
   gender?: string;
   stock: number;
+  rating: string;
+  review_count: number;
   image_url: string;
   images?: string[];
   variants?: Array<{

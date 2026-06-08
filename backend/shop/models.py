@@ -35,6 +35,8 @@ class Product(models.Model):
     gender = models.CharField(max_length=20, default="uniseks")
     stock = models.PositiveIntegerField(default=0)
     image_url = models.URLField(blank=True)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    review_count = models.PositiveIntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
