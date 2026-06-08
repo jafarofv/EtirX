@@ -11,6 +11,7 @@ from .views import (
     UserCartView,
     PromoCodeValidateView,
     PublicPromoCodeListView,
+    SiteSettingsView,
     RegisterView,
     LoginView,
     MeView,
@@ -34,5 +35,6 @@ urlpatterns = [
     path("me/cart/", UserCartView.as_view()),
     path("promo-codes/validate/", PromoCodeValidateView.as_view()),
     path("promo-codes/", PublicPromoCodeListView.as_view()),
+    path("site-settings/", SiteSettingsView.as_view()),
     path("", include(router.urls)),
 ]

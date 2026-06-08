@@ -6,11 +6,12 @@ import { addToCart, isFavorite, toggleFavorite } from "../lib/storage";
 import { loadCatalogProductBySlug, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
-import { WHATSAPP_URL } from "../lib/config";
+import { useSiteSettings } from "../site-settings";
 
 export function ProductDetails() {
   const navigate = useNavigate();
   const { t } = useI18n();
+  const site = useSiteSettings();
   const { slug } = useParams();
   const [quantity, setQuantity] = useState(1);
   const [favorite, setFavorite] = useState(false);
@@ -248,7 +249,7 @@ export function ProductDetails() {
               <p className="text-sm text-zinc-400">Məhsulu təhvil alanda nağd və ya kartla ödəniş et.</p>
             </div>
             <a
-              href={WHATSAPP_URL}
+              href={site.whatsappUrl}
               target="_blank"
               rel="noreferrer"
               className="block bg-emerald-700/20 rounded-2xl p-4 border border-emerald-600/40 hover:bg-emerald-700/30 transition-all"

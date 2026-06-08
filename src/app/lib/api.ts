@@ -182,6 +182,19 @@ export async function getTestimonials() {
   return request<ApiTestimonial[]>("/testimonials/");
 }
 
+export type ApiSiteSettings = {
+  whatsapp_number: string;
+  instagram_url: string;
+  instagram_handle: string;
+  tiktok_url: string;
+  tiktok_handle: string;
+  store_address: string;
+};
+
+export async function getSiteSettings() {
+  return request<ApiSiteSettings>("/site-settings/");
+}
+
 export async function getProductBySlug(slug: string) {
   return request<ApiProduct>(`/products/${slug}/`);
 }

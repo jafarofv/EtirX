@@ -11,13 +11,14 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
-from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod, Testimonial
+from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod, Testimonial, SiteSettings
 from .notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
     ProductSerializer,
     DeliveryMethodSerializer,
     TestimonialSerializer,
+    SiteSettingsSerializer,
     UserFavoriteSerializer,
     UserCartItemSerializer,
     OrderCreateSerializer,
@@ -398,6 +399,13 @@ class PublicPromoCodeListView(APIView):
             .order_by("-created_at")
         )
         return Response(PublicPromoCodeSerializer(promos, many=True).data)
+
+
+class SiteSettingsView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        return Response(SiteSettingsSerializer(SiteSettings.load()).data)
 
 
 class RegisterView(APIView):

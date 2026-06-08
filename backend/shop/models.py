@@ -145,6 +145,38 @@ class Testimonial(models.Model):
         return f"{self.name} ({self.rating}★)"
 
 
+class SiteSettings(models.Model):
+    """Single-row store for contact / social details that used to be hardcoded
+    in the React app. Always loaded as pk=1 via load()."""
+
+    whatsapp_number = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text="Digits only, e.g. 994501112233. Used to build the wa.me link.",
+    )
+    instagram_url = models.URLField(blank=True)
+    instagram_handle = models.CharField(max_length=80, blank=True)
+    tiktok_url = models.URLField(blank=True)
+    tiktok_handle = models.CharField(max_length=80, blank=True)
+    store_address = models.CharField(max_length=255, blank=True)
+
+    class Meta:
+        verbose_name = "Site settings"
+        verbose_name_plural = "Site settings"
+
+    def __str__(self):
+        return "Site settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ("new", "New"),

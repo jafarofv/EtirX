@@ -15,6 +15,7 @@ from .models import (
     ProductImage,
     DeliveryMethod,
     Testimonial,
+    SiteSettings,
 )
 
 class ProductImageInline(admin.TabularInline):
@@ -166,8 +167,24 @@ class TestimonialAdmin(admin.ModelAdmin):
     ordering = ("sort_order", "-created_at")
 
 
+class SiteSettingsAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ("WhatsApp", {"fields": ("whatsapp_number",)}),
+        ("Social", {"fields": ("instagram_url", "instagram_handle", "tiktok_url", "tiktok_handle")}),
+        ("Store", {"fields": ("store_address",)}),
+    )
+
+    def has_add_permission(self, request):
+        # Singleton: only allow adding the first row.
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+
 admin.site.register(DeliveryMethod, DeliveryMethodAdmin)
 admin.site.register(Testimonial, TestimonialAdmin)
+admin.site.register(SiteSettings, SiteSettingsAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant)
