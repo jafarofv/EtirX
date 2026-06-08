@@ -63,6 +63,7 @@ export function ProductDetails() {
 
   const variants = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
   const selectedVariant = variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
+  const selectedStock = selectedVariant?.stock ?? 0;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
 
@@ -145,7 +146,7 @@ export function ProductDetails() {
                   onClick={() => setActiveImage(img)}
                   className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-white" : "border-zinc-700"}`}
                 >
-                  <img src={img} alt={`${perfume.name} ${idx + 1}`} className="w-full h-full object-cover" />
+                  <img src={img} alt="" aria-hidden="true" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>
@@ -182,8 +183,8 @@ export function ProductDetails() {
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.stock")}</p>
-              <p className={`text-xs sm:text-sm font-medium ${selectedVariant?.stock > 0 ? "text-green-500" : "text-red-500"}`}>
-                {selectedVariant?.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
+              <p className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}>
+                {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
               </p>
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">

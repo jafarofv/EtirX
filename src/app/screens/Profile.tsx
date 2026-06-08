@@ -365,6 +365,7 @@ export function EditProfilePage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
@@ -376,10 +377,20 @@ export function EditProfilePage() {
         setPhone(me.phone);
         setAddress(me.address ?? "");
       } catch {
-        navigate("/profile");
+        setErr(t("profile.loadFailed"));
+      } finally {
+        setInitialLoading(false);
       }
     })();
-  }, [navigate]);
+  }, [navigate, t]);
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-zinc-700 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">

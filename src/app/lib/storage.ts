@@ -34,13 +34,18 @@ async function syncJson(path: string, body: unknown, method: "POST" | "DELETE" =
 }
 
 function isValidCartRow(value: unknown): value is CartRow {
-  return Boolean(
-    value &&
-      typeof value === "object" &&
-      typeof (value as CartRow).id === "number" &&
-      typeof (value as CartRow).quantity === "number" &&
-      (typeof (value as CartRow).slug === "string" || typeof (value as CartRow).slug === "undefined")
-      && (typeof (value as CartRow).variantId === "number" || typeof (value as CartRow).variantId === "undefined")
+  if (!value || typeof value !== "object") return false;
+  const row = value as CartRow;
+  return (
+    typeof row.id === "number" &&
+    Number.isInteger(row.id) &&
+    row.id > 0 &&
+    typeof row.quantity === "number" &&
+    Number.isInteger(row.quantity) &&
+    row.quantity > 0 &&
+    row.quantity <= 999 &&
+    (typeof row.slug === "string" || typeof row.slug === "undefined") &&
+    (typeof row.variantId === "number" || typeof row.variantId === "undefined")
   );
 }
 

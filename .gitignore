@@ -19,6 +19,11 @@ backend/venv/
 .venv/
 venv/
 
+# Database and uploaded media
+*.sqlite3
+backend/db.sqlite3
+backend/media/
+
 # OS / editor
 .DS_Store
 Thumbs.db

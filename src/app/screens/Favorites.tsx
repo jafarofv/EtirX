@@ -34,6 +34,14 @@ export function Favorites() {
     setFavorites((favs) => favs.filter((p) => p.id !== id));
   };
 
+  if (!hydrated) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-zinc-700 border-t-white rounded-full animate-spin" />
+      </div>
+    );
+  }
+
   if (favorites.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
