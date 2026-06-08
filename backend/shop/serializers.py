@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode
+from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -118,6 +118,12 @@ class UserCartItemSerializer(serializers.ModelSerializer):
         fields = ["id", "product", "variant", "quantity", "created_at", "updated_at"]
 
 
+class DeliveryMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DeliveryMethod
+        fields = ["code", "label", "eta", "fee", "fee_label", "requires_address", "sort_order"]
+
+
 class OrderItemInputSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
     product_slug = serializers.SlugField(required=False, allow_blank=True)
@@ -131,6 +137,7 @@ class OrderCreateSerializer(serializers.Serializer):
     address = serializers.CharField()
     notes = serializers.CharField(required=False, allow_blank=True)
     promo_code = serializers.CharField(required=False, allow_blank=True)
+    delivery_method = serializers.SlugField(required=False, allow_blank=True)
     shipping_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     items = OrderItemInputSerializer(many=True)
 
@@ -176,7 +183,7 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "code", "full_name", "phone", "address", "notes", "promo_code", "discount_amount",
-            "payment_method", "status", "subtotal", "shipping_fee", "total", "created_at", "items"
+            "payment_method", "delivery_method", "status", "subtotal", "shipping_fee", "total", "created_at", "items"
         ]
 
 

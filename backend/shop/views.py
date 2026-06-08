@@ -11,11 +11,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
-from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption
+from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod
 from .notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
     ProductSerializer,
+    DeliveryMethodSerializer,
     UserFavoriteSerializer,
     UserCartItemSerializer,
     OrderCreateSerializer,
@@ -117,6 +118,11 @@ class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
         return qs.distinct()
 
 
+class DeliveryMethodViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = DeliveryMethod.objects.filter(is_active=True).order_by("sort_order", "id")
+    serializer_class = DeliveryMethodSerializer
+
+
 class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = Order.objects.all().prefetch_related("items__product", "items__variant")
     serializer_class = OrderSerializer
@@ -139,7 +145,9 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
         serializer = OrderCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         payload = serializer.validated_data
-        shipping_fee = payload.get("shipping_fee", Decimal("0.00"))
+        delivery_code = (payload.get("delivery_method") or "").strip()
+        delivery = DeliveryMethod.objects.filter(code=delivery_code, is_active=True).first() if delivery_code else None
+        shipping_fee = delivery.fee if delivery is not None else Decimal("0.00")
         promo_code_value = normalize_promo_code(payload.get("promo_code", ""))
         resolved_items = []
         subtotal = Decimal("0.00")
@@ -202,6 +210,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
                 discount_amount=discount_amount,
                 shipping_fee=shipping_fee,
                 payment_method="cash_on_delivery",
+                delivery_method=delivery.code if delivery else "",
             )
             for product, variant, quantity, unit_price in resolved_items:
                 OrderItem.objects.create(

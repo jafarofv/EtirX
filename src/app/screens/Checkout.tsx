@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, MapPin, Truck, CheckCircle2 } from "lucide-react";
 import { useI18n } from "../i18n";
-import { createOrder, validatePromoCode } from "../lib/api";
+import { createOrder, getDeliveryMethods, validatePromoCode } from "../lib/api";
 import { getAuthToken, getMe, updateMe } from "../lib/auth";
 import { loadCatalogProducts } from "../lib/catalog";
 import { clearCart, getCartRows } from "../lib/storage";
 import { Seo } from "../components/Seo";
 
 type DeliveryMethod = {
-  id: "city_courier" | "metro_drop" | "azerpost" | "pickup";
+  code: string;
   label: string;
   eta: string;
   fee: number;
+  feeLabel: string;
+  requiresAddress: boolean;
 };
 
 type PlacedOrder = {
@@ -57,15 +59,10 @@ export function Checkout() {
   const [profileHadAddress, setProfileHadAddress] = useState(false);
   const [cartItems, setCartItems] = useState<CheckoutItem[]>([]);
 
-  const deliveryMethods: DeliveryMethod[] = [
-    { id: "city_courier", label: t("checkout.delivery.cityCourier"), eta: t("checkout.delivery.cityCourierEta"), fee: 0 },
-    { id: "metro_drop", label: t("checkout.delivery.metroDrop"), eta: t("checkout.delivery.metroDropEta"), fee: 2 },
-    { id: "azerpost", label: t("checkout.delivery.azerpost"), eta: t("checkout.delivery.azerpostEta"), fee: 3 },
-    { id: "pickup", label: t("checkout.delivery.pickup"), eta: t("checkout.delivery.pickupEta"), fee: 0 },
-  ];
-  const [selectedDelivery, setSelectedDelivery] = useState<DeliveryMethod["id"] | null>(null);
-  const selectedMethod = deliveryMethods.find((m) => m.id === selectedDelivery) ?? null;
-  const requiresAddress = selectedDelivery === "city_courier";
+  const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
+  const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
+  const selectedMethod = deliveryMethods.find((m) => m.code === selectedDelivery) ?? null;
+  const requiresAddress = selectedMethod?.requiresAddress ?? false;
   const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = selectedMethod?.fee ?? 0;
   const total = subtotal + shipping - promoDiscount;
@@ -141,6 +138,26 @@ export function Checkout() {
       mounted = false;
     };
   }, [navigate]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const methods = await getDeliveryMethods();
+        setDeliveryMethods(
+          methods.map((m) => ({
+            code: m.code,
+            label: m.label,
+            eta: m.eta,
+            fee: Number(m.fee),
+            feeLabel: m.fee_label,
+            requiresAddress: m.requires_address,
+          }))
+        );
+      } catch {
+        setDeliveryMethods([]);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(
@@ -410,11 +427,11 @@ export function Checkout() {
           <div className="space-y-3">
             {deliveryMethods.map((method) => (
               <button
-                key={method.id}
+                key={method.code}
                 type="button"
-                onClick={() => setSelectedDelivery(method.id)}
+                onClick={() => setSelectedDelivery(method.code)}
                 className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
-                  selectedDelivery === method.id ? "border-white" : "border-zinc-800 hover:border-zinc-600"
+                  selectedDelivery === method.code ? "border-white" : "border-zinc-800 hover:border-zinc-600"
                 }`}
               >
                 <div>
@@ -422,8 +439,8 @@ export function Checkout() {
                   <p className="text-sm text-zinc-400">{method.eta}</p>
                 </div>
                 <p className="font-medium">
-                  {method.id === "city_courier"
-                    ? t("checkout.delivery.cityCourierFee")
+                  {method.feeLabel
+                    ? method.feeLabel
                     : method.fee === 0
                       ? t("checkout.delivery.free")
                       : `${method.fee.toFixed(2)} \u20BC`}
@@ -464,7 +481,7 @@ export function Checkout() {
                 address: requiresAddress ? address : address || t("checkout.defaultAddress"),
                 notes: promoCode.trim() ? `${notes}\nPromo: ${promoCode.trim()}`.trim() : notes,
                 promo_code: promoCode.trim() || undefined,
-                shipping_fee: shipping.toFixed(2),
+                delivery_method: selectedDelivery ?? undefined,
                 items: cartItems.map((item) => ({
                   product_id: item.perfume.id,
                   product_slug: item.perfume.slug,

@@ -13,6 +13,7 @@ from .models import (
     PromoRedemption,
     FragranceNote,
     ProductImage,
+    DeliveryMethod,
 )
 
 class ProductImageInline(admin.TabularInline):
@@ -85,11 +86,11 @@ class OrderItemInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ("code", "full_name", "phone", "status", "payment_method", "promo_code", "discount_amount", "total", "created_at")
+    list_display = ("code", "full_name", "phone", "status", "payment_method", "delivery_method", "promo_code", "discount_amount", "total", "created_at")
     list_filter = ("status", "payment_method", "created_at")
     search_fields = ("code", "full_name", "phone", "address")
     ordering = ("-created_at",)
-    readonly_fields = ("code", "subtotal", "shipping_fee", "discount_amount", "total", "created_at")
+    readonly_fields = ("code", "subtotal", "shipping_fee", "discount_amount", "total", "created_at", "delivery_method")
     inlines = [OrderItemInline]
     actions = ["bulk_delete_orders"]
 
@@ -148,6 +149,15 @@ class FragranceNoteAdmin(admin.ModelAdmin):
     list_filter = ("family",)
     ordering = ("name_az",)
 
+class DeliveryMethodAdmin(admin.ModelAdmin):
+    list_display = ("label", "code", "fee", "fee_label", "requires_address", "sort_order", "is_active")
+    list_editable = ("fee", "requires_address", "sort_order", "is_active")
+    search_fields = ("code", "label")
+    ordering = ("sort_order", "id")
+    prepopulated_fields = {"code": ("label",)}
+
+
+admin.site.register(DeliveryMethod, DeliveryMethodAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant)
