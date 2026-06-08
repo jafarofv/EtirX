@@ -7,6 +7,7 @@ from django.db.models import F, Q
 from rest_framework import permissions
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -142,6 +143,14 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
         if self.action == "retrieve":
             return [permissions.IsAuthenticated()]
         return super().get_permissions()
+
+    def get_throttles(self):
+        # Tighter limit on order creation (guest checkout spam guard); other
+        # actions keep the default anon/user baseline.
+        if self.action == "create":
+            self.throttle_scope = "order"
+            return [ScopedRateThrottle()]
+        return super().get_throttles()
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -410,6 +419,8 @@ class SiteSettingsView(APIView):
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
@@ -432,6 +443,8 @@ class RegisterView(APIView):
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
