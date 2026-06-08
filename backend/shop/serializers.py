@@ -51,6 +51,7 @@ class ProductSerializer(serializers.ModelSerializer):
                     "price": str(variant.price),
                     "stock": variant.stock,
                     "image_url": image_url,
+                    "is_default": variant.is_default,
                     "is_active": variant.is_active,
                     "sort_order": variant.sort_order,
                 }
@@ -58,7 +59,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return variants
 
     def get_default_variant(self, obj: Product):
-        variant = obj.variants.filter(is_active=True).order_by("sort_order", "id").first()
+        variant = obj.variants.filter(is_active=True, is_default=True).first() or obj.variants.filter(is_active=True).order_by("sort_order", "id").first()
         if variant is None:
             return {
                 "id": None,
@@ -98,7 +99,7 @@ class ProductSerializer(serializers.ModelSerializer):
 class ProductVariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariant
-        fields = ["id", "variant_type", "label", "size_ml", "price", "stock", "image_url", "is_active", "sort_order"]
+        fields = ["id", "variant_type", "label", "size_ml", "price", "stock", "image_url", "is_default", "is_active", "sort_order"]
 
 
 class UserFavoriteSerializer(serializers.ModelSerializer):
@@ -242,6 +243,11 @@ class RegisterSerializer(serializers.Serializer):
     address = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, min_length=8)
 
+    def validate_address(self, value):
+        if value and not value.strip():
+            raise serializers.ValidationError("Address must contain non-whitespace characters.")
+        return value
+
     def validate_email(self, value):
         email = value.strip().lower()
         if User.objects.filter(username=email).exists():
@@ -281,6 +287,15 @@ class UpdateMeSerializer(serializers.Serializer):
     phone = serializers.CharField(max_length=30)
     address = serializers.CharField(required=False, allow_blank=True)
 
+    def validate_address(self, value):
+        if value and not value.strip():
+            raise serializers.ValidationError("Address must contain non-whitespace characters.")
+        return value
+
+    def validate_full_name(self, value):
+        if not value.strip():
+            raise serializers.ValidationError("Name is required.")
+        return value
 
 class ChangePasswordSerializer(serializers.Serializer):
     current_password = serializers.CharField(write_only=True)
