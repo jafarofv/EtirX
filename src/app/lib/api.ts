@@ -50,6 +50,7 @@ export async function createOrder(payload: {
   address: string;
   notes?: string;
   promo_code?: string;
+  delivery_method?: string;
   shipping_fee?: string;
   items: Array<{ product_id: number; product_slug?: string; variant_id?: number; quantity: number }>;
 }) {
@@ -62,6 +63,7 @@ export async function createOrder(payload: {
     promo_code: string;
     discount_amount: string;
     payment_method: string;
+    delivery_method: string;
     status: string;
     subtotal: string;
     shipping_fee: string;
@@ -135,6 +137,20 @@ export async function getProducts(params?: { category?: string; q?: string }) {
 
 export async function getCategories() {
   return request<ApiCategory[]>("/categories/");
+}
+
+export type ApiDeliveryMethod = {
+  code: string;
+  label: string;
+  eta: string;
+  fee: string;
+  fee_label: string;
+  requires_address: boolean;
+  sort_order: number;
+};
+
+export async function getDeliveryMethods() {
+  return request<ApiDeliveryMethod[]>("/delivery-methods/");
 }
 
 export async function getProductBySlug(slug: string) {

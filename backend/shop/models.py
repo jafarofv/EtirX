@@ -105,6 +105,23 @@ class FragranceNote(models.Model):
         return self.name_az
 
 
+class DeliveryMethod(models.Model):
+    code = models.SlugField(unique=True)
+    label = models.CharField(max_length=120)
+    eta = models.CharField(max_length=120, blank=True)
+    fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    fee_label = models.CharField(max_length=120, blank=True)
+    requires_address = models.BooleanField(default=False)
+    sort_order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ("sort_order", "id")
+
+    def __str__(self):
+        return self.label
+
+
 class Order(models.Model):
     STATUS_CHOICES = [
         ("new", "New"),
@@ -123,6 +140,7 @@ class Order(models.Model):
     promo_code = models.CharField(max_length=50, blank=True)
     discount_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=30, default="cash_on_delivery")
+    delivery_method = models.CharField(max_length=40, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="new")
     subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     shipping_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
