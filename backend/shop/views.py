@@ -2,7 +2,7 @@ import secrets
 from decimal import Decimal
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from django.db.models import F, Q
 from rest_framework import permissions
 from rest_framework import mixins, status, viewsets
@@ -429,14 +429,25 @@ class RegisterView(APIView):
         full_name = payload["full_name"].strip()
         first_name, *rest = full_name.split(" ")
         last_name = " ".join(rest).strip()
-        user = User.objects.create_user(
-            username=payload["email"],
-            email=payload["email"],
-            password=payload["password"],
-            first_name=first_name,
-            last_name=last_name,
-        )
-        UserProfile.objects.create(user=user, phone=payload["phone"], address=payload.get("address", ""))
+        # The serializer already rejects an existing email, but two concurrent
+        # signups can both pass that check; the DB unique constraint on username
+        # is the real guard. Catch the IntegrityError so the loser of the race
+        # gets a clean 400 instead of an unhandled 500.
+        try:
+            with transaction.atomic():
+                user = User.objects.create_user(
+                    username=payload["email"],
+                    email=payload["email"],
+                    password=payload["password"],
+                    first_name=first_name,
+                    last_name=last_name,
+                )
+                UserProfile.objects.create(user=user, phone=payload["phone"], address=payload.get("address", ""))
+        except IntegrityError:
+            return Response(
+                {"email": ["User with this email already exists."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         token, _ = Token.objects.get_or_create(user=user)
         return Response({"token": token.key, "user": MeSerializer.from_user(user)}, status=status.HTTP_201_CREATED)
 
