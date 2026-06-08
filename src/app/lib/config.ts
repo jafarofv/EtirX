@@ -6,9 +6,10 @@ export const API_BASE = import.meta.env.DEV
   ? "/api"
   : (import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api");
 
-// WhatsApp contact. Override with VITE_WHATSAPP_NUMBER (digits only, e.g. 994501112233).
+// WhatsApp fallback number. Override with VITE_WHATSAPP_NUMBER (digits only, e.g.
+// 994501112233). At runtime the admin-managed SiteSettings value takes priority;
+// this is only the fallback used before the API responds or if it is unreachable.
 export const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER ?? "994000000000";
-export const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
 
 // Turns a DRF error body into a human-readable message:
 // prefers `detail`, then the first field error array, then the raw text.

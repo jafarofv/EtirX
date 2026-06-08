@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod, Testimonial
+from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod, Testimonial, SiteSettings
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -130,6 +130,19 @@ class TestimonialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Testimonial
         fields = ["id", "name", "handle", "time", "rating", "text"]
+
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSettings
+        fields = [
+            "whatsapp_number",
+            "instagram_url",
+            "instagram_handle",
+            "tiktok_url",
+            "tiktok_handle",
+            "store_address",
+        ]
 
 
 class OrderItemInputSerializer(serializers.Serializer):

@@ -5,7 +5,7 @@ import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
 import { getCartCount, getFavoritesCount } from "../lib/storage";
 import { getTestimonials, type ApiTestimonial } from "../lib/api";
-import { WHATSAPP_URL } from "../lib/config";
+import { useSiteSettings } from "../site-settings";
 import { Seo } from "./Seo";
 
 // Shown if the API is unreachable or returns no rows, so the storefront still
@@ -43,6 +43,7 @@ export function Layout() {
   const location = useLocation();
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
+  const site = useSiteSettings();
   const [isLangOpen, setIsLangOpen] = useState(false);
   const [isPagesOpen, setIsPagesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
@@ -73,10 +74,10 @@ export function Layout() {
   ];
   const promoLines = [t("promo.line1"), t("promo.line2"), t("promo.line3")];
   const socialLinks = [
-    { href: WHATSAPP_URL, label: "WhatsApp", kind: "whatsapp" },
-    { href: "https://instagram.com/etirx.az", label: "Instagram", kind: "instagram" },
-    { href: "https://www.tiktok.com/@etirx.az", label: "TikTok", kind: "tiktok" },
-  ];
+    { href: site.whatsappUrl, label: "WhatsApp", kind: "whatsapp" },
+    { href: site.instagram_url, label: "Instagram", kind: "instagram" },
+    { href: site.tiktok_url, label: "TikTok", kind: "tiktok" },
+  ].filter((link) => link.href);
   const showReviews = location.pathname === "/" || location.pathname.startsWith("/product/");
   const [reviews, setReviews] = useState<ApiTestimonial[]>(FALLBACK_REVIEWS);
   const langFlags: Record<Language, string> = {

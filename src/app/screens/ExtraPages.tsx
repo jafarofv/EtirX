@@ -2,7 +2,7 @@
 import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
 import { getCampaigns, getCategories, getProducts, type ApiCampaign, type ApiCategory, type ApiProduct } from "../lib/api";
-import { WHATSAPP_URL } from "../lib/config";
+import { useSiteSettings } from "../site-settings";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
 
@@ -474,6 +474,7 @@ export function AboutPage() {
 
 export function ShippingReturnsPage() {
   const { t } = useI18n();
+  const site = useSiteSettings();
   return (
     <PageWrap title={t("shipret.title")} subtitle={t("shipret.subtitle")}>
       <div className="space-y-4 text-zinc-300">
@@ -490,7 +491,7 @@ export function ShippingReturnsPage() {
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
           <h4 className="text-white mb-2">📍 Depo Ünvanı:</h4>
-          <p>Fəxrəddin Musayev küçəsi, Adore Plaza</p>
+          <p>{site.store_address}</p>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
@@ -573,29 +574,30 @@ export function FAQPage() {
 
 export function ContactPage() {
   const { t } = useI18n();
+  const site = useSiteSettings();
   const contacts = [
     {
       icon: MessageCircle,
       title: t("contact.whatsapp"),
       text: t("contact.whatsappDesc"),
-      href: WHATSAPP_URL,
+      href: site.whatsappUrl,
       action: t("contact.openWhatsapp"),
     },
     {
       icon: Instagram,
       title: t("contact.instagram"),
-      text: "@etirx.az",
-      href: "https://instagram.com/etirx.az",
+      text: site.instagram_handle,
+      href: site.instagram_url,
       action: t("contact.openInstagram"),
     },
     {
       icon: null,
       title: t("contact.tiktok"),
-      text: "@etirx.az",
-      href: "https://www.tiktok.com/@etirx.az",
+      text: site.tiktok_handle,
+      href: site.tiktok_url,
       action: t("contact.openTiktok"),
     },
-  ];
+  ].filter((contact) => contact.href);
   return (
     <PageWrap title={t("contact.title")} subtitle={t("contact.subtitle")}>
       <Seo
@@ -611,7 +613,7 @@ export function ContactPage() {
             </div>
             <div>
               <h2 className="text-lg font-medium mb-1">{t("contact.storeWarehouse")}</h2>
-              <p className="text-zinc-300">Fəxrəddin Musayev küçəsi, Adore Plaza</p>
+              <p className="text-zinc-300">{site.store_address}</p>
               <p className="text-sm text-zinc-500 mt-2">{t("contact.addressHint")}</p>
             </div>
           </div>
