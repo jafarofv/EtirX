@@ -72,6 +72,23 @@ def resolve_variant_from_payload(payload):
     return product.variants.filter(is_active=True).order_by("sort_order", "id").first()
 
 
+MAX_CART_QUANTITY = 99
+
+
+def parse_quantity(raw, default=None):
+    """Coerce a client-supplied quantity to an int in [1, MAX_CART_QUANTITY].
+    Returns ``default`` when the value is missing or not a positive integer,
+    so callers can reject (single item) or skip (bulk) it instead of crashing
+    on int() or persisting a zero/negative/absurd quantity."""
+    try:
+        value = int(raw)
+    except (TypeError, ValueError):
+        return default
+    if value < 1:
+        return default
+    return min(value, MAX_CART_QUANTITY)
+
+
 def normalize_promo_code(value: str) -> str:
     return (value or "").strip().upper()
 
@@ -186,15 +203,26 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
             resolved_items.append((product, variant, quantity, unit_price))
 
         with transaction.atomic():
-            # Lock stock rows and verify availability before creating the order.
+            # Aggregate the requested quantity per distinct stock row so that
+            # duplicate line items for the same product/variant cannot slip past
+            # the availability check and oversell stock.
+            required = {}
             for product, variant, quantity, unit_price in resolved_items:
+                key = ("variant", variant.pk) if variant is not None else ("product", product.pk)
+                entry = required.setdefault(key, {"qty": 0, "product": product, "variant": variant})
+                entry["qty"] += quantity
+
+            # Lock each distinct stock row once and verify the total is available.
+            for entry in required.values():
+                variant = entry["variant"]
+                product = entry["product"]
                 if variant is not None:
                     locked = ProductVariant.objects.select_for_update().get(pk=variant.pk)
                     available, label = locked.stock, f"{product.name} ({variant.label})"
                 else:
                     locked = Product.objects.select_for_update().get(pk=product.pk)
                     available, label = locked.stock, product.name
-                if available < quantity:
+                if available < entry["qty"]:
                     return Response(
                         {"detail": f"Stokda kifayət qədər məhsul yoxdur: {label} (qalıq: {available})."},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -324,11 +352,15 @@ class UserCartView(APIView):
             request.user.cart_items.all().delete()
             created_items = []
             for raw_item in bulk_items:
-                variant = resolve_variant_from_payload(raw_item if isinstance(raw_item, dict) else {})
-                product = variant.product if variant is not None else resolve_product_from_payload(raw_item if isinstance(raw_item, dict) else {})
+                if not isinstance(raw_item, dict):
+                    continue
+                variant = resolve_variant_from_payload(raw_item)
+                product = variant.product if variant is not None else resolve_product_from_payload(raw_item)
                 if product is None:
                     continue
-                quantity = int(raw_item.get("quantity", 1))
+                quantity = parse_quantity(raw_item.get("quantity"))
+                if quantity is None:
+                    continue
                 item = request.user.cart_items.create(product=product, variant=variant, quantity=quantity)
                 created_items.append(item)
             return Response(UserCartItemSerializer(created_items, many=True).data, status=status.HTTP_201_CREATED)
@@ -337,7 +369,12 @@ class UserCartView(APIView):
         product = variant.product if variant is not None else resolve_product_from_payload(request.data)
         if product is None:
             return Response({"detail": "Product not found."}, status=status.HTTP_400_BAD_REQUEST)
-        quantity = int(request.data.get("quantity", 1))
+        quantity = parse_quantity(request.data.get("quantity"))
+        if quantity is None:
+            return Response(
+                {"detail": "Quantity must be a positive integer."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         if variant is None:
             item = request.user.cart_items.filter(product=product, variant__isnull=True).first()
             if item is None:
