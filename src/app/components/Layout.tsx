@@ -4,8 +4,39 @@ import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu, MessageCircle,
 import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
 import { getCartCount, getFavoritesCount } from "../lib/storage";
+import { getTestimonials, type ApiTestimonial } from "../lib/api";
 import { WHATSAPP_URL } from "../lib/config";
 import { Seo } from "./Seo";
+
+// Shown if the API is unreachable or returns no rows, so the storefront still
+// renders social proof. The same three reviews are seeded into the DB, so once
+// the API responds these are replaced by the admin-managed copies.
+const FALLBACK_REVIEWS: ApiTestimonial[] = [
+  {
+    id: -1,
+    name: "Aysel M.",
+    handle: "@aysel_m",
+    time: "2 saat əvvəl",
+    rating: 5,
+    text: "Qoxu həqiqətən premium hiss verir. Qablaşdırma və çatdırılma da çox səliqəli idi.",
+  },
+  {
+    id: -2,
+    name: "Rəşad K.",
+    handle: "@rashadk",
+    time: "Dünən",
+    rating: 5,
+    text: "Sifariş prosesi rahat oldu, WhatsApp-da tez cavab verdilər. Ətir seçimi də çox yaxşıdır.",
+  },
+  {
+    id: -3,
+    name: "Lalə N.",
+    handle: "@lale_n",
+    time: "3 gün əvvəl",
+    rating: 5,
+    text: "Ətir təsviri ilə gələn məhsul tam uyğun idi. Xüsusi notlar da dəqiq yazılıb, çox faydalıdır.",
+  },
+];
 
 export function Layout() {
   const navigate = useNavigate();
@@ -47,29 +78,7 @@ export function Layout() {
     { href: "https://www.tiktok.com/@etirx.az", label: "TikTok", kind: "tiktok" },
   ];
   const showReviews = location.pathname === "/" || location.pathname.startsWith("/product/");
-  const reviews = [
-    {
-      name: "Aysel M.",
-      handle: "@aysel_m",
-      time: "2 saat əvvəl",
-      rating: 5,
-      text: "Qoxu həqiqətən premium hiss verir. Qablaşdırma və çatdırılma da çox səliqəli idi.",
-    },
-    {
-      name: "Rəşad K.",
-      handle: "@rashadk",
-      time: "Dünən",
-      rating: 5,
-      text: "Sifariş prosesi rahat oldu, WhatsApp-da tez cavab verdilər. Ətir seçimi də çox yaxşıdır.",
-    },
-    {
-      name: "Lalə N.",
-      handle: "@lale_n",
-      time: "3 gün əvvəl",
-      rating: 5,
-      text: "Ətir təsviri ilə gələn məhsul tam uyğun idi. Xüsusi notlar da dəqiq yazılıb, çox faydalıdır.",
-    },
-  ];
+  const [reviews, setReviews] = useState<ApiTestimonial[]>(FALLBACK_REVIEWS);
   const langFlags: Record<Language, string> = {
     az: "\uD83C\uDDE6\uD83C\uDDFF",
     en: "\uD83C\uDDEC\uD83C\uDDE7",
@@ -118,6 +127,20 @@ export function Layout() {
     return () => {
       window.removeEventListener("app-storage-updated", syncCounts as EventListener);
       window.removeEventListener("storage", syncCounts);
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getTestimonials()
+      .then((data) => {
+        if (active && data.length > 0) setReviews(data);
+      })
+      .catch(() => {
+        // keep FALLBACK_REVIEWS on failure
+      });
+    return () => {
+      active = false;
     };
   }, []);
 
@@ -326,7 +349,7 @@ export function Layout() {
                 <div className="grid gap-4 md:grid-cols-3">
                   {reviews.map((review, index) => (
                     <article
-                      key={review.handle}
+                      key={review.id}
                       className={`rounded-[28px] border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg ${
                         index === 1 ? "md:-translate-y-3" : ""
                       }`}
@@ -343,7 +366,7 @@ export function Layout() {
                             </div>
                             <div className="flex items-center gap-1 text-amber-400 shrink-0">
                               {Array.from({ length: review.rating }).map((_, i) => (
-                                <Star key={`${review.handle}-${i}`} className="w-3.5 h-3.5 fill-current" />
+                                <Star key={`${review.id}-${i}`} className="w-3.5 h-3.5 fill-current" />
                               ))}
                             </div>
                           </div>

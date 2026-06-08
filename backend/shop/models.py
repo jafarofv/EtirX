@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -122,6 +123,26 @@ class DeliveryMethod(models.Model):
 
     def __str__(self):
         return self.label
+
+
+class Testimonial(models.Model):
+    name = models.CharField(max_length=120)
+    handle = models.CharField(max_length=120, blank=True)
+    time_label = models.CharField(max_length=120, blank=True)
+    rating = models.PositiveSmallIntegerField(
+        default=5,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    text = models.TextField()
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ("sort_order", "-created_at", "id")
+
+    def __str__(self):
+        return f"{self.name} ({self.rating}★)"
 
 
 class Order(models.Model):
