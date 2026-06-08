@@ -122,6 +122,19 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
     serializer_class = OrderSerializer
     lookup_field = "code"
 
+    def get_permissions(self):
+        # Full order detail (name/phone/address/items) is owner-only.
+        # tracking (status/date only) and create (guest checkout) stay public.
+        if self.action == "retrieve":
+            return [permissions.IsAuthenticated()]
+        return super().get_permissions()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if self.action == "retrieve" and self.request.user.is_authenticated:
+            return qs.filter(user=self.request.user)
+        return qs
+
     def create(self, request, *args, **kwargs):
         serializer = OrderCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
