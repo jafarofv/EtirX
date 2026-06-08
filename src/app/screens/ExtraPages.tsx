@@ -2,6 +2,7 @@
 import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
 import { getCategories, getProducts, type ApiCategory, type ApiProduct } from "../lib/api";
+import { WHATSAPP_URL } from "../lib/config";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
 
@@ -554,7 +555,7 @@ export function ContactPage() {
       icon: MessageCircle,
       title: t("contact.whatsapp"),
       text: t("contact.whatsappDesc"),
-      href: "https://wa.me/994000000000",
+      href: WHATSAPP_URL,
       action: t("contact.openWhatsapp"),
     },
     {

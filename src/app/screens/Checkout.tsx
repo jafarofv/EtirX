@@ -483,8 +483,8 @@ export function Checkout() {
               localStorage.removeItem("checkout-promo-code");
               setPlacedOrder(result);
               setStep("success");
-            } catch {
-              setError(t("checkout.submitError"));
+            } catch (e) {
+              setError(e instanceof Error ? e.message : t("checkout.submitError"));
             } finally {
               setSubmitting(false);
             }

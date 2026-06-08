@@ -4,6 +4,7 @@ import { Home, ShoppingCart, Heart, User, Globe, Sun, Moon, Menu, MessageCircle,
 import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
 import { getCartCount, getFavoritesCount } from "../lib/storage";
+import { WHATSAPP_URL } from "../lib/config";
 import { Seo } from "./Seo";
 
 export function Layout() {
@@ -41,7 +42,7 @@ export function Layout() {
   ];
   const promoLines = [t("promo.line1"), t("promo.line2"), t("promo.line3")];
   const socialLinks = [
-    { href: "https://wa.me/994000000000", label: "WhatsApp", kind: "whatsapp" },
+    { href: WHATSAPP_URL, label: "WhatsApp", kind: "whatsapp" },
     { href: "https://instagram.com/etirx.az", label: "Instagram", kind: "instagram" },
     { href: "https://www.tiktok.com/@etirx.az", label: "TikTok", kind: "tiktok" },
   ];

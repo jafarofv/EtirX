@@ -1,8 +1,6 @@
-const TOKEN_KEY = "auth-token";
+import { API_BASE, extractApiErrorMessage } from "./config";
 
-const API_BASE = import.meta.env.DEV
-  ? "/api"
-  : import.meta.env.VITE_API_BASE ?? "http://127.0.0.1:8000/api";
+const TOKEN_KEY = "auth-token";
 
 export type AuthUser = {
   full_name: string;
@@ -35,22 +33,7 @@ async function authRequest<T>(path: string, init?: RequestInit, useToken = false
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
   if (!res.ok) {
     const bodyText = await res.text();
-    let message = bodyText || `API error: ${res.status}`;
-    try {
-      const parsed = JSON.parse(bodyText) as Record<string, unknown>;
-      if (typeof parsed.detail === "string") {
-        message = parsed.detail;
-      } else {
-        const firstKey = Object.keys(parsed)[0];
-        const firstVal = parsed[firstKey];
-        if (Array.isArray(firstVal) && typeof firstVal[0] === "string") {
-          message = firstVal[0];
-        }
-      }
-    } catch {
-      // keep plain text
-    }
-    throw new Error(message);
+    throw new Error(extractApiErrorMessage(bodyText, res.status));
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;
