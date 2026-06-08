@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
-from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod
+from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod, Testimonial
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -122,6 +122,14 @@ class DeliveryMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeliveryMethod
         fields = ["code", "label", "eta", "fee", "fee_label", "requires_address", "sort_order"]
+
+
+class TestimonialSerializer(serializers.ModelSerializer):
+    time = serializers.CharField(source="time_label")
+
+    class Meta:
+        model = Testimonial
+        fields = ["id", "name", "handle", "time", "rating", "text"]
 
 
 class OrderItemInputSerializer(serializers.Serializer):

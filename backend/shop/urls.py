@@ -4,6 +4,7 @@ from .views import (
     CategoryViewSet,
     ProductViewSet,
     DeliveryMethodViewSet,
+    TestimonialViewSet,
     OrderViewSet,
     ContactMessageViewSet,
     UserFavoriteView,
@@ -20,6 +21,7 @@ router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
 router.register("products", ProductViewSet, basename="product")
 router.register("delivery-methods", DeliveryMethodViewSet, basename="delivery-method")
+router.register("testimonials", TestimonialViewSet, basename="testimonial")
 router.register("orders", OrderViewSet, basename="order")
 router.register("contact", ContactMessageViewSet, basename="contact")
 

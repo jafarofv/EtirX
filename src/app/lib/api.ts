@@ -169,6 +169,19 @@ export async function getDeliveryMethods() {
   return request<ApiDeliveryMethod[]>("/delivery-methods/");
 }
 
+export type ApiTestimonial = {
+  id: number;
+  name: string;
+  handle: string;
+  time: string;
+  rating: number;
+  text: string;
+};
+
+export async function getTestimonials() {
+  return request<ApiTestimonial[]>("/testimonials/");
+}
+
 export async function getProductBySlug(slug: string) {
   return request<ApiProduct>(`/products/${slug}/`);
 }

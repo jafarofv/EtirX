@@ -14,6 +14,7 @@ from .models import (
     FragranceNote,
     ProductImage,
     DeliveryMethod,
+    Testimonial,
 )
 
 class ProductImageInline(admin.TabularInline):
@@ -157,7 +158,16 @@ class DeliveryMethodAdmin(admin.ModelAdmin):
     prepopulated_fields = {"code": ("label",)}
 
 
+class TestimonialAdmin(admin.ModelAdmin):
+    list_display = ("name", "handle", "rating", "time_label", "sort_order", "is_active", "created_at")
+    list_editable = ("rating", "sort_order", "is_active")
+    list_filter = ("is_active", "rating")
+    search_fields = ("name", "handle", "text")
+    ordering = ("sort_order", "-created_at")
+
+
 admin.site.register(DeliveryMethod, DeliveryMethodAdmin)
+admin.site.register(Testimonial, TestimonialAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 admin.site.register(ProductVariant)

@@ -11,12 +11,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
-from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod
+from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod, Testimonial
 from .notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
     ProductSerializer,
     DeliveryMethodSerializer,
+    TestimonialSerializer,
     UserFavoriteSerializer,
     UserCartItemSerializer,
     OrderCreateSerializer,
@@ -122,6 +123,11 @@ class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
 class DeliveryMethodViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = DeliveryMethod.objects.filter(is_active=True).order_by("sort_order", "id")
     serializer_class = DeliveryMethodSerializer
+
+
+class TestimonialViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = Testimonial.objects.filter(is_active=True).order_by("sort_order", "-created_at", "id")
+    serializer_class = TestimonialSerializer
 
 
 class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
