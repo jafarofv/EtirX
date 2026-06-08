@@ -192,6 +192,12 @@ class PromoCodeValidateSerializer(serializers.Serializer):
     subtotal = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
 
 
+class PublicPromoCodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PromoCode
+        fields = ["code", "title", "description", "discount_type", "discount_value", "min_subtotal", "ends_at"]
+
+
 class PromoCodeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PromoCode

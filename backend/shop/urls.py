@@ -9,6 +9,7 @@ from .views import (
     UserFavoriteView,
     UserCartView,
     PromoCodeValidateView,
+    PublicPromoCodeListView,
     RegisterView,
     LoginView,
     MeView,
@@ -30,5 +31,6 @@ urlpatterns = [
     path("me/favorites/", UserFavoriteView.as_view()),
     path("me/cart/", UserCartView.as_view()),
     path("promo-codes/validate/", PromoCodeValidateView.as_view()),
+    path("promo-codes/", PublicPromoCodeListView.as_view()),
     path("", include(router.urls)),
 ]
