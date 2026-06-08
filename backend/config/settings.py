@@ -107,5 +107,17 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
-    ]
+    ],
+    # Baseline abuse protection on every endpoint, with tighter scoped limits
+    # applied on the auth and order-create views (see shop/views.py).
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "200/min",
+        "user": "400/min",
+        "auth": "10/min",
+        "order": "15/min",
+    },
 }
