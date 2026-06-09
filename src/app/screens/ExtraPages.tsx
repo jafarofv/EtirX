@@ -5,9 +5,11 @@ import {
   getCampaigns,
   getCategories,
   getProducts,
+  getStaticPage,
   type ApiCampaign,
   type ApiCategory,
   type ApiProduct,
+  type ApiStaticPage,
 } from "../lib/api";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
@@ -85,6 +87,43 @@ function PageWrap({
       <h1 className="text-3xl mb-2">{title}</h1>
       {subtitle && <p className="text-zinc-400 mb-6">{subtitle}</p>}
       {children}
+    </div>
+  );
+}
+
+/**
+ * Fetch the admin-managed version of a static page for the active language.
+ * Returns null until loaded or when no published page exists, so each screen
+ * can fall back to its built-in content.
+ */
+function useStaticPage(slug: string): ApiStaticPage | null {
+  const { language } = useI18n();
+  const [page, setPage] = useState<ApiStaticPage | null>(null);
+  useEffect(() => {
+    let active = true;
+    getStaticPage(slug, language).then((p) => {
+      if (active) setPage(p);
+    });
+    return () => {
+      active = false;
+    };
+  }, [slug, language]);
+  return page;
+}
+
+/** Render admin page body: blank lines split paragraphs; text only (no HTML). */
+function CmsBody({ body }: { body: string }) {
+  const paragraphs = body
+    .split(/\n{2,}/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return (
+    <div className="max-w-4xl space-y-4 text-zinc-300 leading-7">
+      {paragraphs.map((para, i) => (
+        <p key={i} className="whitespace-pre-line">
+          {para}
+        </p>
+      ))}
     </div>
   );
 }
@@ -513,6 +552,15 @@ export function CampaignsPage() {
 
 export function AboutPage() {
   const { t } = useI18n();
+  const cms = useStaticPage("about");
+  if (cms) {
+    return (
+      <PageWrap title={cms.title} subtitle={cms.subtitle || undefined}>
+        <Seo title={`${cms.title} | ƏtirX`} description={cms.subtitle || cms.title} path="/about" />
+        <CmsBody body={cms.body} />
+      </PageWrap>
+    );
+  }
   const values = [
     "Keyfiyyət",
     "Etibar",
@@ -628,6 +676,15 @@ export function ShippingReturnsPage() {
 
 export function FAQPage() {
   const { t } = useI18n();
+  const cms = useStaticPage("faq");
+  if (cms) {
+    return (
+      <PageWrap title={cms.title} subtitle={cms.subtitle || t("faq.subtitle")}>
+        <Seo title={`${cms.title} | ƏtirX`} description={cms.subtitle || cms.title} path="/faq" />
+        <CmsBody body={cms.body} />
+      </PageWrap>
+    );
+  }
   const sections = [
     {
       title: t("faq.section.orders"),
@@ -780,6 +837,14 @@ export function ContactPage() {
 
 export function PrivacyPage() {
   const { t } = useI18n();
+  const cms = useStaticPage("privacy");
+  if (cms) {
+    return (
+      <PageWrap title={cms.title} subtitle={cms.subtitle || t("privacy.subtitle")}>
+        <CmsBody body={cms.body} />
+      </PageWrap>
+    );
+  }
   const sections = [
     ["privacy.section.general", "privacy.section.generalBody"],
     ["privacy.section.data", "privacy.section.dataBody"],
@@ -808,6 +873,14 @@ export function PrivacyPage() {
 
 export function TermsPage() {
   const { t } = useI18n();
+  const cms = useStaticPage("terms");
+  if (cms) {
+    return (
+      <PageWrap title={cms.title} subtitle={cms.subtitle || t("terms.subtitle")}>
+        <CmsBody body={cms.body} />
+      </PageWrap>
+    );
+  }
   const sections = [
     ["terms.section.general", "terms.section.generalBody"],
     ["terms.section.products", "terms.section.productsBody"],

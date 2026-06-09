@@ -12,6 +12,7 @@ from .views import (
     PromoCodeValidateView,
     PublicPromoCodeListView,
     SiteSettingsView,
+    StaticPageView,
     RegisterView,
     LoginView,
     MeView,
@@ -37,6 +38,7 @@ urlpatterns = [
     path("promo-codes/validate/", PromoCodeValidateView.as_view()),
     path("promo-codes/", PublicPromoCodeListView.as_view()),
     path("site-settings/", SiteSettingsView.as_view()),
+    path("pages/<slug:slug>/", StaticPageView.as_view()),
     path("", include(router.urls)),
     # Admin dashboard
     path("admin/stats/", admin_dashboard_html, name="admin-dashboard"),
