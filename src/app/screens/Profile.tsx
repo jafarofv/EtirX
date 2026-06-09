@@ -82,7 +82,7 @@ export function Profile() {
     setError(null);
     setSuccess(null);
     const errs: Record<string, string> = {};
-    if (!/^[A-Za-z0-9 ]{2,60}$/.test(fullName.trim())) errs.fullName = t("profile.nameErr");
+    if (!/^[\p{L}\p{N} .'-]{2,60}$/u.test(fullName.trim())) errs.fullName = t("profile.nameErr");
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = t("profile.emailErr");
     if (!/^\+?[0-9]{9,15}$/.test(phone.trim())) errs.phone = t("profile.phoneErr");
     if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(password)) errs.password = t("profile.passErr");
@@ -116,6 +116,14 @@ export function Profile() {
   const onLogin = async () => {
     setError(null);
     setSuccess(null);
+    const errs: Record<string, string> = {};
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) errs.email = t("profile.emailErr");
+    if (!password) errs.password = t("profile.passwordRequired");
+    setFieldErrors(errs);
+    if (Object.keys(errs).length > 0) {
+      setError(t("profile.fixErr"));
+      return;
+    }
     try {
       setLoading(true);
       const logged = await loginAuth({ email: email.trim().toLowerCase(), password });
@@ -301,11 +309,11 @@ export function Profile() {
           <div className="space-y-3 mb-3">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} type="email" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 pl-10 pr-3" />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 pl-10 pr-3" />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <button disabled={loading} onClick={onLogin} className="w-full bg-white text-black rounded-xl py-3">{loading ? "..." : t("profile.login")}</button>
           </div>

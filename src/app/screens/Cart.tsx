@@ -25,6 +25,7 @@ export function Cart() {
   const [promoMsg, setPromoMsg] = useState<string | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
   const [promoDiscount, setPromoDiscount] = useState(0);
+  const [repricedNote, setRepricedNote] = useState(false);
   const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
@@ -37,16 +38,19 @@ export function Cart() {
           [p.defaultVariant.id ?? p.id, { perfume: p, variant: p.defaultVariant }] as const,
         ])
       );
+      let repriced = false;
       const items = getCartRows()
         .map((i) => {
           const perfume = byId.get(i.id);
           if (!perfume) return null;
           const resolved = i.variantId ? variantById.get(i.variantId) : undefined;
+          if (i.variantId && !resolved) repriced = true;
           const variant = resolved?.variant ?? perfume.defaultVariant;
           return { perfume, variant, quantity: i.quantity };
         })
         .filter((i): i is CartItem => Boolean(i?.perfume && i.variant));
       setCartItems(items);
+      setRepricedNote(repriced);
       setPromoCode(localStorage.getItem("checkout-promo-code") ?? "");
       setPromoDiscount(0);
       setHydrated(true);
@@ -88,24 +92,28 @@ export function Cart() {
     }
     if (!getAuthToken()) return;
     let cancelled = false;
-    (async () => {
-      try {
-        const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
-        if (cancelled) return;
-        localStorage.setItem("checkout-promo-code", result.promo.code);
-        setPromoCode(result.promo.code);
-        setPromoDiscount(Number(result.discount_amount));
-        setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`);
-        setPromoErr(null);
-      } catch (err) {
-        if (cancelled) return;
-        localStorage.removeItem("checkout-promo-code");
-        setPromoDiscount(0);
-        setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
-      }
-    })();
+    // Debounce so we fire one request after the user stops typing, not per keystroke.
+    const timer = setTimeout(() => {
+      (async () => {
+        try {
+          const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
+          if (cancelled) return;
+          localStorage.setItem("checkout-promo-code", result.promo.code);
+          setPromoCode(result.promo.code);
+          setPromoDiscount(Number(result.discount_amount));
+          setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`);
+          setPromoErr(null);
+        } catch (err) {
+          if (cancelled) return;
+          localStorage.removeItem("checkout-promo-code");
+          setPromoDiscount(0);
+          setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
+        }
+      })();
+    }, 400);
     return () => {
       cancelled = true;
+      clearTimeout(timer);
     };
   }, [hydrated, promoCode, subtotal]);
 
@@ -164,6 +172,11 @@ export function Cart() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
+        {repricedNote && (
+          <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-300">
+            {t("cart.repricedNotice")}
+          </div>
+        )}
         <div className="space-y-4">
           {cartItems.map((item) => (
             <div key={lineKey(item)} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
