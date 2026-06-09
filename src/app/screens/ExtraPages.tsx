@@ -1,7 +1,14 @@
 ﻿import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
-import { getCampaigns, getCategories, getProducts, type ApiCampaign, type ApiCategory, type ApiProduct } from "../lib/api";
+import {
+  getCampaigns,
+  getCategories,
+  getProducts,
+  type ApiCampaign,
+  type ApiCategory,
+  type ApiProduct,
+} from "../lib/api";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
@@ -12,14 +19,16 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
   const { t } = useI18n();
   const fmt = (v: string | number) => formatCurrency(Number(v));
   const latestId = Math.max(...items.map((i) => i.id), 0);
-  const hasSlug = (p: ApiProduct, slug: string) => (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
+  const hasSlug = (p: ApiProduct, slug: string) =>
+    (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
   const badgeFor = (p: ApiProduct) => {
     if (p.old_price) return t("common.sale");
     if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2) return "Yeni";
     if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return "Çox Satılan";
     return null;
   };
-  const hasStock = (p: ApiProduct) => (p.variants ?? []).some((variant) => variant.is_active && variant.stock > 0) || p.stock > 0;
+  const hasStock = (p: ApiProduct) =>
+    (p.variants ?? []).some((variant) => variant.is_active && variant.stock > 0) || p.stock > 0;
 
   if (items.length === 0) {
     return <p className="text-zinc-400">{t("shop.noProducts")}</p>;
@@ -34,14 +43,25 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
           className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
         >
           <div className="aspect-[4/5] overflow-hidden relative">
-            <img src={(p.images && p.images.length > 0 ? p.images[0] : p.image_url)} alt={p.name} onError={onImageError} className="w-full h-full object-cover" />
-            {badgeFor(p) && <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{badgeFor(p)}</div>}
+            <img
+              src={p.images && p.images.length > 0 ? p.images[0] : p.image_url}
+              alt={p.name}
+              onError={onImageError}
+              className="w-full h-full object-cover"
+            />
+            {badgeFor(p) && (
+              <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+                {badgeFor(p)}
+              </div>
+            )}
           </div>
           <div className="p-3">
             <p className="text-sm text-zinc-400">{p.brand}</p>
             <h3 className="font-medium text-sm truncate">{p.name}</h3>
             <p className="text-xs text-zinc-500 mt-0.5">
-              {(p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks")} • {p.volume_ml ?? 100}ml • {hasStock(p) ? t("product.inStock") : t("product.outOfStock")}
+              {p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks"} •{" "}
+              {p.volume_ml ?? 100}ml •{" "}
+              {hasStock(p) ? t("product.inStock") : t("product.outOfStock")}
             </p>
             <p className="mt-1 font-medium">{fmt(p.price)}</p>
           </div>
@@ -51,7 +71,15 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
   );
 }
 
-function PageWrap({ title, subtitle, children }: { title: string; subtitle?: string; children: ReactNode }) {
+function PageWrap({
+  title,
+  subtitle,
+  children,
+}: {
+  title: string;
+  subtitle?: string;
+  children: ReactNode;
+}) {
   return (
     <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-10">
       <h1 className="text-3xl mb-2">{title}</h1>
@@ -85,7 +113,10 @@ export function ShopPage() {
     })();
   }, [t]);
 
-  const brands = useMemo(() => Array.from(new Set(items.map((i) => i.brand))).filter(Boolean), [items]);
+  const brands = useMemo(
+    () => Array.from(new Set(items.map((i) => i.brand))).filter(Boolean),
+    [items]
+  );
 
   const visibleItems = useMemo(() => {
     return items
@@ -121,10 +152,16 @@ export function ShopPage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("shop.search")} aria-label={t("shop.search")}
+          placeholder={t("shop.search")}
+          aria-label={t("shop.search")}
           className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
         />
-        <select value={brand} onChange={(e) => setBrand(e.target.value)} aria-label={t("shop.brand")} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm">
+        <select
+          value={brand}
+          onChange={(e) => setBrand(e.target.value)}
+          aria-label={t("shop.brand")}
+          className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
+        >
           <option value="all">{t("shop.allBrands")}</option>
           {brands.map((b) => (
             <option key={b} value={b}>
@@ -132,14 +169,21 @@ export function ShopPage() {
             </option>
           ))}
         </select>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} aria-label={t("shop.sort")} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm">
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          aria-label={t("shop.sort")}
+          className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
+        >
           <option value="newest">{t("shop.sort.newest")}</option>
           <option value="priceAsc">{t("shop.sort.priceAsc")}</option>
           <option value="priceDesc">{t("shop.sort.priceDesc")}</option>
           <option value="name">{t("shop.sort.name")}</option>
         </select>
       </div>
-      <p className="text-xs text-zinc-500 mb-2">Notlara görə də axtara bilərsiniz (məs: oud, rose, vanilla)</p>
+      <p className="text-xs text-zinc-500 mb-2">
+        Notlara görə də axtara bilərsiniz (məs: oud, rose, vanilla)
+      </p>
       <div className="flex flex-wrap gap-2 mb-4">
         {noteHints.map((note) => (
           <button
@@ -151,7 +195,11 @@ export function ShopPage() {
           </button>
         ))}
       </div>
-      {loading ? <p className="text-zinc-400">{t("shop.loading")}</p> : <ProductGrid items={visibleItems} />}
+      {loading ? (
+        <p className="text-zinc-400">{t("shop.loading")}</p>
+      ) : (
+        <ProductGrid items={visibleItems} />
+      )}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
@@ -160,20 +208,60 @@ export function ShopPage() {
 export function CategoriesPage() {
   const { t } = useI18n();
   const categories = [
-    { name: "Yeni Gələnlər", slug: "yeni-gelenler", desc: "Son əlavə edilən ən yeni ətir modelləri." },
+    {
+      name: "Yeni Gələnlər",
+      slug: "yeni-gelenler",
+      desc: "Son əlavə edilən ən yeni ətir modelləri.",
+    },
     { name: "Qadın", slug: "qadin", desc: "Qadınlar üçün zərif və cazibədar seçimlər." },
     { name: "Kişi", slug: "kisiler", desc: "Kişi üçün güclü və xarakterli ətirlər." },
     { name: "Uniseks", slug: "uniseks", desc: "Hər kəs üçün uyğun universal qoxular." },
     { name: "Endirim", slug: "endirim", desc: "Xüsusi endirimdə olan sərfəli seçimlər." },
-    { name: "Ən Çox Satanlar", slug: "en-cox-satanlar", desc: "Müştərilərin ən çox seçdiyi bestseller ətirlər." },
-    { name: "Niş Ətirlər", slug: "nis-etirler", desc: "Xüsusi və fərqli qoxu sevənlər üçün premium niş kolleksiya." },
-    { name: "Gündəlik İstifadə", slug: "gundelik-istifade", desc: "Hər gün rahat istifadə üçün balanslı və yüngül seçimlər." },
-    { name: "Axşam və Tədbir", slug: "axsam-ve-tedbir", desc: "Daha intensiv, yadda qalan və təsirli axşam qoxuları." },
-    { name: "Yay Ətirləri", slug: "yay-etirleri", desc: "Təravətli, sitrus və yüngül notlarla yay ruhu." },
-    { name: "Qış Ətirləri", slug: "qis-etirleri", desc: "İsti, ədviyyəli və qalıcı notlarla qış kolleksiyası." },
-    { name: "Uzunmüddətli Qalıcılıq", slug: "uzunmuddetli-qaliciliq", desc: "Daha uzun qalan performanslı ətir seçimləri." },
-    { name: "Hədiyyəlik Setlər", slug: "hediyyelik-setler", desc: "Xüsusi günlər üçün hazır hədiyyəlik set təklifləri." },
-    { name: "Premium Seçimlər", slug: "premium-secimler", desc: "Ən yüksək segmentdən seçilmiş premium ətirlər." },
+    {
+      name: "Ən Çox Satanlar",
+      slug: "en-cox-satanlar",
+      desc: "Müştərilərin ən çox seçdiyi bestseller ətirlər.",
+    },
+    {
+      name: "Niş Ətirlər",
+      slug: "nis-etirler",
+      desc: "Xüsusi və fərqli qoxu sevənlər üçün premium niş kolleksiya.",
+    },
+    {
+      name: "Gündəlik İstifadə",
+      slug: "gundelik-istifade",
+      desc: "Hər gün rahat istifadə üçün balanslı və yüngül seçimlər.",
+    },
+    {
+      name: "Axşam və Tədbir",
+      slug: "axsam-ve-tedbir",
+      desc: "Daha intensiv, yadda qalan və təsirli axşam qoxuları.",
+    },
+    {
+      name: "Yay Ətirləri",
+      slug: "yay-etirleri",
+      desc: "Təravətli, sitrus və yüngül notlarla yay ruhu.",
+    },
+    {
+      name: "Qış Ətirləri",
+      slug: "qis-etirleri",
+      desc: "İsti, ədviyyəli və qalıcı notlarla qış kolleksiyası.",
+    },
+    {
+      name: "Uzunmüddətli Qalıcılıq",
+      slug: "uzunmuddetli-qaliciliq",
+      desc: "Daha uzun qalan performanslı ətir seçimləri.",
+    },
+    {
+      name: "Hədiyyəlik Setlər",
+      slug: "hediyyelik-setler",
+      desc: "Xüsusi günlər üçün hazır hədiyyəlik set təklifləri.",
+    },
+    {
+      name: "Premium Seçimlər",
+      slug: "premium-secimler",
+      desc: "Ən yüksək segmentdən seçilmiş premium ətirlər.",
+    },
   ];
 
   return (
@@ -185,7 +273,11 @@ export function CategoriesPage() {
       />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {categories.map((c) => (
-          <Link key={c.slug} to={`/kateqoriya/${c.slug}`} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-600 transition-all">
+          <Link
+            key={c.slug}
+            to={`/kateqoriya/${c.slug}`}
+            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-600 transition-all"
+          >
             <h3 className="text-lg font-medium mb-1">{c.name}</h3>
             <p className="text-sm text-zinc-400">{c.desc}</p>
           </Link>
@@ -269,13 +361,20 @@ export function CategoryPage() {
   }, [slug, t]);
 
   return (
-    <PageWrap title={`${t("category.title")}: ${slug ?? ""}`} subtitle={`${items.length} ${t("shop.count")}`}>
+    <PageWrap
+      title={`${t("category.title")}: ${slug ?? ""}`}
+      subtitle={`${items.length} ${t("shop.count")}`}
+    >
       <Seo
         title={`${slug ?? ""} | Kateqoriya | ƏtirX`}
         description="Seçilmiş kateqoriyada premium ətirləri araşdırın və sifariş edin."
         path={`/category/${slug ?? ""}`}
       />
-      {loading ? <p className="text-zinc-400">{t("shop.loading")}</p> : <ProductGrid items={items} />}
+      {loading ? (
+        <p className="text-zinc-400">{t("shop.loading")}</p>
+      ) : (
+        <ProductGrid items={items} />
+      )}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
@@ -316,10 +415,16 @@ export function SearchPage() {
     })();
   }, [q, t]);
 
-  const visibleItems = categoryFilter === "all" ? items : items.filter((item) => item.category.slug === categoryFilter);
+  const visibleItems =
+    categoryFilter === "all"
+      ? items
+      : items.filter((item) => item.category.slug === categoryFilter);
 
   return (
-    <PageWrap title={`${t("search.title")}: ${params.get("q") ?? ""}`} subtitle={`${visibleItems.length} ${t("search.results")}`}>
+    <PageWrap
+      title={`${t("search.title")}: ${params.get("q") ?? ""}`}
+      subtitle={`${visibleItems.length} ${t("search.results")}`}
+    >
       <Seo
         title={`Axtarış: ${params.get("q") ?? ""} | ƏtirX`}
         description="Ətir adları, marka və notlara görə nəticələr."
@@ -351,7 +456,11 @@ export function SearchPage() {
           ))}
         </select>
       </div>
-      {loading ? <p className="text-zinc-400">{t("shop.loading")}</p> : <ProductGrid items={visibleItems} />}
+      {loading ? (
+        <p className="text-zinc-400">{t("shop.loading")}</p>
+      ) : (
+        <ProductGrid items={visibleItems} />
+      )}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
@@ -382,13 +491,17 @@ export function CampaignsPage() {
               <div className="flex items-center justify-between gap-3">
                 <p className="text-lg font-medium">{c.code}</p>
                 <span className="text-sm font-medium text-emerald-400">
-                  {c.discount_type === "percent" ? `-${Number(c.discount_value)}%` : `-${formatCurrency(Number(c.discount_value))}`}
+                  {c.discount_type === "percent"
+                    ? `-${Number(c.discount_value)}%`
+                    : `-${formatCurrency(Number(c.discount_value))}`}
                 </span>
               </div>
               {c.title && <p className="text-zinc-300 mt-1">{c.title}</p>}
               {c.description && <p className="text-zinc-400 text-sm mt-0.5">{c.description}</p>}
               {Number(c.min_subtotal) > 0 && (
-                <p className="text-xs text-zinc-500 mt-1">Minimum sifariş: {formatCurrency(Number(c.min_subtotal))}</p>
+                <p className="text-xs text-zinc-500 mt-1">
+                  Minimum sifariş: {formatCurrency(Number(c.min_subtotal))}
+                </p>
               )}
             </div>
           ))}
@@ -413,47 +526,51 @@ export function AboutPage() {
     <PageWrap title={t("about.title")}>
       <div className="max-w-4xl space-y-6 text-zinc-300 leading-7">
         <p>
-          <strong className="text-white">ƏtirX</strong> olaraq inanırıq ki, ətir sadəcə bir qoxu deyil, insanın
-          xarakterini, zövqünü və özünəməxsusluğunu ifadə edən görünməz imzadır. Məhz bu düşüncə ilə fəaliyyətə
-          başlayaraq, müştərilərimizə dünya üzrə tanınmış və sevilən ətir brendlərini bir araya gətirən etibarlı
-          alış-veriş təcrübəsi təqdim etməyi hədəfləyirik.
+          <strong className="text-white">ƏtirX</strong> olaraq inanırıq ki, ətir sadəcə bir qoxu
+          deyil, insanın xarakterini, zövqünü və özünəməxsusluğunu ifadə edən görünməz imzadır. Məhz
+          bu düşüncə ilə fəaliyyətə başlayaraq, müştərilərimizə dünya üzrə tanınmış və sevilən ətir
+          brendlərini bir araya gətirən etibarlı alış-veriş təcrübəsi təqdim etməyi hədəfləyirik.
         </p>
         <p>
-          Kolleksiyamızda kişi, qadın və uniseks kateqoriyalarında müxtəlif zövqlərə uyğun seçilmiş ətirlər yer alır.
-          Klassik qoxulardan müasir və niş kompozisiyalara qədər geniş seçim imkanları təqdim edərək hər kəsin özünə
-          uyğun ətri tapmasına kömək edirik.
+          Kolleksiyamızda kişi, qadın və uniseks kateqoriyalarında müxtəlif zövqlərə uyğun seçilmiş
+          ətirlər yer alır. Klassik qoxulardan müasir və niş kompozisiyalara qədər geniş seçim
+          imkanları təqdim edərək hər kəsin özünə uyğun ətri tapmasına kömək edirik.
         </p>
         <p>
-          Ətir seçiminin şəxsi və xüsusi bir qərar olduğunu bilirik. Buna görə də məhsullarımızı diqqətlə seçir,
-          keyfiyyətə və müştəri məmnuniyyətinə xüsusi önəm veririk. Məqsədimiz sadəcə məhsul satmaq deyil, hər
-          sifarişdə müştərilərimizə yüksək xidmət və etibar hissi təqdim etməkdir.
+          Ətir seçiminin şəxsi və xüsusi bir qərar olduğunu bilirik. Buna görə də məhsullarımızı
+          diqqətlə seçir, keyfiyyətə və müştəri məmnuniyyətinə xüsusi önəm veririk. Məqsədimiz
+          sadəcə məhsul satmaq deyil, hər sifarişdə müştərilərimizə yüksək xidmət və etibar hissi
+          təqdim etməkdir.
         </p>
         <p>
-          <strong className="text-white">ƏtirX</strong> müasir texnologiya və rahat alış-veriş prinsiplərini
-          birləşdirərək sifariş prosesini mümkün qədər sadə və sürətli edir. Azərbaycanda istənilən bölgəyə çatdırılma
-          və qapıda ödəniş imkanları ilə alış-verişi daha rahat və təhlükəsiz hala gətiririk.
+          <strong className="text-white">ƏtirX</strong> müasir texnologiya və rahat alış-veriş
+          prinsiplərini birləşdirərək sifariş prosesini mümkün qədər sadə və sürətli edir.
+          Azərbaycanda istənilən bölgəyə çatdırılma və qapıda ödəniş imkanları ilə alış-verişi daha
+          rahat və təhlükəsiz hala gətiririk.
         </p>
         <p>
-          Bizim üçün hər bir müştəri dəyərlidir. Buna görə də xidmət keyfiyyətimizi daim inkişaf etdirir, yeni məhsullar
-          əlavə edir və ən son ətir trendlərini izləyərək kolleksiyamızı yeniləyirik.
+          Bizim üçün hər bir müştəri dəyərlidir. Buna görə də xidmət keyfiyyətimizi daim inkişaf
+          etdirir, yeni məhsullar əlavə edir və ən son ətir trendlərini izləyərək kolleksiyamızı
+          yeniləyirik.
         </p>
         <p className="text-white font-medium">
-          ƏtirX, öz üslubunu və xarakterini qoxu ilə ifadə etmək istəyənlər üçün yaradılmış premium ətir məkanıdır.
+          ƏtirX, öz üslubunu və xarakterini qoxu ilə ifadə etmək istəyənlər üçün yaradılmış premium
+          ətir məkanıdır.
         </p>
 
         <section className="pt-2">
           <h2 className="text-xl text-white mb-2">{t("about.missionTitle")}</h2>
           <p>
-            Müştərilərimizə keyfiyyətli ətirləri əlçatan şəkildə təqdim etmək, etibarlı xidmət göstərmək və hər
-            alış-verişi xoş təcrübəyə çevirmək.
+            Müştərilərimizə keyfiyyətli ətirləri əlçatan şəkildə təqdim etmək, etibarlı xidmət
+            göstərmək və hər alış-verişi xoş təcrübəyə çevirmək.
           </p>
         </section>
 
         <section>
           <h2 className="text-xl text-white mb-2">{t("about.visionTitle")}</h2>
           <p>
-            Azərbaycanda ətir sevərlərin ilk seçim etdiyi, etibar və keyfiyyətlə tanınan aparıcı onlayn ətir
-            platformasına çevrilmək.
+            Azərbaycanda ətir sevərlərin ilk seçim etdiyi, etibar və keyfiyyətlə tanınan aparıcı
+            onlayn ətir platformasına çevrilmək.
           </p>
         </section>
 
@@ -461,7 +578,10 @@ export function AboutPage() {
           <h2 className="text-xl text-white mb-3">{t("about.valuesTitle")}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {values.map((value) => (
-              <div key={value} className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white">
+              <div
+                key={value}
+                className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white"
+              >
                 {value}
               </div>
             ))}
@@ -634,7 +754,11 @@ export function ContactPage() {
               >
                 <span className="flex items-center gap-3 min-w-0">
                   <span className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
-                    {Icon ? <Icon className="w-5 h-5" /> : <span className="text-sm font-semibold">♪</span>}
+                    {Icon ? (
+                      <Icon className="w-5 h-5" />
+                    ) : (
+                      <span className="text-sm font-semibold">♪</span>
+                    )}
                   </span>
                   <span className="min-w-0">
                     <span className="block font-medium">{item.title}</span>
@@ -721,12 +845,10 @@ export function NotFoundPage() {
       <div className="text-center">
         <h1 className="text-5xl mb-3">404</h1>
         <p className="text-zinc-400 mb-6">{t("notFound.text")}</p>
-        <Link to="/" className="bg-white text-black px-5 py-2.5 rounded-xl">{t("notFound.home")}</Link>
+        <Link to="/" className="bg-white text-black px-5 py-2.5 rounded-xl">
+          {t("notFound.home")}
+        </Link>
       </div>
     </div>
   );
 }
-
-
-
-

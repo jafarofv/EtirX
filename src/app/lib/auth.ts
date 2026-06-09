@@ -30,7 +30,10 @@ async function authRequest<T>(path: string, init?: RequestInit, useToken = false
   if (useToken && getToken()) {
     headers.Authorization = `Token ${getToken()}`;
   }
-  const res = await fetch(`${API_BASE}${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
+  const res = await fetch(`${API_BASE}${path}`, {
+    ...init,
+    headers: { ...headers, ...(init?.headers ?? {}) },
+  });
   if (!res.ok) {
     const bodyText = await res.text();
     throw new Error(extractApiErrorMessage(bodyText, res.status));
@@ -76,11 +79,19 @@ export async function logoutAuth() {
 }
 
 export async function updateMe(payload: { full_name: string; phone: string; address?: string }) {
-  return authRequest<AuthUser>("/auth/me/", { method: "PATCH", body: JSON.stringify(payload) }, true);
+  return authRequest<AuthUser>(
+    "/auth/me/",
+    { method: "PATCH", body: JSON.stringify(payload) },
+    true
+  );
 }
 
 export async function changePassword(payload: { current_password: string; new_password: string }) {
-  const data = await authRequest<{ token: string }>("/auth/me/", { method: "POST", body: JSON.stringify(payload) }, true);
+  const data = await authRequest<{ token: string }>(
+    "/auth/me/",
+    { method: "POST", body: JSON.stringify(payload) },
+    true
+  );
   setToken(data.token);
 }
 
@@ -98,7 +109,15 @@ export type UserOrder = {
   shipping_fee: string;
   total: string;
   created_at: string;
-  items: Array<{ product: number; product_name: string; product_image: string; variant_label: string; variant_type: string; quantity: number; unit_price: string }>;
+  items: Array<{
+    product: number;
+    product_name: string;
+    product_image: string;
+    variant_label: string;
+    variant_type: string;
+    quantity: number;
+    unit_price: string;
+  }>;
 };
 
 export async function getMyOrders() {

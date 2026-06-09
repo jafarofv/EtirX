@@ -52,7 +52,12 @@ export async function createOrder(payload: {
   promo_code?: string;
   delivery_method?: string;
   shipping_fee?: string;
-  items: Array<{ product_id: number; product_slug?: string; variant_id?: number; quantity: number }>;
+  items: Array<{
+    product_id: number;
+    product_slug?: string;
+    variant_id?: number;
+    quantity: number;
+  }>;
 }) {
   return request<{
     code: string;
@@ -69,7 +74,15 @@ export async function createOrder(payload: {
     shipping_fee: string;
     total: string;
     created_at: string;
-    items: Array<{ product: number; product_name: string; product_image: string; variant_label: string; variant_type: string; quantity: number; unit_price: string }>;
+    items: Array<{
+      product: number;
+      product_name: string;
+      product_image: string;
+      variant_label: string;
+      variant_type: string;
+      quantity: number;
+      unit_price: string;
+    }>;
   }>("/orders/", {
     method: "POST",
     body: JSON.stringify(payload),
@@ -134,7 +147,9 @@ export async function getProducts(params?: { category?: string; q?: string }) {
   if (params?.category) search.set("category", params.category);
   if (params?.q) search.set("q", params.q);
   const qs = search.toString();
-  const data = await request<{ results: ApiProduct[]; count: number } | ApiProduct[]>(`/products/${qs ? `?${qs}` : ""}`);
+  const data = await request<{ results: ApiProduct[]; count: number } | ApiProduct[]>(
+    `/products/${qs ? `?${qs}` : ""}`
+  );
   return Array.isArray(data) ? data : (data.results ?? []);
 }
 
