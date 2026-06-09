@@ -7,8 +7,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_in_production}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "127.0.0.1:5432:5432"
+    # No host port exposed — services communicate via Docker network
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-etirx_user} -d ${POSTGRES_DB:-etirx}"]
@@ -36,6 +35,7 @@ services:
     command: >
       sh -c "
         python manage.py migrate --noinput &&
+        python manage.py collectstatic --noinput &&
         daphne -b 0.0.0.0 -p 8000 config.asgi:application
       "
     environment:

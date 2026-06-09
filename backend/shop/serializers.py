@@ -43,18 +43,26 @@ class ProductSerializer(serializers.ModelSerializer):
                 urls.append(value)
         return urls
 
-    def _gram_fallback_image(self):
+    def _settings(self):
+        if not hasattr(self, "_site_settings_cache"):
+            self._site_settings_cache = SiteSettings.load()
+        return self._site_settings_cache
+
+    def _gram_fallback_image(self, size_ml: int | None):
         # Configurable shared packaging image for gram variants without their own
         # image, so they don't fall back to the full-bottle product photo.
-        if not hasattr(self, "_gram_image_cache"):
-            self._gram_image_cache = SiteSettings.load().gram_image_url
-        return self._gram_image_cache
+        return self._settings().gram_image_for_size(size_ml)
+
+    def _variant_image(self, obj: Product, variant: ProductVariant):
+        if variant.variant_type == ProductVariant.VARIANT_TYPE_GRAM:
+            return variant.image_url or self._gram_fallback_image(variant.size_ml) or obj.image_url
+        return variant.image_url or obj.image_url
 
     def get_variants(self, obj: Product):
         request = self.context.get("request")
         variants = []
         for variant in obj.variants.filter(is_active=True).order_by("sort_order", "id"):
-            image_url = variant.image_url or (self._gram_fallback_image() if variant.variant_type == "gram" else "") or obj.image_url
+            image_url = self._variant_image(obj, variant)
             if request is not None and image_url.startswith("/"):
                 image_url = request.build_absolute_uri(image_url)
             variants.append(
@@ -74,7 +82,7 @@ class ProductSerializer(serializers.ModelSerializer):
         return variants
 
     def get_default_variant(self, obj: Product):
-        variant = obj.variants.filter(is_active=True, is_default=True).first() or obj.variants.filter(is_active=True).order_by("sort_order", "id").first()
+        variant = obj.get_default_variant()
         if variant is None:
             return {
                 "id": None,
@@ -87,7 +95,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 "is_active": True,
                 "sort_order": 0,
             }
-        image_url = variant.image_url or (self._gram_fallback_image() if variant.variant_type == "gram" else "") or obj.image_url
+        image_url = self._variant_image(obj, variant)
         request = self.context.get("request")
         if request is not None and image_url.startswith("/"):
             image_url = request.build_absolute_uri(image_url)
@@ -160,6 +168,10 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "store_address",
             "banner_text",
             "gram_image_url",
+            "gram_image_15_url",
+            "gram_image_30_url",
+            "gram_image_50_url",
+            "gram_image_100_url",
         ]
 
 
@@ -208,7 +220,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         variant = getattr(obj, "variant", None)
         value = ""
-        if variant and variant.image_url:
+        if variant and variant.variant_type == ProductVariant.VARIANT_TYPE_GRAM:
+            value = variant.image_url or SiteSettings.load().gram_image_for_size(variant.size_ml) or obj.product.image_url
+        elif variant and variant.image_url:
             value = variant.image_url
         elif obj.product and obj.product.image_url:
             value = obj.product.image_url

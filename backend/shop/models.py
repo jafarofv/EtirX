@@ -44,6 +44,22 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    def get_default_variant(self):
+        premium = (
+            self.variants.filter(
+                is_active=True,
+                variant_type=ProductVariant.VARIANT_TYPE_PREMIUM,
+            )
+            .order_by("-is_default", "sort_order", "id")
+            .first()
+        )
+        if premium is not None:
+            return premium
+        return (
+            self.variants.filter(is_active=True, is_default=True).first()
+            or self.variants.filter(is_active=True).order_by("sort_order", "id").first()
+        )
+
 
 class ProductImage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
@@ -169,6 +185,22 @@ class SiteSettings(models.Model):
         blank=True,
         help_text="Shared packaging image used for gram variants that have no image of their own.",
     )
+    gram_image_15_url = models.URLField(
+        blank=True,
+        help_text="Shared image for 15ml gram variants.",
+    )
+    gram_image_30_url = models.URLField(
+        blank=True,
+        help_text="Shared image for 30ml gram variants.",
+    )
+    gram_image_50_url = models.URLField(
+        blank=True,
+        help_text="Shared image for 50ml gram variants.",
+    )
+    gram_image_100_url = models.URLField(
+        blank=True,
+        help_text="Shared image for 100ml gram variants.",
+    )
 
     class Meta:
         verbose_name = "Site settings"
@@ -185,6 +217,17 @@ class SiteSettings(models.Model):
     def load(cls):
         obj, _ = cls.objects.get_or_create(pk=1)
         return obj
+
+    def gram_image_for_size(self, size_ml: int | None) -> str:
+        if size_ml == 15:
+            return self.gram_image_15_url or self.gram_image_url
+        if size_ml == 30:
+            return self.gram_image_30_url or self.gram_image_url
+        if size_ml == 50:
+            return self.gram_image_50_url or self.gram_image_url
+        if size_ml == 100:
+            return self.gram_image_100_url or self.gram_image_url
+        return self.gram_image_url
 
 
 class Order(models.Model):

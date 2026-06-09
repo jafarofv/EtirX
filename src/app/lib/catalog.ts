@@ -92,7 +92,7 @@ function fromApi(items: ApiProduct[]) {
           isActive: true,
           sortOrder: 0,
         };
-    const defaultImage = defaultVariant.imageUrl || (p.images && p.images.length > 0 ? p.images[0] : p.image_url);
+    const defaultImage = p.image_url || (p.images && p.images.length > 0 ? p.images[0] : defaultVariant.imageUrl);
     return {
       id: p.id,
       slug: p.slug,

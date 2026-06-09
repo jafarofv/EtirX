@@ -1,7 +1,17 @@
 ﻿import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
-import { getCampaigns, getCategories, getProducts, type ApiCampaign, type ApiCategory, type ApiProduct } from "../lib/api";
+import {
+  FALLBACK_DELIVERY_METHODS,
+  getCampaigns,
+  getCategories,
+  getDeliveryMethods,
+  getProducts,
+  type ApiCampaign,
+  type ApiCategory,
+  type ApiDeliveryMethod,
+  type ApiProduct,
+} from "../lib/api";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
@@ -34,7 +44,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
           className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
         >
           <div className="aspect-[4/5] overflow-hidden relative">
-            <img src={(p.images && p.images.length > 0 ? p.images[0] : p.image_url)} alt={p.name} onError={onImageError} className="w-full h-full object-cover" />
+            <img src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")} alt={p.name} onError={onImageError} className="w-full h-full object-cover" />
             {badgeFor(p) && <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{badgeFor(p)}</div>}
           </div>
           <div className="p-3">
@@ -477,18 +487,54 @@ export function AboutPage() {
 export function ShippingReturnsPage() {
   const { t } = useI18n();
   const site = useSiteSettings();
+  const [deliveryMethods, setDeliveryMethods] = useState<ApiDeliveryMethod[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    getDeliveryMethods()
+      .then((items) => {
+        const normalized = Array.isArray(items) && items.length > 0 ? items : FALLBACK_DELIVERY_METHODS;
+        if (active) setDeliveryMethods(normalized);
+      })
+      .catch(() => {
+        if (active) setDeliveryMethods(FALLBACK_DELIVERY_METHODS);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <PageWrap title={t("shipret.title")} subtitle={t("shipret.subtitle")}>
       <div className="space-y-4 text-zinc-300">
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
-          <h3 className="text-white text-lg mb-3">🚚 Çatdırılma və Ödəniş</h3>
-          <ul className="space-y-2">
-            <li>• Şəhər daxili çatdırılma — Yango, Bolt və s.</li>
-            <li>• Özünüz ödəniş edərək Bolt və ya Yango ilə çatdırılma qəbul edə bilərsiniz.</li>
-            <li>• AzerPoçt ilə göndəriş — 3 ₼</li>
-            <li>• N.Nərimanov və Gənclik metrosuna çatdırılma — 2 ₼</li>
-            <li>• Depodan təhvil alma — Pulsuz</li>
-          </ul>
+          <h3 className="text-white text-lg mb-3">🚚 Çatdırılma üsulları</h3>
+          <div className="space-y-3">
+            {deliveryMethods.map((method) => (
+              <div key={method.code} className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-white font-medium">{method.label}</p>
+                    <p className="text-sm text-zinc-400 mt-0.5">{method.eta}</p>
+                  </div>
+                  <p className="text-sm font-medium text-white">
+                    {method.fee_label
+                      ? method.fee_label
+                      : Number(method.fee) === 0
+                        ? "Pulsuz"
+                        : `${formatCurrency(Number(method.fee))}`}
+                  </p>
+                </div>
+                {method.code === "city_courier" && (
+                  <p className="text-sm text-zinc-500 mt-2">Özünüz ödəniş edərək Bolt və ya Yango ilə çatdırılma qəbul edə bilərsiniz.</p>
+                )}
+                {method.code === "pickup" && (
+                  <p className="text-sm text-zinc-500 mt-2">Depodan birbaşa təhvil alma mümkündür.</p>
+                )}
+              </div>
+            ))}
+            {deliveryMethods.length === 0 && <p className="text-sm text-zinc-400">Çatdırılma məlumatı yüklənmədi.</p>}
+          </div>
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
@@ -499,7 +545,7 @@ export function ShippingReturnsPage() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
           <h4 className="text-white mb-2">💳 Ödəniş</h4>
           <p>Ödəniş məhsul çatdırıldıqda edilir.</p>
-          <p>Nağd və ya kartdan-karta ödəniş mümkündür.</p>
+          <p>Nağd və ya bank kartı vasitəsilə ödəniş mümkündür.</p>
         </div>
       </div>
     </PageWrap>

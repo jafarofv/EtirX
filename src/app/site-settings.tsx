@@ -14,6 +14,10 @@ const FALLBACK_SETTINGS: ApiSiteSettings = {
   store_address: "Fəxrəddin Musayev küçəsi, Adore Plaza",
   banner_text: "",
   gram_image_url: "",
+  gram_image_15_url: "",
+  gram_image_30_url: "",
+  gram_image_50_url: "",
+  gram_image_100_url: "",
 };
 
 type SiteSettingsContextValue = ApiSiteSettings & { whatsappUrl: string };

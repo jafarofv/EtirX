@@ -2,7 +2,13 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, MapPin, Truck, CheckCircle2 } from "lucide-react";
 import { useI18n } from "../i18n";
-import { createOrder, getDeliveryMethods, validatePromoCode } from "../lib/api";
+import {
+  FALLBACK_DELIVERY_METHODS as API_FALLBACK_DELIVERY_METHODS,
+  createOrder,
+  getDeliveryMethods,
+  validatePromoCode,
+  type ApiDeliveryMethod,
+} from "../lib/api";
 import { getAuthToken, getMe, updateMe } from "../lib/auth";
 import { loadCatalogProducts } from "../lib/catalog";
 import { clearCart, getCartRows } from "../lib/storage";
@@ -43,6 +49,17 @@ type CheckoutItem = {
   quantity: number;
 };
 
+const toDeliveryMethod = (method: ApiDeliveryMethod): DeliveryMethod => ({
+  code: method.code,
+  label: method.label,
+  eta: method.eta,
+  fee: Number(method.fee),
+  feeLabel: method.fee_label,
+  requiresAddress: method.requires_address,
+});
+
+const FALLBACK_DELIVERY_METHODS: DeliveryMethod[] = API_FALLBACK_DELIVERY_METHODS.map(toDeliveryMethod);
+
 export function Checkout() {
   const navigate = useNavigate();
   const { t } = useI18n();
@@ -64,7 +81,7 @@ export function Checkout() {
 
   const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
   const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
-  const selectedMethod = deliveryMethods.find((m) => m.code === selectedDelivery) ?? null;
+  const selectedMethod = deliveryMethods.find((m) => m.code === selectedDelivery) ?? deliveryMethods[0] ?? null;
   const requiresAddress = selectedMethod?.requiresAddress ?? false;
   const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = selectedMethod?.fee ?? 0;
@@ -176,18 +193,12 @@ export function Checkout() {
     (async () => {
       try {
         const methods = await getDeliveryMethods();
-        setDeliveryMethods(
-          methods.map((m) => ({
-            code: m.code,
-            label: m.label,
-            eta: m.eta,
-            fee: Number(m.fee),
-            feeLabel: m.fee_label,
-            requiresAddress: m.requires_address,
-          }))
-        );
+        const normalized = methods.length > 0 ? methods.map(toDeliveryMethod) : FALLBACK_DELIVERY_METHODS;
+        setDeliveryMethods(normalized);
+        setSelectedDelivery((current) => current ?? normalized[0]?.code ?? null);
       } catch {
-        setDeliveryMethods([]);
+        setDeliveryMethods(FALLBACK_DELIVERY_METHODS);
+        setSelectedDelivery((current) => current ?? FALLBACK_DELIVERY_METHODS[0]?.code ?? null);
       }
     })();
   }, []);
@@ -445,26 +456,51 @@ export function Checkout() {
                 key={method.code}
                 type="button"
                 onClick={() => setSelectedDelivery(method.code)}
-                className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
-                  selectedDelivery === method.code ? "border-white" : "border-zinc-800 hover:border-zinc-600"
+                aria-pressed={selectedDelivery === method.code}
+                className={`w-full rounded-3xl border p-4 text-left transition-all duration-200 ${
+                  selectedDelivery === method.code
+                    ? "border-white bg-white/6 shadow-lg shadow-white/5"
+                    : "border-zinc-800 bg-zinc-900 hover:border-zinc-600 hover:bg-zinc-900/80"
                 }`}
               >
-                <div>
-                  <p className="font-medium mb-0.5">{method.label}</p>
-                  <p className="text-sm text-zinc-400">{method.eta}</p>
+                <div className="flex items-start gap-3">
+                  <span
+                    className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                      selectedDelivery === method.code ? "border-white bg-white text-black" : "border-zinc-500 bg-transparent"
+                    }`}
+                    aria-hidden="true"
+                  >
+                    {selectedDelivery === method.code ? <CheckCircle2 className="h-4 w-4" /> : <span className="h-2 w-2 rounded-full bg-zinc-500" />}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="font-medium leading-tight">{method.label}</p>
+                      <p className="font-medium shrink-0">
+                        {method.feeLabel
+                          ? method.feeLabel
+                          : method.fee === 0
+                            ? t("checkout.delivery.free")
+                            : `${method.fee.toFixed(2)} \u20BC`}
+                      </p>
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-400">{method.eta}</p>
+                    {method.requiresAddress && (
+                      <p className="mt-2 text-xs text-zinc-500">Ünvan tələb olunur</p>
+                    )}
+                  </div>
                 </div>
-                <p className="font-medium">
-                  {method.feeLabel
-                    ? method.feeLabel
-                    : method.fee === 0
-                      ? t("checkout.delivery.free")
-                      : `${method.fee.toFixed(2)} \u20BC`}
-                </p>
               </button>
             ))}
-            <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-              <p className="font-medium mb-0.5">{t("checkout.cod")}</p>
-              <p className="text-sm text-zinc-400">{t("checkout.codDesc")}</p>
+            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+              <div className="flex items-start gap-3">
+                <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-transparent" aria-hidden="true">
+                  <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-medium mb-0.5">{t("checkout.cod")}</p>
+                  <p className="text-sm text-zinc-400">{t("checkout.codDesc")}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -496,7 +532,7 @@ export function Checkout() {
                 address: requiresAddress ? address : address || t("checkout.defaultAddress"),
                 notes: promoCode.trim() ? `${notes}\nPromo: ${promoCode.trim()}`.trim() : notes,
                 promo_code: promoCode.trim() || undefined,
-                delivery_method: selectedDelivery ?? undefined,
+                delivery_method: selectedMethod.code,
                 items: cartItems.map((item) => ({
                   product_id: item.perfume.id,
                   product_slug: item.perfume.slug,

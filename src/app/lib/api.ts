@@ -166,8 +166,49 @@ export type ApiDeliveryMethod = {
   sort_order: number;
 };
 
+export const FALLBACK_DELIVERY_METHODS: ApiDeliveryMethod[] = [
+  {
+    code: "city_courier",
+    label: "Şəhər daxili çatdırılma",
+    eta: "Yango, Bolt və s.",
+    fee: "0.00",
+    fee_label: "Ödənişi siz edirsiniz",
+    requires_address: true,
+    sort_order: 10,
+  },
+  {
+    code: "metro_drop",
+    label: "N.Nərimanov / Gənclik metrosuna çatdırılma",
+    eta: "1-2 saat",
+    fee: "2.00",
+    fee_label: "",
+    requires_address: false,
+    sort_order: 20,
+  },
+  {
+    code: "azerpost",
+    label: "AzərPoçt ilə göndəriş",
+    eta: "2-4 iş günü",
+    fee: "3.00",
+    fee_label: "",
+    requires_address: false,
+    sort_order: 30,
+  },
+  {
+    code: "pickup",
+    label: "Depodan təhvil alma",
+    eta: "Dərhal",
+    fee: "0.00",
+    fee_label: "Pulsuz",
+    requires_address: false,
+    sort_order: 40,
+  },
+];
+
 export async function getDeliveryMethods() {
-  return request<ApiDeliveryMethod[]>("/delivery-methods/");
+  const data = await request<{ results: ApiDeliveryMethod[]; count: number } | ApiDeliveryMethod[]>("/delivery-methods/");
+  const methods = Array.isArray(data) ? data : (data.results ?? []);
+  return methods.length > 0 ? methods : FALLBACK_DELIVERY_METHODS;
 }
 
 export type ApiTestimonial = {
@@ -192,6 +233,10 @@ export type ApiSiteSettings = {
   store_address: string;
   banner_text: string;
   gram_image_url: string;
+  gram_image_15_url: string;
+  gram_image_30_url: string;
+  gram_image_50_url: string;
+  gram_image_100_url: string;
 };
 
 export async function getSiteSettings() {

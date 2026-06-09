@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.contrib import admin
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -27,6 +29,13 @@ from .cache_utils import (
     invalidate_delivery_methods_cache,
     invalidate_promo_cache,
 )
+
+GRAM_VARIANT_DEFAULTS = [
+    (15, "0.35"),
+    (30, "0.55"),
+    (50, "0.75"),
+    (100, "1.00"),
+]
 
 
 def _push_order_ws_update(order):
@@ -102,6 +111,48 @@ class ProductAdmin(admin.ModelAdmin):
     def save_related(self, request, form, formsets, change):
         super().save_related(request, form, formsets, change)
         obj = form.instance
+        premium = (
+            obj.variants.filter(variant_type=ProductVariant.VARIANT_TYPE_PREMIUM, is_active=True)
+            .order_by("-is_default", "sort_order", "id")
+            .first()
+        )
+        if premium is None:
+            existing_premium = obj.variants.filter(variant_type=ProductVariant.VARIANT_TYPE_PREMIUM).first()
+            if existing_premium is None:
+                premium, _ = ProductVariant.objects.get_or_create(
+                    product=obj,
+                    variant_type=ProductVariant.VARIANT_TYPE_PREMIUM,
+                    defaults={
+                        "label": "Premium orijinal qablaşdırma",
+                        "size_ml": obj.volume_ml,
+                        "price": obj.price,
+                        "stock": obj.stock,
+                        "image_url": obj.image_url,
+                        "is_default": True,
+                        "is_active": True,
+                        "sort_order": 0,
+                    },
+                )
+        if premium is not None and premium.is_active and not premium.is_default:
+            ProductVariant.objects.filter(product=obj, is_default=True).exclude(pk=premium.pk).update(is_default=False)
+            premium.is_default = True
+            premium.save(update_fields=["is_default"])
+
+        for idx, (size_ml, rate) in enumerate(GRAM_VARIANT_DEFAULTS, start=1):
+            ProductVariant.objects.get_or_create(
+                product=obj,
+                variant_type=ProductVariant.VARIANT_TYPE_GRAM,
+                size_ml=size_ml,
+                defaults={
+                    "label": f"{size_ml}ml",
+                    "price": (obj.price * Decimal(rate)).quantize(Decimal("0.01")),
+                    "stock": obj.stock,
+                    "image_url": "",
+                    "is_default": False,
+                    "is_active": True,
+                    "sort_order": idx,
+                },
+            )
         first_multi = obj.categories.order_by("id").first()
         if first_multi and obj.category_id != first_multi.id:
             obj.category = first_multi
@@ -206,6 +257,19 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ("WhatsApp", {"fields": ("whatsapp_number",)}),
         ("Social", {"fields": ("instagram_url", "instagram_handle", "tiktok_url", "tiktok_handle")}),
         ("Store", {"fields": ("store_address",)}),
+        (
+            "Announcement and images",
+            {
+                "fields": (
+                    "banner_text",
+                    "gram_image_url",
+                    "gram_image_15_url",
+                    "gram_image_30_url",
+                    "gram_image_50_url",
+                    "gram_image_100_url",
+                )
+            },
+        ),
     )
 
     def has_add_permission(self, request):

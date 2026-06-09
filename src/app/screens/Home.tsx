@@ -110,32 +110,34 @@ export function Home() {
           </div>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-          <input
-            type="text"
-            placeholder={t("home.search")} aria-label={t("home.search")}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-              }
-            }}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700"
-          />
-        </div>
-        <p className="text-xs text-zinc-500 mt-2">Ətir, marka və notlara görə axtar (məs: oud, rose, vanilla)</p>
-        <div className="flex flex-wrap gap-2 mt-2">
-          {noteHints.map((note) => (
-            <button
-              key={note}
-              onClick={() => navigate(`/search?q=${encodeURIComponent(note)}`)}
-              className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
-            >
-              #{note}
-            </button>
-          ))}
+        <div className="sticky top-[124px] md:static z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-black/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-0 border-b border-zinc-900/60 md:border-0">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+            <input
+              type="text"
+              placeholder={t("home.search")} aria-label={t("home.search")}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                }
+              }}
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 shadow-xl shadow-black/20"
+            />
+          </div>
+          <p className="text-xs text-zinc-500 mt-2">Ətir, marka və notlara görə axtar (məs: oud, rose, vanilla)</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            {noteHints.map((note) => (
+              <button
+                key={note}
+                onClick={() => navigate(`/search?q=${encodeURIComponent(note)}`)}
+                className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+              >
+                #{note}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

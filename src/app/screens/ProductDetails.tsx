@@ -34,7 +34,7 @@ export function ProductDetails() {
       const found = await loadCatalogProductBySlug(slug);
       setPerfume(found);
       setSelectedVariantId(found?.defaultVariant.id ?? found?.variants?.[0]?.id ?? null);
-      setActiveImage(found?.defaultVariant.imageUrl || found?.images?.[0] || found?.image || "");
+      setActiveImage(found?.image || found?.defaultVariant.imageUrl || found?.images?.[0] || "");
       if (found) setFavorite(isFavorite(found.id));
     })();
   }, [slug]);
@@ -45,7 +45,7 @@ export function ProductDetails() {
     if (!perfume) return;
     const list = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
     const selected = list.find((variant) => variant.id === selectedVariantId) ?? list[0];
-    const nextImage = selected?.imageUrl || perfume.images[0] || perfume.image;
+    const nextImage = selected?.imageUrl || perfume.image || perfume.images[0];
     if (nextImage) setActiveImage(nextImage);
   }, [perfume, selectedVariantId]);
 
@@ -69,6 +69,42 @@ export function ProductDetails() {
   const selectedStock = selectedVariant?.stock ?? 0;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
+  const premiumVariants = variants.filter((variant) => variant.variantType === "premium");
+  const gramVariants = variants.filter((variant) => variant.variantType === "gram");
+  const renderVariantCard = (variant: (typeof variants)[number]) => {
+    const isSelected = selectedVariant?.id === variant.id;
+    const isPremium = variant.variantType === "premium";
+    return (
+      <button
+        key={variant.id ?? `${variant.label}-${variant.sizeMl}`}
+        type="button"
+        onClick={() => {
+          setSelectedVariantId(variant.id);
+          setActiveImage(variant.imageUrl || perfume.image);
+        }}
+        className={`rounded-2xl border p-4 text-left transition-all ${
+          isSelected ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+        }`}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-medium">
+              {isPremium ? t("product.premiumPack") : `${variant.label}`}
+            </p>
+            <p className="text-xs text-zinc-500 mt-1">
+              {isPremium ? t("product.originalPackaging") : `${variant.sizeMl ?? variant.label} ml`}
+            </p>
+          </div>
+          <div className="text-right shrink-0">
+            <p className="font-medium">{fmt(variant.price)}</p>
+            <p className={`text-xs mt-1 ${variant.stock > 0 ? "text-green-400" : "text-red-400"}`}>
+              {variant.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
+            </p>
+          </div>
+        </div>
+      </button>
+    );
+  };
 
   const goNextImage = () => {
     if (gallery.length <= 1) return;
@@ -198,44 +234,23 @@ export function ProductDetails() {
             </div>
           </div>
 
-          <div className="mb-8">
-            <h3 className="text-sm font-medium mb-3">{t("product.saleType")}</h3>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {variants.map((variant) => {
-                const isSelected = selectedVariant?.id === variant.id;
-                const isPremium = variant.variantType === "premium";
-                return (
-                  <button
-                    key={variant.id ?? `${variant.label}-${variant.sizeMl}`}
-                    type="button"
-                    onClick={() => {
-                      setSelectedVariantId(variant.id);
-                      if (variant.imageUrl) setActiveImage(variant.imageUrl);
-                    }}
-                    className={`rounded-2xl border p-4 text-left transition-all ${
-                      isSelected ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-medium">
-                          {isPremium ? t("product.premiumPack") : `${variant.label} ${t("product.gramSale")}`}
-                        </p>
-                        <p className="text-xs text-zinc-500 mt-1">
-                          {isPremium ? t("product.originalPackaging") : `${variant.sizeMl ?? variant.label}`}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-medium">{fmt(variant.price)}</p>
-                        <p className={`text-xs mt-1 ${variant.stock > 0 ? "text-green-400" : "text-red-400"}`}>
-                          {variant.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+          <div className="mb-8 space-y-4">
+            {premiumVariants.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-3">{t("product.originalPackaging")}</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {premiumVariants.map(renderVariantCard)}
+                </div>
+              </div>
+            )}
+            {gramVariants.length > 0 && (
+              <div>
+                <h3 className="text-sm font-medium mb-3">{t("product.gramSale")}</h3>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {gramVariants.map(renderVariantCard)}
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="mb-8 space-y-3">
@@ -249,9 +264,9 @@ export function ProductDetails() {
             <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="w-4 h-4 text-zinc-300" />
-                <p className="text-sm font-medium">Qapıda ödəniş ilə ödə</p>
+                <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
               </div>
-              <p className="text-sm text-zinc-400">Məhsulu təhvil alanda nağd və ya kartla ödəniş et.</p>
+              <p className="text-sm text-zinc-400">Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.</p>
             </div>
             <a
               href={site.whatsappUrl}

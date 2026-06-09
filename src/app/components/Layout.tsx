@@ -174,17 +174,89 @@ export function Layout() {
         ]}
       />
       <div className="w-full min-h-screen flex flex-col relative">
-        <div className="promo-strip overflow-hidden border-b border-zinc-800 bg-zinc-900">
-          <div className="promo-track">
-            {promoLines.map((line, idx) => (
-              <span key={`p1-${idx}`}>{line}</span>
-            ))}
-            {promoLines.map((line, idx) => (
-              <span key={`p2-${idx}`}>{line}</span>
-            ))}
+        <div className="sticky top-0 z-30">
+          <div className="promo-strip">
+            <div className="w-full px-4 sm:px-6 lg:px-8 h-[56px] flex items-center justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <span className="promo-badge shrink-0">ETIRX10</span>
+                <div className="min-w-0">
+                  <p className="truncate text-sm sm:text-[15px] font-semibold tracking-wide text-white">
+                    {site.banner_text || promoLines[0]}
+                  </p>
+                  <p className="truncate text-[11px] sm:text-xs text-white/70">{promoLines[2]}</p>
+                </div>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 shrink-0">
+                <span className="promo-chip">{promoLines[1]}</span>
+                <span className="promo-chip">{t("promo.line3")}</span>
+              </div>
+            </div>
           </div>
+          <header className="md:hidden border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
+            <div className="px-4 py-2.5 flex items-center justify-between">
+              <button onClick={() => navigate("/")} className="inline-flex items-center" aria-label="EtirX home">
+                <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
+              </button>
+              <div className="flex items-center gap-2">
+                <div ref={langMobileRef} className="relative">
+                  <button
+                    onClick={() => {
+                      setIsLangOpen((v) => !v);
+                    }}
+                    aria-label={t("a11y.language")}
+                    className="px-3 py-1.5 text-base rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    {langFlags[language]}
+                  </button>
+                  {isLangOpen && (
+                    <div className="absolute right-0 mt-2 w-24 rounded-xl border border-zinc-700 bg-zinc-900 p-1">
+                      {langs.map((lang) => (
+                        <button
+                          key={`m-${lang}`}
+                          onClick={() => {
+                            setLanguage(lang);
+                            setIsLangOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 text-base rounded-lg ${
+                            language === lang ? "bg-white text-black" : "text-zinc-300 hover:bg-zinc-800"
+                          }`}
+                        >
+                          {langFlags[lang]}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <button
+                    onClick={() => {
+                      setIsLangOpen(false);
+                      setTheme(theme === "dark" ? "light" : "dark");
+                    }}
+                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  >
+                    {theme === "dark" ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                    <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
+                  </button>
+                </div>
+                <div ref={pagesMobileRef} className="relative">
+                  <button
+                    onClick={() => {
+                      setIsPagesOpen((v) => !v);
+                      setIsLangOpen(false);
+                    }}
+                    aria-label={t("a11y.menu")}
+                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  >
+                    <Menu className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
         </div>
-        <header className="hidden md:block sticky top-[34px] z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
+        <header className="hidden md:block sticky top-[56px] z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
           <div className="w-full px-6 lg:px-8 h-16 flex items-center justify-between">
             <button
               onClick={() => navigate("/")}
@@ -277,69 +349,6 @@ export function Layout() {
           </div>
         </header>
         <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
-          <div className="md:hidden sticky top-0 z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
-            <div className="px-4 py-2.5 flex items-center justify-between">
-              <button onClick={() => navigate("/")} className="inline-flex items-center" aria-label="EtirX home">
-                <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
-              </button>
-              <div className="flex items-center gap-2">
-                <div ref={langMobileRef} className="relative">
-                  <button
-                    onClick={() => {
-                      setIsLangOpen((v) => !v);
-                    }}
-                    aria-label={t("a11y.language")}
-                    className="px-3 py-1.5 text-base rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                  >
-                    <Globe className="w-3.5 h-3.5" />
-                    {langFlags[language]}
-                  </button>
-                  {isLangOpen && (
-                    <div className="absolute right-0 mt-2 w-24 rounded-xl border border-zinc-700 bg-zinc-900 p-1">
-                      {langs.map((lang) => (
-                        <button
-                          key={`m-${lang}`}
-                          onClick={() => {
-                            setLanguage(lang);
-                            setIsLangOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                            language === lang ? "bg-white text-black" : "text-zinc-300 hover:bg-zinc-800"
-                          }`}
-                        >
-                          {langFlags[lang]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <button
-                    onClick={() => {
-                      setIsLangOpen(false);
-                      setTheme(theme === "dark" ? "light" : "dark");
-                    }}
-                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                  >
-                    {theme === "dark" ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
-                    <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
-                  </button>
-                </div>
-                <div ref={pagesMobileRef} className="relative">
-                  <button
-                    onClick={() => {
-                      setIsPagesOpen((v) => !v);
-                      setIsLangOpen(false);
-                    }}
-                    aria-label={t("a11y.menu")}
-                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                  >
-                    <Menu className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
           <Outlet />
           {showReviews && (
             <section className="px-4 sm:px-6 lg:px-8 py-10 md:py-14">
