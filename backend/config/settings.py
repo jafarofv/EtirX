@@ -149,7 +149,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # ── REST Framework ─────────────────────────────────────────────────
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "shop.authentication.ExpiringTokenAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
@@ -170,6 +170,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 24,
 }
+
+# Auth-token TTL: tokens older than this are rejected by
+# shop.authentication.ExpiringTokenAuthentication. Rotated on each login, so the
+# window resets per active session. Default 7 days; tune via AUTH_TOKEN_TTL_HOURS.
+from datetime import timedelta  # noqa: E402
+
+AUTH_TOKEN_TTL = timedelta(hours=int(os.getenv("AUTH_TOKEN_TTL_HOURS", "168")))
 
 # ── Redis / Cache ──────────────────────────────────────────────────
 from .redis_cache import CACHES, SESSION_ENGINE, SESSION_CACHE_ALIAS  # noqa: E402

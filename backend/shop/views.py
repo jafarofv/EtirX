@@ -558,7 +558,10 @@ class LoginView(APIView):
         user = authenticate(username=payload["email"].strip().lower(), password=payload["password"])
         if not user:
             return Response({"detail": "Invalid credentials."}, status=status.HTTP_400_BAD_REQUEST)
-        token, _ = Token.objects.get_or_create(user=user)
+        # Rotate the token on every login: invalidates any previously issued
+        # (possibly leaked) key and resets the expiry window for this session.
+        Token.objects.filter(user=user).delete()
+        token = Token.objects.create(user=user)
         return Response({"token": token.key, "user": MeSerializer.from_user(user)})
 
 
