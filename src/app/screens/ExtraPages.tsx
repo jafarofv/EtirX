@@ -121,10 +121,10 @@ export function ShopPage() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t("shop.search")}
+          placeholder={t("shop.search")} aria-label={t("shop.search")}
           className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
         />
-        <select value={brand} onChange={(e) => setBrand(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm">
+        <select value={brand} onChange={(e) => setBrand(e.target.value)} aria-label={t("shop.brand")} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm">
           <option value="all">{t("shop.allBrands")}</option>
           {brands.map((b) => (
             <option key={b} value={b}>
@@ -132,7 +132,7 @@ export function ShopPage() {
             </option>
           ))}
         </select>
-        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm">
+        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} aria-label={t("shop.sort")} className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm">
           <option value="newest">{t("shop.sort.newest")}</option>
           <option value="priceAsc">{t("shop.sort.priceAsc")}</option>
           <option value="priceDesc">{t("shop.sort.priceDesc")}</option>

@@ -25,6 +25,15 @@ const dict: Dict = {
   "menu.terms": { az: "Şərtlər", en: "Terms", ru: "Условия" },
   "menu.tracking": { az: "Sifariş İzləmə", en: "Order Tracking", ru: "Отслеживание" },
 
+  "a11y.menu": { az: "Menyu", en: "Menu", ru: "Меню" },
+  "a11y.language": { az: "Dil seçimi", en: "Language", ru: "Язык" },
+  "a11y.favorite": { az: "Seçilənlərə əlavə et", en: "Add to favorites", ru: "В избранное" },
+  "a11y.addToCart": { az: "Səbətə at", en: "Add to cart", ru: "В корзину" },
+  "a11y.increaseQty": { az: "Sayı artır", en: "Increase quantity", ru: "Увеличить количество" },
+  "a11y.decreaseQty": { az: "Sayı azalt", en: "Decrease quantity", ru: "Уменьшить количество" },
+  "a11y.removeItem": { az: "Səbətdən sil", en: "Remove from cart", ru: "Удалить из корзины" },
+  "a11y.back": { az: "Geri", en: "Back", ru: "Назад" },
+
   "theme.label": { az: "Tema", en: "Theme", ru: "Тема" },
   "theme.dark": { az: "Tünd", en: "Dark", ru: "Тёмная" },
   "theme.light": { az: "Açıq", en: "Light", ru: "Светлая" },

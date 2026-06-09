@@ -193,15 +193,15 @@ export function Cart() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center bg-zinc-800 rounded-xl px-1">
-                    <button onClick={() => updateQuantity(lineKey(item), -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button aria-label={t("a11y.decreaseQty")} onClick={() => updateQuantity(lineKey(item), -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(lineKey(item), 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button aria-label={t("a11y.increaseQty")} onClick={() => updateQuantity(lineKey(item), 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <button onClick={() => removeItem(lineKey(item))} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
+                  <button aria-label={t("a11y.removeItem")} onClick={() => removeItem(lineKey(item))} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -223,7 +223,7 @@ export function Cart() {
                 setPromoMsg(null);
                 setPromoDiscount(0);
               }}
-              placeholder={t("cart.promo")}
+              placeholder={t("cart.promo")} aria-label={t("cart.promo")}
               className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500"
             />
             <button

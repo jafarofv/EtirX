@@ -199,6 +199,7 @@ export function Layout() {
                   onClick={() => {
                     setIsLangOpen((v) => !v);
                   }}
+                  aria-label={t("a11y.language")}
                   className="px-3 py-2 text-xs rounded-xl border border-zinc-700 bg-zinc-900 uppercase flex items-center gap-2"
                 >
                   <Globe className="w-3.5 h-3.5" />
@@ -241,6 +242,7 @@ export function Layout() {
                     setIsPagesOpen((v) => !v);
                     setIsLangOpen(false);
                   }}
+                  aria-label={t("a11y.menu")}
                   className="px-3 py-2 text-xs rounded-xl border border-zinc-700 bg-zinc-900 flex items-center gap-2"
                 >
                   <Menu className="w-3.5 h-3.5" />
@@ -286,6 +288,7 @@ export function Layout() {
                     onClick={() => {
                       setIsLangOpen((v) => !v);
                     }}
+                    aria-label={t("a11y.language")}
                     className="px-3 py-1.5 text-base rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
                   >
                     <Globe className="w-3.5 h-3.5" />
@@ -328,6 +331,7 @@ export function Layout() {
                       setIsPagesOpen((v) => !v);
                       setIsLangOpen(false);
                     }}
+                    aria-label={t("a11y.menu")}
                     className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
                   >
                     <Menu className="w-3.5 h-3.5" />

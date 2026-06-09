@@ -286,20 +286,20 @@ export function Profile() {
           <div className="space-y-3 mb-3">
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t("profile.fullName")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : "border-zinc-700"}`} />
+              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t("profile.fullName")} aria-label={t("profile.fullName")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} aria-label={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("profile.phone")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`} />
+              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("profile.phone")} aria-label={t("profile.phone")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`} />
             </div>
 
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} aria-label={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <button disabled={loading} onClick={onRegister} className="w-full bg-white text-black rounded-xl py-3">{loading ? "..." : t("profile.createAccount")}</button>
           </div>
@@ -309,11 +309,11 @@ export function Profile() {
           <div className="space-y-3 mb-3">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} aria-label={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
+              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} aria-label={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
             </div>
             <button disabled={loading} onClick={onLogin} className="w-full bg-white text-black rounded-xl py-3">{loading ? "..." : t("profile.login")}</button>
           </div>
@@ -376,9 +376,9 @@ export function EditProfilePage() {
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-3">
-        <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.fullName")} />
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.phone")} />
-        <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" rows={4} placeholder={t("profile.address")} />
+        <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.fullName")} aria-label={t("profile.fullName")} />
+        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.phone")} aria-label={t("profile.phone")} />
+        <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" rows={4} placeholder={t("profile.address")} aria-label={t("profile.address")} />
         <button
           disabled={loading}
           onClick={async () => {
@@ -425,8 +425,8 @@ export function ChangePasswordPage() {
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-3">
-        <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.currentPassword")} />
-        <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.newPassword")} />
+        <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.currentPassword")} aria-label={t("profile.currentPassword")} />
+        <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.newPassword")} aria-label={t("profile.newPassword")} />
         <button
           disabled={loading}
           onClick={async () => {
