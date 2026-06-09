@@ -155,3 +155,175 @@
   letter-spacing: 0.04em;
   font-weight: 600;
 }
+
+/* ============================================================
+   PREMIUM DESIGN SYSTEM (luxury perfume boutique)
+   Gold accent + display serif + glassmorphism + soft motion.
+   Utility classes here are applied directly in the redesigned
+   screens (Home, ProductDetails, Cart/Checkout, Profile).
+   ============================================================ */
+:root {
+  --gold: #c8a96a;
+  --gold-bright: #e6c780;
+  --gold-soft: rgba(200, 169, 106, 0.16);
+  --gold-line: rgba(200, 169, 106, 0.32);
+}
+
+/* Elegant display serif for headings (graceful fallback to serif) */
+.font-display {
+  font-family: "Cormorant Garamond", "Playfair Display", Georgia, serif;
+  letter-spacing: 0.01em;
+}
+
+/* Frosted glass panel */
+.glass {
+  background: rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.light-mode .glass {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Premium card hover: lift + gold hairline + depth */
+.premium-card {
+  transition:
+    transform 0.45s cubic-bezier(0.22, 0.61, 0.36, 1),
+    box-shadow 0.45s ease,
+    border-color 0.45s ease;
+}
+.premium-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--gold-line);
+  box-shadow:
+    0 26px 60px -22px rgba(0, 0, 0, 0.75),
+    0 0 0 1px var(--gold-soft);
+}
+.light-mode .premium-card:hover {
+  box-shadow:
+    0 26px 60px -22px rgba(0, 0, 0, 0.18),
+    0 0 0 1px var(--gold-soft);
+}
+
+/* Image zoom inside cards */
+.premium-card .zoom-img {
+  transition: transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.premium-card:hover .zoom-img {
+  transform: scale(1.06);
+}
+
+/* Gold-accented badges */
+.badge-lux {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  backdrop-filter: blur(8px);
+}
+.badge-sale {
+  background: linear-gradient(135deg, #b91c1c, #7f1d1d);
+  color: #fff;
+}
+.badge-new {
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  color: #1a1206;
+}
+.badge-best {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111;
+}
+
+/* Gold focus ring for premium inputs */
+.premium-input {
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background-color 0.3s ease;
+}
+.premium-input:focus {
+  outline: none;
+  border-color: var(--gold-line);
+  box-shadow: 0 0 0 3px var(--gold-soft);
+}
+
+/* Gold CTA button */
+.btn-gold {
+  background: linear-gradient(135deg, var(--gold-bright), var(--gold));
+  color: #1a1206;
+  font-weight: 600;
+  transition:
+    filter 0.3s ease,
+    transform 0.2s ease,
+    box-shadow 0.3s ease;
+  box-shadow: 0 8px 24px -10px var(--gold-soft);
+}
+.btn-gold:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 12px 30px -10px var(--gold-line);
+}
+.btn-gold:active {
+  transform: translateY(1px);
+}
+
+/* Animated hero gradient */
+@keyframes heroShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.hero-lux {
+  background:
+    radial-gradient(120% 120% at 80% 0%, rgba(200, 169, 106, 0.12), transparent 55%),
+    linear-gradient(135deg, #0a0a0c 0%, #141318 35%, #1c1822 65%, #0d0c10 100%);
+  background-size: 160% 160%;
+  animation: heroShift 18s ease infinite;
+}
+
+/* Soft fade-in-up for sections */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.fade-d1 {
+  animation-delay: 0.08s;
+}
+.fade-d2 {
+  animation-delay: 0.16s;
+}
+.fade-d3 {
+  animation-delay: 0.24s;
+}
+
+/* Thin gold divider */
+.gold-rule {
+  height: 1px;
+  width: 64px;
+  background: linear-gradient(90deg, var(--gold), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-lux,
+  .animate-fade-up,
+  .premium-card,
+  .premium-card .zoom-img {
+    animation: none !important;
+    transition: none !important;
+  }
+}
