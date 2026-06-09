@@ -151,8 +151,13 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "shop.authentication.ExpiringTokenAuthentication",
     ],
+    # Secure-by-default: any view that omits permission_classes requires
+    # authentication. Public storefront endpoints (catalog, categories,
+    # delivery methods, testimonials, site settings, guest checkout/tracking,
+    # contact form, register/login, public promo list) opt in with an explicit
+    # AllowAny so a newly added view fails closed rather than leaking data.
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
