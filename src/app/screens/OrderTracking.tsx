@@ -5,8 +5,7 @@ import { useI18n } from "../i18n";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const WS_BASE =
-  (import.meta.env.VITE_WS_URL as string) ||
-  API_BASE.replace("/api", "").replace("http", "ws");
+  (import.meta.env.VITE_WS_URL as string) || API_BASE.replace("/api", "").replace("http", "ws");
 
 interface OrderStatus {
   code: string;
@@ -113,10 +112,7 @@ export function OrderTracking() {
       </h1>
       <p style={{ color: "#666", marginBottom: 24 }}>{t("tracking.intro")}</p>
 
-      <form
-        onSubmit={handleSearch}
-        style={{ display: "flex", gap: 8, marginBottom: 32 }}
-      >
+      <form onSubmit={handleSearch} style={{ display: "flex", gap: 8, marginBottom: 32 }}>
         <input
           type="text"
           placeholder={t("tracking.codePlaceholder")}
@@ -179,9 +175,7 @@ export function OrderTracking() {
         >
           <div style={{ marginBottom: 16 }}>
             <span style={{ color: "#888", fontSize: 14 }}>{t("tracking.codeLabel")}</span>
-            <h2 style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 700 }}>
-              {status.code}
-            </h2>
+            <h2 style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 700 }}>{status.code}</h2>
           </div>
 
           {/* Live badge */}
@@ -214,7 +208,14 @@ export function OrderTracking() {
           )}
 
           {/* Progress stepper */}
-          <div style={{ display: "flex", justifyContent: "space-between", margin: "24px 0", position: "relative" }}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              margin: "24px 0",
+              position: "relative",
+            }}
+          >
             {ORDER_STATUSES.map((s, idx) => {
               const info = STATUS_STYLE[s];
               const isActive = idx <= currentStep;

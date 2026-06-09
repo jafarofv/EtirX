@@ -34,7 +34,15 @@ type PlacedOrder = {
   shipping_fee: string;
   total: string;
   created_at: string;
-  items: Array<{ product: number; product_name: string; product_image: string; variant_label: string; variant_type: string; quantity: number; unit_price: string }>;
+  items: Array<{
+    product: number;
+    product_name: string;
+    product_image: string;
+    variant_label: string;
+    variant_type: string;
+    quantity: number;
+    unit_price: string;
+  }>;
 };
 
 type CheckoutItem = {
@@ -81,7 +89,12 @@ export function Checkout() {
     if (savedPromo && mounted) setPromoCode(savedPromo);
     if (guestRaw) {
       try {
-        const guest = JSON.parse(guestRaw) as { fullName?: string; phone?: string; address?: string; notes?: string };
+        const guest = JSON.parse(guestRaw) as {
+          fullName?: string;
+          phone?: string;
+          address?: string;
+          notes?: string;
+        };
         if (mounted) {
           setFullName((prev) => prev || guest.fullName || "");
           setPhone((prev) => prev || guest.phone || "");
@@ -218,9 +231,13 @@ export function Checkout() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-xs text-zinc-500 uppercase tracking-wider">{t("checkout.orderCode")}</p>
+                <p className="text-xs text-zinc-500 uppercase tracking-wider">
+                  {t("checkout.orderCode")}
+                </p>
                 <p className="text-lg font-medium">{order?.code ? `#${order.code}` : "N/A"}</p>
-                <span className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}>
+                <span
+                  className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}
+                >
                   {orderStatusLabel(status)}
                 </span>
               </div>
@@ -257,10 +274,15 @@ export function Checkout() {
               </div>
 
               <div className="bg-black/40 border border-zinc-800 rounded-2xl p-4">
-                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">{t("cart.summary")}</p>
+                <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">
+                  {t("cart.summary")}
+                </p>
                 <div className="space-y-3">
                   {(order?.items ?? []).map((item) => (
-                    <div key={`${item.product}-${item.variant_label || "variant"}-${item.unit_price}`} className="flex items-center gap-3 text-sm">
+                    <div
+                      key={`${item.product}-${item.variant_label || "variant"}-${item.unit_price}`}
+                      className="flex items-center gap-3 text-sm"
+                    >
                       <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
                         <img
                           src={item.product_image}
@@ -273,7 +295,9 @@ export function Checkout() {
                         <div className="flex items-start justify-between gap-3">
                           <span className="text-zinc-200 block truncate">
                             {item.product_name}
-                            {item.variant_label ? <span className="text-zinc-500"> • {item.variant_label}</span> : null}
+                            {item.variant_label ? (
+                              <span className="text-zinc-500"> • {item.variant_label}</span>
+                            ) : null}
                           </span>
                           <span className="font-medium shrink-0">{fmt(item.unit_price)}</span>
                         </div>
@@ -294,7 +318,9 @@ export function Checkout() {
                   {Number(order?.discount_amount || "0") > 0 && (
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-zinc-400">{t("checkout.promo")}</span>
-                      <span className="text-emerald-400">-{fmt(order?.discount_amount || "0")}</span>
+                      <span className="text-emerald-400">
+                        -{fmt(order?.discount_amount || "0")}
+                      </span>
                     </div>
                   )}
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
@@ -327,7 +353,12 @@ export function Checkout() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8">
-      <Seo title="Checkout | ƏtirX" description="Sifarişin rəsmiləşdirilməsi." path="/checkout" noindex />
+      <Seo
+        title="Checkout | ƏtirX"
+        description="Sifarişin rəsmiləşdirilməsi."
+        path="/checkout"
+        noindex
+      />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
         <div className="flex items-center gap-4 mb-6">
           <button
@@ -346,19 +377,22 @@ export function Checkout() {
             <input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder={t("checkout.fullName")} aria-label={t("checkout.fullName")}
+              placeholder={t("checkout.fullName")}
+              aria-label={t("checkout.fullName")}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder={t("checkout.phone")} aria-label={t("checkout.phone")}
+              placeholder={t("checkout.phone")}
+              aria-label={t("checkout.phone")}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("checkout.notes")} aria-label={t("checkout.notes")}
+              placeholder={t("checkout.notes")}
+              aria-label={t("checkout.notes")}
               rows={2}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
@@ -371,7 +405,8 @@ export function Checkout() {
                   setPromoMsg(null);
                   setPromoDiscount(0);
                 }}
-                placeholder={t("checkout.promo")} aria-label={t("checkout.promo")}
+                placeholder={t("checkout.promo")}
+                aria-label={t("checkout.promo")}
                 className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
               />
               <button
@@ -395,7 +430,9 @@ export function Checkout() {
                     localStorage.setItem("checkout-promo-code", result.promo.code);
                     setPromoCode(result.promo.code);
                     setPromoDiscount(Number(result.discount_amount));
-                    setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${Number(result.discount_amount).toFixed(2)} \u20BC`);
+                    setPromoMsg(
+                      `${result.promo.code} ${t("cart.promoApplied")} - ${Number(result.discount_amount).toFixed(2)} \u20BC`
+                    );
                   } catch (err) {
                     localStorage.removeItem("checkout-promo-code");
                     setPromoDiscount(0);
@@ -421,7 +458,8 @@ export function Checkout() {
             <textarea
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder={t("checkout.addrInput")} aria-label={t("checkout.addrInput")}
+              placeholder={t("checkout.addrInput")}
+              aria-label={t("checkout.addrInput")}
               rows={3}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
@@ -446,7 +484,9 @@ export function Checkout() {
                 type="button"
                 onClick={() => setSelectedDelivery(method.code)}
                 className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
-                  selectedDelivery === method.code ? "border-white" : "border-zinc-800 hover:border-zinc-600"
+                  selectedDelivery === method.code
+                    ? "border-white"
+                    : "border-zinc-800 hover:border-zinc-600"
                 }`}
               >
                 <div>
@@ -473,7 +513,9 @@ export function Checkout() {
           onClick={async () => {
             setError(null);
             if (!fullName || !phone || (requiresAddress && !address)) {
-              setError(requiresAddress ? t("checkout.requiredError") : t("checkout.basicRequiredError"));
+              setError(
+                requiresAddress ? t("checkout.requiredError") : t("checkout.basicRequiredError")
+              );
               return;
             }
             if (!selectedMethod) {
@@ -530,5 +572,3 @@ export function Checkout() {
     </div>
   );
 }
-
-

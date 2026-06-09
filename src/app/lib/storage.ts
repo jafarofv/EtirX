@@ -223,7 +223,9 @@ export function addToCart(
 ) {
   const rows = getCartRows();
   const variantKey = variant?.id ?? null;
-  const existing = rows.find((r) => (variantKey !== null ? r.variantId === variantKey : r.id === productId && !r.variantId));
+  const existing = rows.find((r) =>
+    variantKey !== null ? r.variantId === variantKey : r.id === productId && !r.variantId
+  );
   if (existing) {
     existing.quantity += quantity;
     if (slug && !existing.slug) existing.slug = slug;
@@ -250,16 +252,27 @@ export function addToCart(
   }
   localStorage.setItem("cart-items", JSON.stringify(rows));
   window.dispatchEvent(new CustomEvent("app-storage-updated"));
-  void syncJson("/me/cart/", {
-    items: rows.map((row) => ({ product_id: row.id, product_slug: row.slug, variant_id: row.variantId, quantity: row.quantity })),
-  }, "POST");
+  void syncJson(
+    "/me/cart/",
+    {
+      items: rows.map((row) => ({
+        product_id: row.id,
+        product_slug: row.slug,
+        variant_id: row.variantId,
+        quantity: row.quantity,
+      })),
+    },
+    "POST"
+  );
 }
 
 export function getFavoriteIds(): number[] {
   try {
     const raw = localStorage.getItem("favorites");
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.filter((value): value is number => typeof value === "number") : [];
+    return Array.isArray(parsed)
+      ? parsed.filter((value): value is number => typeof value === "number")
+      : [];
   } catch {
     return [];
   }
@@ -282,8 +295,12 @@ export function toggleFavorite(id: number, slug?: string) {
   const next = ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id];
   localStorage.setItem("favorites", JSON.stringify(next));
   window.dispatchEvent(new CustomEvent("app-storage-updated"));
-  void syncJson("/me/favorites/", {
-    items: next.map((itemId) => ({ product_id: itemId })),
-  }, "POST");
+  void syncJson(
+    "/me/favorites/",
+    {
+      items: next.map((itemId) => ({ product_id: itemId })),
+    },
+    "POST"
+  );
   return next.includes(id);
 }

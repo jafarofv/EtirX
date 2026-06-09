@@ -92,7 +92,8 @@ function fromApi(items: ApiProduct[]) {
           isActive: true,
           sortOrder: 0,
         };
-    const defaultImage = defaultVariant.imageUrl || (p.images && p.images.length > 0 ? p.images[0] : p.image_url);
+    const defaultImage =
+      defaultVariant.imageUrl || (p.images && p.images.length > 0 ? p.images[0] : p.image_url);
     return {
       id: p.id,
       slug: p.slug,
@@ -104,10 +105,18 @@ function fromApi(items: ApiProduct[]) {
       rating: Number(p.rating ?? 0),
       reviews: p.review_count ?? 0,
       image: defaultImage,
-      images: p.images && p.images.length > 0 ? p.images : (p.image_url ? [p.image_url] : []),
+      images: p.images && p.images.length > 0 ? p.images : p.image_url ? [p.image_url] : [],
       category: p.category?.name ?? "General",
-      categorySlugs: Array.from(new Set([p.category?.slug, ...(p.categories ?? []).map((c) => c.slug)].filter(Boolean) as string[])),
-      categoryNames: Array.from(new Set([p.category?.name, ...(p.categories ?? []).map((c) => c.name)].filter(Boolean) as string[])),
+      categorySlugs: Array.from(
+        new Set(
+          [p.category?.slug, ...(p.categories ?? []).map((c) => c.slug)].filter(Boolean) as string[]
+        )
+      ),
+      categoryNames: Array.from(
+        new Set(
+          [p.category?.name, ...(p.categories ?? []).map((c) => c.name)].filter(Boolean) as string[]
+        )
+      ),
       isNewArrival: Boolean(p.is_new_arrival),
       isBestSeller: Boolean(p.is_best_seller),
       size: `${p.volume_ml ?? 100}ml`,

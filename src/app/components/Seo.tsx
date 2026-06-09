@@ -35,7 +35,15 @@ function upsertLink(rel: string, href: string, hreflang?: string) {
   el.href = href;
 }
 
-export function Seo({ title, description, path = "/", image = "/favicon.png", lang = "az", noindex = false, jsonLd }: SeoProps) {
+export function Seo({
+  title,
+  description,
+  path = "/",
+  image = "/favicon.png",
+  lang = "az",
+  noindex = false,
+  jsonLd,
+}: SeoProps) {
   useEffect(() => {
     const origin = window.location.origin;
     const canonicalPath = path.startsWith("/") ? path : `/${path}`;
@@ -53,7 +61,11 @@ export function Seo({ title, description, path = "/", image = "/favicon.png", la
     upsertMeta("og:description", description, "property");
     upsertMeta("og:url", canonicalUrl, "property");
     upsertMeta("og:image", imageUrl, "property");
-    upsertMeta("og:locale", lang === "az" ? "az_AZ" : lang === "ru" ? "ru_RU" : "en_US", "property");
+    upsertMeta(
+      "og:locale",
+      lang === "az" ? "az_AZ" : lang === "ru" ? "ru_RU" : "en_US",
+      "property"
+    );
 
     upsertMeta("twitter:card", "summary_large_image");
     upsertMeta("twitter:title", title);
@@ -82,4 +94,3 @@ export function Seo({ title, description, path = "/", image = "/favicon.png", la
 
   return null;
 }
-

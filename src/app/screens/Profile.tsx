@@ -52,7 +52,10 @@ export function Profile() {
   const { user, setUser, orders, loadOrders, refresh } = useAuthState();
 
   const [mode, setMode] = useState<"login" | "register">(
-    location.state && typeof location.state === "object" && "mode" in location.state && location.state.mode === "register"
+    location.state &&
+      typeof location.state === "object" &&
+      "mode" in location.state &&
+      location.state.mode === "register"
       ? "register"
       : "login"
   );
@@ -66,7 +69,10 @@ export function Profile() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const nextPath =
-    location.state && typeof location.state === "object" && "next" in location.state && typeof location.state.next === "string"
+    location.state &&
+    typeof location.state === "object" &&
+    "next" in location.state &&
+    typeof location.state.next === "string"
       ? location.state.next
       : null;
 
@@ -75,7 +81,10 @@ export function Profile() {
   }, []);
 
   const isLoggedIn = Boolean(user);
-  const title = useMemo(() => (isLoggedIn ? t("profile.myAccount") : t("profile.loginRegister")), [isLoggedIn, t]);
+  const title = useMemo(
+    () => (isLoggedIn ? t("profile.myAccount") : t("profile.loginRegister")),
+    [isLoggedIn, t]
+  );
   const fmt = (value: string) => formatCurrency(Number(value));
 
   const onRegister = async () => {
@@ -151,7 +160,12 @@ export function Profile() {
   if (isLoggedIn && user) {
     return (
       <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-        <Seo title="Profil | ƏtirX" description="İstifadəçi profil səhifəsi." path="/profile" noindex />
+        <Seo
+          title="Profil | ƏtirX"
+          description="İstifadəçi profil səhifəsi."
+          path="/profile"
+          noindex
+        />
         <h1 className="text-2xl mb-6">{title}</h1>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-4">
@@ -166,16 +180,25 @@ export function Profile() {
               <p className="text-xs text-zinc-500">{user.address || t("profile.addressNotSet")}</p>
             </div>
           </div>
-
         </div>
 
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-2 mb-4">
-          <button onClick={() => navigate("/profile/edit")} className="w-full px-4 py-3 rounded-2xl hover:bg-zinc-800 flex items-center justify-between">
-            <span className="flex items-center gap-2"><User className="w-4 h-4" /> {t("profile.editProfile")}</span>
+          <button
+            onClick={() => navigate("/profile/edit")}
+            className="w-full px-4 py-3 rounded-2xl hover:bg-zinc-800 flex items-center justify-between"
+          >
+            <span className="flex items-center gap-2">
+              <User className="w-4 h-4" /> {t("profile.editProfile")}
+            </span>
             <ChevronRight className="w-4 h-4 text-zinc-500" />
           </button>
-          <button onClick={() => navigate("/profile/password")} className="w-full px-4 py-3 rounded-2xl hover:bg-zinc-800 flex items-center justify-between">
-            <span className="flex items-center gap-2"><Lock className="w-4 h-4" /> {t("profile.changePassword")}</span>
+          <button
+            onClick={() => navigate("/profile/password")}
+            className="w-full px-4 py-3 rounded-2xl hover:bg-zinc-800 flex items-center justify-between"
+          >
+            <span className="flex items-center gap-2">
+              <Lock className="w-4 h-4" /> {t("profile.changePassword")}
+            </span>
             <ChevronRight className="w-4 h-4 text-zinc-500" />
           </button>
         </div>
@@ -183,29 +206,45 @@ export function Profile() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6">
           <h2 className="text-lg mb-3">{t("profile.myOrders")}</h2>
           <div className="space-y-4">
-            {orders.length === 0 && <p className="text-sm text-zinc-500">{t("profile.noOrders")}</p>}
+            {orders.length === 0 && (
+              <p className="text-sm text-zinc-500">{t("profile.noOrders")}</p>
+            )}
             {orders.map((o) => (
               <div key={o.code} className="bg-black/40 rounded-[20px] p-4 border border-zinc-800">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
                     <div className="flex items-center gap-3 flex-wrap mb-2">
                       <span className="text-sm text-zinc-500">#{o.code}</span>
-                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(o.status)}`}>
+                      <span
+                        className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(o.status)}`}
+                      >
                         {orderStatusLabel(o.status)}
                       </span>
                     </div>
-                    <p className="text-sm text-zinc-400">{new Date(o.created_at).toLocaleString()}</p>
+                    <p className="text-sm text-zinc-400">
+                      {new Date(o.created_at).toLocaleString()}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-zinc-500 uppercase tracking-wider">{t("profile.total")}</p>
+                    <p className="text-xs text-zinc-500 uppercase tracking-wider">
+                      {t("profile.total")}
+                    </p>
                     <p className="text-xl font-medium">{fmt(o.total)}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 mb-3 overflow-hidden">
                   {o.items.slice(0, 3).map((item) => (
-                    <div key={`${o.code}-${item.product}`} className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
-                      <img src={item.product_image} alt={item.product_name} onError={onImageError} className="w-full h-full object-cover" />
+                    <div
+                      key={`${o.code}-${item.product}`}
+                      className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0"
+                    >
+                      <img
+                        src={item.product_image}
+                        alt={item.product_name}
+                        onError={onImageError}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   ))}
                   {o.items.length > 3 && (
@@ -216,16 +255,21 @@ export function Profile() {
                 </div>
 
                 <div className="space-y-2">
-                      {o.items.map((item) => (
-                    <div key={`${o.code}-${item.product}-${item.variant_label || "variant"}-${item.unit_price}`} className="flex items-center justify-between gap-3 text-sm">
-                          <span className="text-zinc-300 truncate">
+                  {o.items.map((item) => (
+                    <div
+                      key={`${o.code}-${item.product}-${item.variant_label || "variant"}-${item.unit_price}`}
+                      className="flex items-center justify-between gap-3 text-sm"
+                    >
+                      <span className="text-zinc-300 truncate">
                         {item.product_name}
-                        {item.variant_label ? <span className="text-zinc-500"> • {item.variant_label}</span> : null}
+                        {item.variant_label ? (
+                          <span className="text-zinc-500"> • {item.variant_label}</span>
+                        ) : null}
                         <span className="text-zinc-500"> x{item.quantity}</span>
-                          </span>
-                          <span className="text-zinc-400">{fmt(item.unit_price)}</span>
-                        </div>
-                      ))}
+                      </span>
+                      <span className="text-zinc-400">{fmt(item.unit_price)}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-800 text-sm">
@@ -271,15 +315,26 @@ export function Profile() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-      <Seo title="Giriş / Qeydiyyat | ƏtirX" description="İstifadəçi girişi və qeydiyyat." path="/profile" noindex />
+      <Seo
+        title="Giriş / Qeydiyyat | ƏtirX"
+        description="İstifadəçi girişi və qeydiyyat."
+        path="/profile"
+        noindex
+      />
       <h1 className="text-2xl mb-6">{title}</h1>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
         <div className="flex gap-2 mb-5">
-          <button onClick={() => setMode("login")} className={`px-4 py-2 rounded-xl text-sm ${mode === "login" ? "bg-white text-black" : "bg-zinc-800 text-zinc-300"}`}>
+          <button
+            onClick={() => setMode("login")}
+            className={`px-4 py-2 rounded-xl text-sm ${mode === "login" ? "bg-white text-black" : "bg-zinc-800 text-zinc-300"}`}
+          >
             {t("profile.login")}
           </button>
-          <button onClick={() => setMode("register")} className={`px-4 py-2 rounded-xl text-sm ${mode === "register" ? "bg-white text-black" : "bg-zinc-800 text-zinc-300"}`}>
+          <button
+            onClick={() => setMode("register")}
+            className={`px-4 py-2 rounded-xl text-sm ${mode === "register" ? "bg-white text-black" : "bg-zinc-800 text-zinc-300"}`}
+          >
             {t("profile.register")}
           </button>
         </div>
@@ -288,22 +343,54 @@ export function Profile() {
           <div className="space-y-3 mb-3">
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder={t("profile.fullName")} aria-label={t("profile.fullName")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : "border-zinc-700"}`} />
+              <input
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder={t("profile.fullName")}
+                aria-label={t("profile.fullName")}
+                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : "border-zinc-700"}`}
+              />
             </div>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} aria-label={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("profile.email")}
+                aria-label={t("profile.email")}
+                type="email"
+                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+              />
             </div>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("profile.phone")} aria-label={t("profile.phone")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`} />
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={t("profile.phone")}
+                aria-label={t("profile.phone")}
+                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
+              />
             </div>
 
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} aria-label={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("profile.password")}
+                aria-label={t("profile.password")}
+                type="password"
+                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+              />
             </div>
-            <button disabled={loading} onClick={onRegister} className="w-full bg-white text-black rounded-xl py-3">{loading ? "..." : t("profile.createAccount")}</button>
+            <button
+              disabled={loading}
+              onClick={onRegister}
+              className="w-full bg-white text-black rounded-xl py-3"
+            >
+              {loading ? "..." : t("profile.createAccount")}
+            </button>
           </div>
         )}
 
@@ -311,13 +398,33 @@ export function Profile() {
           <div className="space-y-3 mb-3">
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("profile.email")} aria-label={t("profile.email")} type="email" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`} />
+              <input
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder={t("profile.email")}
+                aria-label={t("profile.email")}
+                type="email"
+                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+              />
             </div>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} aria-label={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
+              <input
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t("profile.password")}
+                aria-label={t("profile.password")}
+                type="password"
+                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+              />
             </div>
-            <button disabled={loading} onClick={onLogin} className="w-full bg-white text-black rounded-xl py-3">{loading ? "..." : t("profile.login")}</button>
+            <button
+              disabled={loading}
+              onClick={onLogin}
+              className="w-full bg-white text-black rounded-xl py-3"
+            >
+              {loading ? "..." : t("profile.login")}
+            </button>
           </div>
         )}
 
@@ -369,18 +476,45 @@ export function EditProfilePage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-      <Seo title="Profili redaktə et | ƏtirX" description="Profil məlumatlarını yenilə." path="/profile/edit" noindex />
+      <Seo
+        title="Profili redaktə et | ƏtirX"
+        description="Profil məlumatlarını yenilə."
+        path="/profile/edit"
+        noindex
+      />
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate("/profile")} className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+        <button
+          onClick={() => navigate("/profile")}
+          className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center"
+        >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-2xl">{t("profile.editTitle")}</h1>
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-3">
-        <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.fullName")} aria-label={t("profile.fullName")} />
-        <input value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.phone")} aria-label={t("profile.phone")} />
-        <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" rows={4} placeholder={t("profile.address")} aria-label={t("profile.address")} />
+        <input
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          placeholder={t("profile.fullName")}
+          aria-label={t("profile.fullName")}
+        />
+        <input
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          placeholder={t("profile.phone")}
+          aria-label={t("profile.phone")}
+        />
+        <textarea
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          rows={4}
+          placeholder={t("profile.address")}
+          aria-label={t("profile.address")}
+        />
         <button
           disabled={loading}
           onClick={async () => {
@@ -388,7 +522,11 @@ export function EditProfilePage() {
             setMsg(null);
             try {
               setLoading(true);
-              await updateMe({ full_name: fullName.trim(), phone: phone.trim(), address: address.trim() });
+              await updateMe({
+                full_name: fullName.trim(),
+                phone: phone.trim(),
+                address: address.trim(),
+              });
               setMsg(t("profile.updated"));
             } catch (e) {
               setErr(e instanceof Error ? e.message : t("profile.updateFailed"));
@@ -418,17 +556,39 @@ export function ChangePasswordPage() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
-      <Seo title="Şifrəni dəyiş | ƏtirX" description="Hesab şifrəsini yenilə." path="/profile/password" noindex />
+      <Seo
+        title="Şifrəni dəyiş | ƏtirX"
+        description="Hesab şifrəsini yenilə."
+        path="/profile/password"
+        noindex
+      />
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate("/profile")} className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+        <button
+          onClick={() => navigate("/profile")}
+          className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center"
+        >
           <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-2xl">{t("profile.passwordTitle")}</h1>
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-3">
-        <input value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.currentPassword")} aria-label={t("profile.currentPassword")} />
-        <input value={newPassword} onChange={(e) => setNewPassword(e.target.value)} type="password" className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3" placeholder={t("profile.newPassword")} aria-label={t("profile.newPassword")} />
+        <input
+          value={currentPassword}
+          onChange={(e) => setCurrentPassword(e.target.value)}
+          type="password"
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          placeholder={t("profile.currentPassword")}
+          aria-label={t("profile.currentPassword")}
+        />
+        <input
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          type="password"
+          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          placeholder={t("profile.newPassword")}
+          aria-label={t("profile.newPassword")}
+        />
         <button
           disabled={loading}
           onClick={async () => {
@@ -436,7 +596,10 @@ export function ChangePasswordPage() {
             setMsg(null);
             try {
               setLoading(true);
-              await changePassword({ current_password: currentPassword, new_password: newPassword });
+              await changePassword({
+                current_password: currentPassword,
+                new_password: newPassword,
+              });
               setCurrentPassword("");
               setNewPassword("");
               setMsg(t("profile.passwordUpdated"));
@@ -456,5 +619,3 @@ export function ChangePasswordPage() {
     </div>
   );
 }
-
-

@@ -1,4 +1,12 @@
-export type NoteFamily = "wood" | "citrus" | "floral" | "amber" | "musk" | "spicy" | "fresh" | "default";
+export type NoteFamily =
+  | "wood"
+  | "citrus"
+  | "floral"
+  | "amber"
+  | "musk"
+  | "spicy"
+  | "fresh"
+  | "default";
 
 const NOTE_AZ_MAP: Record<string, string> = {
   oud: "Ud",
@@ -64,4 +72,3 @@ export function noteChipClass(note: string) {
   };
   return classes[fam];
 }
-

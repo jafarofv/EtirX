@@ -64,31 +64,48 @@ export function Favorites() {
 
   return (
     <div className="min-h-screen bg-black text-white pb-8">
-      <Seo title="Seçilənlər | ƏtirX" description="Seçilən məhsullar səhifəsi." path="/favorites" noindex />
+      <Seo
+        title="Seçilənlər | ƏtirX"
+        description="Seçilən məhsullar səhifəsi."
+        path="/favorites"
+        noindex
+      />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
         <h1 className="text-2xl mb-1">{t("favorites.title")}</h1>
-        <p className="text-sm text-zinc-400">{favorites.length} {t("shop.count")}</p>
+        <p className="text-sm text-zinc-400">
+          {favorites.length} {t("shop.count")}
+        </p>
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {favorites.map((perfume) => (
-            <div key={perfume.id} className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 group">
+            <div
+              key={perfume.id}
+              className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 group"
+            >
               <div onClick={() => navigate(`/product/${perfume.slug}`)} className="cursor-pointer">
                 <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
-                  <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img
+                    src={perfume.image}
+                    alt={perfume.name}
+                    onError={onImageError}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                   <button
-                      aria-label={t("favorites.title")}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFavorite(perfume.id);
-                      }}
+                    aria-label={t("favorites.title")}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeFavorite(perfume.id);
+                    }}
                     className="absolute top-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-all border border-zinc-700"
                   >
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
                   </button>
                   {perfume.originalPrice && (
-                    <div className="absolute top-3 left-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{t("common.sale")}</div>
+                    <div className="absolute top-3 left-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+                      {t("common.sale")}
+                    </div>
                   )}
                 </div>
                 <div className="p-4">
@@ -100,25 +117,36 @@ export function Favorites() {
                   )}
                   <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
                   <p className="text-xs text-zinc-400 mb-1">{perfume.size}</p>
-                  {!perfume.inStock && <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>}
+                  {!perfume.inStock && (
+                    <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
+                  )}
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-medium">{fmt(perfume.price)}</span>
                       {perfume.originalPrice && (
-                        <span className="text-xs text-zinc-500 line-through ml-1.5">{fmt(perfume.originalPrice)}</span>
+                        <span className="text-xs text-zinc-500 line-through ml-1.5">
+                          {fmt(perfume.originalPrice)}
+                        </span>
                       )}
                     </div>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToCart(perfume.id, 1, perfume.slug, perfume.defaultVariant ? {
-                          id: perfume.defaultVariant.id,
-                          label: perfume.defaultVariant.label,
-                          variantType: perfume.defaultVariant.variantType,
-                          sizeMl: perfume.defaultVariant.sizeMl,
-                          price: perfume.defaultVariant.price,
-                          imageUrl: perfume.defaultVariant.imageUrl,
-                        } : undefined);
+                        addToCart(
+                          perfume.id,
+                          1,
+                          perfume.slug,
+                          perfume.defaultVariant
+                            ? {
+                                id: perfume.defaultVariant.id,
+                                label: perfume.defaultVariant.label,
+                                variantType: perfume.defaultVariant.variantType,
+                                sizeMl: perfume.defaultVariant.sizeMl,
+                                price: perfume.defaultVariant.price,
+                                imageUrl: perfume.defaultVariant.imageUrl,
+                              }
+                            : undefined
+                        );
                       }}
                       aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
@@ -136,8 +164,3 @@ export function Favorites() {
     </div>
   );
 }
-
-
-
-
-

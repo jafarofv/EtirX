@@ -101,7 +101,9 @@ export function Cart() {
           localStorage.setItem("checkout-promo-code", result.promo.code);
           setPromoCode(result.promo.code);
           setPromoDiscount(Number(result.discount_amount));
-          setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`);
+          setPromoMsg(
+            `${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`
+          );
           setPromoErr(null);
         } catch (err) {
           if (cancelled) return;
@@ -125,9 +127,7 @@ export function Cart() {
     setCartItems((items) =>
       items
         .map((item) =>
-          lineKey(item) === key
-            ? { ...item, quantity: Math.max(0, item.quantity + delta) }
-            : item
+          lineKey(item) === key ? { ...item, quantity: Math.max(0, item.quantity + delta) } : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -168,7 +168,9 @@ export function Cart() {
       <Seo title="Səbət | ƏtirX" description="Səbət səhifəsi." path="/cart" noindex />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
         <h1 className="text-2xl mb-1">{t("cart.title")}</h1>
-        <p className="text-sm text-zinc-400">{cartItems.length} {t("cart.items")}</p>
+        <p className="text-sm text-zinc-400">
+          {cartItems.length} {t("cart.items")}
+        </p>
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
@@ -179,29 +181,52 @@ export function Cart() {
         )}
         <div className="space-y-4">
           {cartItems.map((item) => (
-            <div key={lineKey(item)} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
+            <div
+              key={lineKey(item)}
+              className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4"
+            >
               <div className="w-24 h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl overflow-hidden flex-shrink-0">
-                <img src={item.variant.imageUrl || item.perfume.image} alt={item.perfume.name} onError={onImageError} className="w-full h-full object-cover" />
+                <img
+                  src={item.variant.imageUrl || item.perfume.image}
+                  alt={item.perfume.name}
+                  onError={onImageError}
+                  className="w-full h-full object-cover"
+                />
               </div>
               <div className="flex-1 flex flex-col">
                 <div className="flex-1">
                   <h3 className="font-medium mb-1">{item.perfume.name}</h3>
                   <p className="text-sm text-zinc-400 mb-2">
-                    {item.perfume.brand} · {item.variant.variantType === "premium" ? t("product.premiumPack") : `${item.variant.label} ${t("product.gramSale")}`}
+                    {item.perfume.brand} ·{" "}
+                    {item.variant.variantType === "premium"
+                      ? t("product.premiumPack")
+                      : `${item.variant.label} ${t("product.gramSale")}`}
                   </p>
                   <p className="text-lg font-medium">{fmt(item.variant.price)}</p>
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center bg-zinc-800 rounded-xl px-1">
-                    <button aria-label={t("a11y.decreaseQty")} onClick={() => updateQuantity(lineKey(item), -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button
+                      aria-label={t("a11y.decreaseQty")}
+                      onClick={() => updateQuantity(lineKey(item), -1)}
+                      className="p-2 hover:bg-zinc-700 rounded-lg transition-all"
+                    >
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <button aria-label={t("a11y.increaseQty")} onClick={() => updateQuantity(lineKey(item), 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button
+                      aria-label={t("a11y.increaseQty")}
+                      onClick={() => updateQuantity(lineKey(item), 1)}
+                      className="p-2 hover:bg-zinc-700 rounded-lg transition-all"
+                    >
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <button aria-label={t("a11y.removeItem")} onClick={() => removeItem(lineKey(item))} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
+                  <button
+                    aria-label={t("a11y.removeItem")}
+                    onClick={() => removeItem(lineKey(item))}
+                    className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
@@ -223,7 +248,8 @@ export function Cart() {
                 setPromoMsg(null);
                 setPromoDiscount(0);
               }}
-              placeholder={t("cart.promo")} aria-label={t("cart.promo")}
+              placeholder={t("cart.promo")}
+              aria-label={t("cart.promo")}
               className="flex-1 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500"
             />
             <button
@@ -246,7 +272,9 @@ export function Cart() {
                   localStorage.setItem("checkout-promo-code", result.promo.code);
                   setPromoCode(result.promo.code);
                   setPromoDiscount(Number(result.discount_amount));
-                  setPromoMsg(`${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`);
+                  setPromoMsg(
+                    `${result.promo.code} ${t("cart.promoApplied")} - ${fmt(Number(result.discount_amount))}`
+                  );
                 } catch (err) {
                   localStorage.removeItem("checkout-promo-code");
                   setPromoDiscount(0);
@@ -267,16 +295,25 @@ export function Cart() {
         <div className="bg-zinc-900 rounded-3xl p-6 border border-zinc-800">
           <h3 className="font-medium mb-4">{t("cart.summary")}</h3>
           <div className="space-y-3 mb-4">
-            <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.subtotal")}</span><span className="font-medium">{fmt(subtotal)}</span></div>
+            <div className="flex justify-between text-sm">
+              <span className="text-zinc-400">{t("cart.subtotal")}</span>
+              <span className="font-medium">{fmt(subtotal)}</span>
+            </div>
             {promoDiscount > 0 && (
               <div className="flex justify-between text-sm">
                 <span className="text-zinc-400">{t("checkout.promo")}</span>
                 <span className="font-medium text-emerald-400">-{fmt(promoDiscount)}</span>
               </div>
             )}
-            <div className="flex justify-between text-sm"><span className="text-zinc-400">{t("cart.shipping")}</span><span className="font-medium text-zinc-400">{t("cart.shippingAtCheckout")}</span></div>
+            <div className="flex justify-between text-sm">
+              <span className="text-zinc-400">{t("cart.shipping")}</span>
+              <span className="font-medium text-zinc-400">{t("cart.shippingAtCheckout")}</span>
+            </div>
             <div className="border-t border-zinc-800 pt-3">
-              <div className="flex justify-between"><span className="font-medium">{t("cart.total")}</span><span className="text-xl font-medium">{fmt(total)}</span></div>
+              <div className="flex justify-between">
+                <span className="font-medium">{t("cart.total")}</span>
+                <span className="text-xl font-medium">{fmt(total)}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -299,6 +336,3 @@ export function Cart() {
     </div>
   );
 }
-
-
-
