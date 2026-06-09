@@ -142,6 +142,36 @@ export function Checkout() {
     };
   }, [navigate]);
 
+  // Revalidate the saved/typed promo code (debounced) whenever it or the subtotal
+  // changes, so the displayed total includes the discount on mount — not only
+  // after the user re-clicks Apply.
+  useEffect(() => {
+    const code = promoCode.trim();
+    if (!code || subtotal <= 0 || !getAuthToken()) {
+      setPromoDiscount(0);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      validatePromoCode({ code, subtotal: subtotal.toFixed(2) })
+        .then((res) => {
+          if (cancelled) return;
+          setPromoDiscount(Number(res.discount_amount) || 0);
+          setPromoErr(null);
+          setPromoMsg(`${res.promo.code} ${t("cart.promoApplied")}`);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setPromoDiscount(0);
+          setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
+        });
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [promoCode, subtotal]);
+
   useEffect(() => {
     (async () => {
       try {
