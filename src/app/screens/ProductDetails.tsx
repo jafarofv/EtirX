@@ -8,6 +8,7 @@ import { Seo } from "../components/Seo";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 
 export function ProductDetails() {
   const navigate = useNavigate();
@@ -138,7 +139,7 @@ export function ProductDetails() {
               setTouchStartX(null);
             }}
           >
-            <img src={activeImage || perfume.image} alt={perfume.name} className="w-full h-full object-contain" />
+            <img src={activeImage || perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-contain" />
           </div>
           {gallery.length > 1 && (
             <div className="px-4 sm:px-0 mt-3 pb-2 flex gap-2 overflow-x-auto">
@@ -163,7 +164,7 @@ export function ProductDetails() {
               {perfume.reviews > 0 && (
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-white text-white" />
+                    <Star aria-hidden="true" className="w-4 h-4 fill-white text-white" />
                     <span className="text-sm font-medium">{perfume.rating}</span>
                   </div>
                   <span className="text-sm text-zinc-500">({perfume.reviews} {t("product.reviews")})</span>

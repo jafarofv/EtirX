@@ -4,6 +4,7 @@ import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
 import { getCampaigns, getCategories, getProducts, type ApiCampaign, type ApiCategory, type ApiProduct } from "../lib/api";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
 
@@ -33,7 +34,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
           className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
         >
           <div className="aspect-[4/5] overflow-hidden relative">
-            <img src={(p.images && p.images.length > 0 ? p.images[0] : p.image_url)} alt={p.name} className="w-full h-full object-cover" />
+            <img src={(p.images && p.images.length > 0 ? p.images[0] : p.image_url)} alt={p.name} onError={onImageError} className="w-full h-full object-cover" />
             {badgeFor(p) && <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{badgeFor(p)}</div>}
           </div>
           <div className="p-3">

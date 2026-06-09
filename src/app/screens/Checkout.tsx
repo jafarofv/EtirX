@@ -8,6 +8,7 @@ import { loadCatalogProducts } from "../lib/catalog";
 import { clearCart, getCartRows } from "../lib/storage";
 import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 import { Seo } from "../components/Seo";
 
 type DeliveryMethod = {
@@ -234,6 +235,7 @@ export function Checkout() {
                         <img
                           src={item.product_image}
                           alt={item.product_name}
+                          onError={onImageError}
                           className="w-full h-full object-cover"
                         />
                       </div>

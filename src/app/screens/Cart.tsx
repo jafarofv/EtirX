@@ -7,6 +7,7 @@ import { getAuthToken } from "../lib/auth";
 import { getCartRows, syncStoredCollections } from "../lib/storage";
 import { validatePromoCode } from "../lib/api";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 import { Seo } from "../components/Seo";
 
 interface CartItem {
@@ -163,7 +164,7 @@ export function Cart() {
           {cartItems.map((item) => (
             <div key={`${item.perfume.id}-${item.variant.id ?? "default"}`} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
               <div className="w-24 h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl overflow-hidden flex-shrink-0">
-                <img src={item.variant.imageUrl || item.perfume.image} alt={item.perfume.name} className="w-full h-full object-cover" />
+                <img src={item.variant.imageUrl || item.perfume.image} alt={item.perfume.name} onError={onImageError} className="w-full h-full object-cover" />
               </div>
               <div className="flex-1 flex flex-col">
                 <div className="flex-1">
