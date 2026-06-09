@@ -21,6 +21,10 @@ venv/
 
 # Database
 *.sqlite3
+backend/db.sqlite3
+
+# Uploaded media (user content, not source)
+backend/media/
 
 # OS / editor
 .DS_Store
