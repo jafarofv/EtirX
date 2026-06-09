@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import ssl
 import socket
 import time
 import threading
@@ -15,43 +14,35 @@ HTTP_RETRY_COUNT = int(os.getenv("NOTIFICATION_HTTP_RETRIES", "2"))
 
 def _post_json(url: str, payload: dict, headers: dict | None = None) -> None:
     data = json.dumps(payload).encode("utf-8")
-    insecure_context = ssl._create_unverified_context()
     last_exc: Exception | None = None
 
+    # Always use the default (verified) TLS context. Transient timeouts are
+    # retried; certificate-verification failures are never downgraded to an
+    # insecure connection — they propagate so the caller can log/alert.
     for attempt in range(HTTP_RETRY_COUNT + 1):
         request = Request(url, data=data, method="POST")
         request.add_header("Content-Type", "application/json")
         for key, value in (headers or {}).items():
             request.add_header(key, value)
 
-        for context in (None, insecure_context):
-            try:
-                kwargs = {"timeout": HTTP_TIMEOUT_SECONDS}
-                if context is not None:
-                    kwargs["context"] = context
-                with urlopen(request, **kwargs) as response:
-                    response.read()
-                return
-            except ssl.SSLCertVerificationError as exc:
-                last_exc = exc
+        try:
+            with urlopen(request, timeout=HTTP_TIMEOUT_SECONDS) as response:
+                response.read()
+            return
+        except URLError as exc:
+            last_exc = exc
+            reason = getattr(exc, "reason", None)
+            is_timeout = isinstance(reason, socket.timeout) or "timed out" in str(reason).lower()
+            if is_timeout and attempt < HTTP_RETRY_COUNT:
+                time.sleep(1.0)
                 continue
-            except URLError as exc:
-                last_exc = exc
-                reason = getattr(exc, "reason", None)
-                if isinstance(reason, ssl.SSLCertVerificationError) or (
-                    isinstance(reason, OSError)
-                    and "CERTIFICATE_VERIFY_FAILED" in str(reason)
-                ):
-                    continue
-                if isinstance(reason, socket.timeout) or "timed out" in str(reason).lower():
-                    break
-                raise
-            except socket.timeout as exc:
-                last_exc = exc
-                break
-
-        if attempt < HTTP_RETRY_COUNT:
-            time.sleep(1.0)
+            raise
+        except socket.timeout as exc:
+            last_exc = exc
+            if attempt < HTTP_RETRY_COUNT:
+                time.sleep(1.0)
+                continue
+            raise
 
     if last_exc:
         raise last_exc
