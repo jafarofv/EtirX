@@ -5,6 +5,7 @@ import { useI18n } from "../i18n";
 import { addToCart, getFavoriteIds } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { syncStoredCollections } from "../lib/storage";
+import { formatCurrency } from "../lib/formatCurrency";
 import { Seo } from "../components/Seo";
 
 export function Favorites() {
@@ -12,7 +13,7 @@ export function Favorites() {
   const { t } = useI18n();
   const [favorites, setFavorites] = useState<CatalogProduct[]>([]);
   const [hydrated, setHydrated] = useState(false);
-  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
+  const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
     (async () => {

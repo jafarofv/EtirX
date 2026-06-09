@@ -6,6 +6,8 @@ import { createOrder, getDeliveryMethods, validatePromoCode } from "../lib/api";
 import { getAuthToken, getMe, updateMe } from "../lib/auth";
 import { loadCatalogProducts } from "../lib/catalog";
 import { clearCart, getCartRows } from "../lib/storage";
+import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
+import { formatCurrency } from "../lib/formatCurrency";
 import { Seo } from "../components/Seo";
 
 type DeliveryMethod = {
@@ -168,27 +170,8 @@ export function Checkout() {
 
   if (step === "success") {
     const order = placedOrder;
-    const fmt = (value: string) => `${Number(value).toFixed(2)} AZN`;
-    const statusLabel = order?.status ?? "new";
-    const prettyStatus =
-      statusLabel === "new"
-        ? "Gözləyir"
-        : statusLabel === "confirmed"
-          ? "Təsdiqləndi"
-          : statusLabel === "shipped"
-            ? "Göndərildi"
-            : statusLabel === "delivered"
-              ? "Təslim edildi"
-              : statusLabel === "cancelled"
-                ? "Ləğv edildi"
-                : statusLabel;
-    const statusStyles: Record<string, string> = {
-      new: "bg-amber-500/10 text-amber-300 border-amber-500/20",
-      confirmed: "bg-blue-500/10 text-blue-300 border-blue-500/20",
-      shipped: "bg-purple-500/10 text-purple-300 border-purple-500/20",
-      delivered: "bg-emerald-500/10 text-emerald-300 border-emerald-500/20",
-      cancelled: "bg-red-500/10 text-red-300 border-red-500/20",
-    };
+    const fmt = (value: string) => formatCurrency(Number(value));
+    const status = order?.status ?? "new";
     return (
       <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto">
@@ -206,8 +189,8 @@ export function Checkout() {
               <div className="text-right">
                 <p className="text-xs text-zinc-500 uppercase tracking-wider">{t("checkout.orderCode")}</p>
                 <p className="text-lg font-medium">{order?.code ? `#${order.code}` : "N/A"}</p>
-                <span className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${statusStyles[statusLabel] ?? "bg-zinc-800 text-zinc-300 border-zinc-700"}`}>
-                  {prettyStatus}
+                <span className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}>
+                  {orderStatusLabel(status)}
                 </span>
               </div>
             </div>

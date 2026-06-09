@@ -6,6 +6,7 @@ import { addToCart, toggleFavorite } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
+import { formatCurrency } from "../lib/formatCurrency";
 
 export function Home() {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ export function Home() {
   const [pulseFavorite, setPulseFavorite] = useState<number | null>(null);
   const [pulseCart, setPulseCart] = useState<number | null>(null);
   const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
-  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
+  const fmt = (v: number) => formatCurrency(v);
 
   const refreshFavorites = () => {
     try {
