@@ -319,6 +319,8 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
 class ContactMessageViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "contact"
 
 
 class UserFavoriteView(APIView):
@@ -427,6 +429,8 @@ class UserCartView(APIView):
 
 class PromoCodeValidateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "promo"
 
     def post(self, request):
         serializer = PromoCodeValidateSerializer(data=request.data)
@@ -454,6 +458,8 @@ class PromoCodeValidateView(APIView):
 
 class PublicPromoCodeListView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "promo"
 
     def get(self, request):
         now = timezone.now()
