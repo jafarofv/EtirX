@@ -163,6 +163,18 @@ class OrderCreateSerializer(serializers.Serializer):
     shipping_fee = serializers.DecimalField(max_digits=10, decimal_places=2, required=False)
     items = OrderItemInputSerializer(many=True)
 
+    def validate_full_name(self, value):
+        value = (value or "").strip()
+        if not value:
+            raise serializers.ValidationError("Ad boş və ya yalnız boşluqdan ibarət ola bilməz.")
+        return value
+
+    def validate_address(self, value):
+        value = (value or "").strip()
+        if not value:
+            raise serializers.ValidationError("Ünvan boş və ya yalnız boşluqdan ibarət ola bilməz.")
+        return value
+
     def validate_items(self, value):
         if not value:
             raise serializers.ValidationError("At least one order item is required.")
