@@ -279,7 +279,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
                 PromoRedemption.objects.create(promo_code=promo, user=request.user, order=order)
             transaction.on_commit(lambda: send_order_notification_async(order))
 
-        response_serializer = OrderSerializer(order)
+        response_serializer = OrderSerializer(order, context={"request": request})
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["get"], url_path="tracking")
@@ -294,7 +294,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
             .prefetch_related("items__product", "items__variant")
             .order_by("-created_at")
         )
-        return Response(OrderSerializer(orders, many=True).data)
+        return Response(OrderSerializer(orders, many=True, context={"request": request}).data)
 
     @action(detail=False, methods=["get"], url_path="by-code", permission_classes=[permissions.AllowAny])
     def by_code(self, request):

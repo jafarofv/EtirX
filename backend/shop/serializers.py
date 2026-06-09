@@ -1,7 +1,15 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
+from django.core.validators import RegexValidator
 from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod, Testimonial, SiteSettings
+
+# Shared phone-format validator for registration, profile update and order create.
+# Accepts an optional leading + and 9-15 digits (e.g. +994501112233 or 0501112233).
+PHONE_VALIDATOR = RegexValidator(
+    regex=r"^\+?[0-9]{9,15}$",
+    message="Telefon nömrəsi düzgün formatda deyil (məs: +994501112233).",
+)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -155,7 +163,7 @@ class OrderItemInputSerializer(serializers.Serializer):
 
 class OrderCreateSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=120)
-    phone = serializers.CharField(max_length=30)
+    phone = serializers.CharField(max_length=30, validators=[PHONE_VALIDATOR])
     address = serializers.CharField()
     notes = serializers.CharField(required=False, allow_blank=True)
     promo_code = serializers.CharField(required=False, allow_blank=True)
@@ -251,7 +259,7 @@ class ContactMessageSerializer(serializers.ModelSerializer):
 class RegisterSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=120)
     email = serializers.EmailField()
-    phone = serializers.CharField(max_length=30)
+    phone = serializers.CharField(max_length=30, validators=[PHONE_VALIDATOR])
     address = serializers.CharField(required=False, allow_blank=True)
     password = serializers.CharField(write_only=True, min_length=8)
 
@@ -296,7 +304,7 @@ class MeSerializer(serializers.Serializer):
 
 class UpdateMeSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=120)
-    phone = serializers.CharField(max_length=30)
+    phone = serializers.CharField(max_length=30, validators=[PHONE_VALIDATOR])
     address = serializers.CharField(required=False, allow_blank=True)
 
     def validate_address(self, value):
