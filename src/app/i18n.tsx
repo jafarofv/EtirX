@@ -253,7 +253,11 @@ const dict: Dict = {
   },
   "checkout.delivery.pickupEta": { az: "Pulsuz", en: "Free", ru: "Бесплатно" },
   "checkout.delivery.free": { az: "Pulsuz", en: "Free", ru: "Бесплатно" },
-  "checkout.cod": { az: "Bank kartı vasitəsilə ödəniş", en: "Pay by bank card", ru: "Оплата банковской картой" },
+  "checkout.cod": {
+    az: "Bank kartı vasitəsilə ödəniş",
+    en: "Pay by bank card",
+    ru: "Оплата банковской картой",
+  },
   "checkout.place": { az: "Sifarişi tamamla", en: "Place Order", ru: "Оформить заказ" },
   "checkout.orderCode": { az: "Sifariş", en: "Order", ru: "Заказ" },
   "checkout.fullName": { az: "Ad və soyad", en: "Full name", ru: "Имя и фамилия" },

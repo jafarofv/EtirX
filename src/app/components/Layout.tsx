@@ -207,7 +207,11 @@ export function Layout() {
           </div>
           <header className="md:hidden border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
             <div className="px-4 py-2.5 flex items-center justify-between">
-              <button onClick={() => navigate("/")} className="inline-flex items-center" aria-label="EtirX home">
+              <button
+                onClick={() => navigate("/")}
+                className="inline-flex items-center"
+                aria-label="EtirX home"
+              >
                 <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
               </button>
               <div className="flex items-center gap-2">
@@ -232,7 +236,9 @@ export function Layout() {
                             setIsLangOpen(false);
                           }}
                           className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                            language === lang ? "bg-white text-black" : "text-zinc-300 hover:bg-zinc-800"
+                            language === lang
+                              ? "bg-white text-black"
+                              : "text-zinc-300 hover:bg-zinc-800"
                           }`}
                         >
                           {langFlags[lang]}
@@ -249,7 +255,11 @@ export function Layout() {
                     }}
                     className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
                   >
-                    {theme === "dark" ? <Moon className="w-3.5 h-3.5" /> : <Sun className="w-3.5 h-3.5" />}
+                    {theme === "dark" ? (
+                      <Moon className="w-3.5 h-3.5" />
+                    ) : (
+                      <Sun className="w-3.5 h-3.5" />
+                    )}
                     <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
                   </button>
                 </div>

@@ -221,7 +221,9 @@ export const FALLBACK_DELIVERY_METHODS: ApiDeliveryMethod[] = [
 ];
 
 export async function getDeliveryMethods() {
-  const data = await request<{ results: ApiDeliveryMethod[]; count: number } | ApiDeliveryMethod[]>("/delivery-methods/");
+  const data = await request<{ results: ApiDeliveryMethod[]; count: number } | ApiDeliveryMethod[]>(
+    "/delivery-methods/"
+  );
   const methods = Array.isArray(data) ? data : (data.results ?? []);
   return methods.length > 0 ? methods : FALLBACK_DELIVERY_METHODS;
 }

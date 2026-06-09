@@ -48,8 +48,17 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
           className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
         >
           <div className="aspect-[4/5] overflow-hidden relative">
-            <img src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")} alt={p.name} onError={onImageError} className="w-full h-full object-cover" />
-            {badgeFor(p) && <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{badgeFor(p)}</div>}
+            <img
+              src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")}
+              alt={p.name}
+              onError={onImageError}
+              className="w-full h-full object-cover"
+            />
+            {badgeFor(p) && (
+              <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+                {badgeFor(p)}
+              </div>
+            )}
           </div>
           <div className="p-3">
             <p className="text-sm text-zinc-400">{p.brand}</p>
@@ -645,7 +654,8 @@ export function ShippingReturnsPage() {
     let active = true;
     getDeliveryMethods()
       .then((items) => {
-        const normalized = Array.isArray(items) && items.length > 0 ? items : FALLBACK_DELIVERY_METHODS;
+        const normalized =
+          Array.isArray(items) && items.length > 0 ? items : FALLBACK_DELIVERY_METHODS;
         if (active) setDeliveryMethods(normalized);
       })
       .catch(() => {
@@ -663,7 +673,10 @@ export function ShippingReturnsPage() {
           <h3 className="text-white text-lg mb-3">🚚 Çatdırılma üsulları</h3>
           <div className="space-y-3">
             {deliveryMethods.map((method) => (
-              <div key={method.code} className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4">
+              <div
+                key={method.code}
+                className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-white font-medium">{method.label}</p>
@@ -678,14 +691,20 @@ export function ShippingReturnsPage() {
                   </p>
                 </div>
                 {method.code === "city_courier" && (
-                  <p className="text-sm text-zinc-500 mt-2">Özünüz ödəniş edərək Bolt və ya Yango ilə çatdırılma qəbul edə bilərsiniz.</p>
+                  <p className="text-sm text-zinc-500 mt-2">
+                    Özünüz ödəniş edərək Bolt və ya Yango ilə çatdırılma qəbul edə bilərsiniz.
+                  </p>
                 )}
                 {method.code === "pickup" && (
-                  <p className="text-sm text-zinc-500 mt-2">Depodan birbaşa təhvil alma mümkündür.</p>
+                  <p className="text-sm text-zinc-500 mt-2">
+                    Depodan birbaşa təhvil alma mümkündür.
+                  </p>
                 )}
               </div>
             ))}
-            {deliveryMethods.length === 0 && <p className="text-sm text-zinc-400">Çatdırılma məlumatı yüklənmədi.</p>}
+            {deliveryMethods.length === 0 && (
+              <p className="text-sm text-zinc-400">Çatdırılma məlumatı yüklənmədi.</p>
+            )}
           </div>
         </div>
 
