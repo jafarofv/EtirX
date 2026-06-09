@@ -69,7 +69,10 @@ def resolve_variant_from_payload(payload):
     product = resolve_product_from_payload(payload)
     if product is None:
         return None
-    return product.variants.filter(is_active=True).order_by("sort_order", "id").first()
+    return (
+        product.variants.filter(is_active=True, is_default=True).first()
+        or product.variants.filter(is_active=True).order_by("sort_order", "id").first()
+    )
 
 
 MAX_CART_QUANTITY = 99

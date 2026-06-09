@@ -61,7 +61,7 @@ class ProductImageInline(admin.TabularInline):
 class ProductVariantInline(admin.TabularInline):
     model = ProductVariant
     extra = 4
-    fields = ("variant_type", "label", "size_ml", "price", "stock", "image_url", "sort_order", "is_active")
+    fields = ("variant_type", "label", "size_ml", "price", "stock", "image_url", "is_default", "sort_order", "is_active")
 
 
 class ProductAdmin(admin.ModelAdmin):
