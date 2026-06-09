@@ -6,6 +6,7 @@ import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { getAuthToken } from "../lib/auth";
 import { getCartRows, syncStoredCollections } from "../lib/storage";
 import { validatePromoCode } from "../lib/api";
+import { formatCurrency } from "../lib/formatCurrency";
 import { Seo } from "../components/Seo";
 
 interface CartItem {
@@ -23,7 +24,7 @@ export function Cart() {
   const [promoMsg, setPromoMsg] = useState<string | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
   const [promoDiscount, setPromoDiscount] = useState(0);
-  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
+  const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
     (async () => {

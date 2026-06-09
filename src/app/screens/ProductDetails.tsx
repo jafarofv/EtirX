@@ -7,6 +7,7 @@ import { loadCatalogProductBySlug, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { useSiteSettings } from "../site-settings";
+import { formatCurrency } from "../lib/formatCurrency";
 
 export function ProductDetails() {
   const navigate = useNavigate();
@@ -21,7 +22,7 @@ export function ProductDetails() {
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState("");
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
-  const fmt = (v: number) => `${v.toFixed(2)} \u20BC`;
+  const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
     (async () => {

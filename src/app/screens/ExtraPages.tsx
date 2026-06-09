@@ -3,12 +3,13 @@ import { Link, useParams, useSearchParams } from "react-router";
 import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
 import { getCampaigns, getCategories, getProducts, type ApiCampaign, type ApiCategory, type ApiProduct } from "../lib/api";
 import { useSiteSettings } from "../site-settings";
+import { formatCurrency } from "../lib/formatCurrency";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
 
 function ProductGrid({ items }: { items: ApiProduct[] }) {
   const { t } = useI18n();
-  const fmt = (v: string | number) => `${Number(v).toFixed(2)} \u20BC`;
+  const fmt = (v: string | number) => formatCurrency(Number(v));
   const latestId = Math.max(...items.map((i) => i.id), 0);
   const hasSlug = (p: ApiProduct, slug: string) => (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
   const badgeFor = (p: ApiProduct) => {

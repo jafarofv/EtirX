@@ -14,6 +14,8 @@ import {
   type UserOrder,
 } from "../lib/auth";
 import { syncStoredCollections } from "../lib/storage";
+import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
+import { formatCurrency } from "../lib/formatCurrency";
 import { Seo } from "../components/Seo";
 
 function useAuthState() {
@@ -73,41 +75,7 @@ export function Profile() {
 
   const isLoggedIn = Boolean(user);
   const title = useMemo(() => (isLoggedIn ? t("profile.myAccount") : t("profile.loginRegister")), [isLoggedIn, t]);
-  const fmt = (value: string) => `${Number(value).toFixed(2)} AZN`;
-
-  const statusLabel = (status: string) => {
-    switch (status) {
-      case "new":
-        return "Gözləyir";
-      case "confirmed":
-        return "Təsdiqləndi";
-      case "shipped":
-        return "Göndərildi";
-      case "delivered":
-        return "Təslim edildi";
-      case "cancelled":
-        return "Ləğv edildi";
-      default:
-        return status;
-    }
-  };
-
-  const statusStyle = (status: string) => {
-    switch (status) {
-      case "new":
-        return "bg-amber-500/10 text-amber-300 border-amber-500/20";
-      case "confirmed":
-        return "bg-blue-500/10 text-blue-300 border-blue-500/20";
-      case "shipped":
-        return "bg-purple-500/10 text-purple-300 border-purple-500/20";
-      case "delivered":
-        return "bg-emerald-500/10 text-emerald-300 border-emerald-500/20";
-      case "cancelled":
-        return "bg-red-500/10 text-red-300 border-red-500/20";
-      default:
-        return "bg-zinc-800 text-zinc-300 border-zinc-700";
-    }
-  };
+  const fmt = (value: string) => formatCurrency(Number(value));
 
   const onRegister = async () => {
     setError(null);
@@ -211,8 +179,8 @@ export function Profile() {
                   <div>
                     <div className="flex items-center gap-3 flex-wrap mb-2">
                       <span className="text-sm text-zinc-500">#{o.code}</span>
-                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${statusStyle(o.status)}`}>
-                        {statusLabel(o.status)}
+                      <span className={`inline-flex px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(o.status)}`}>
+                        {orderStatusLabel(o.status)}
                       </span>
                     </div>
                     <p className="text-sm text-zinc-400">{new Date(o.created_at).toLocaleString()}</p>
@@ -252,7 +220,7 @@ export function Profile() {
                 <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-800 text-sm">
                   <div className="bg-zinc-900/60 rounded-xl p-3">
                     <p className="text-zinc-500 text-xs mb-1">Status</p>
-                    <p className="font-medium">{statusLabel(o.status)}</p>
+                    <p className="font-medium">{orderStatusLabel(o.status)}</p>
                   </div>
                   <div className="bg-zinc-900/60 rounded-xl p-3">
                     <p className="text-zinc-500 text-xs mb-1">{t("cart.shipping")}</p>
