@@ -149,7 +149,7 @@ export function ProductDetails() {
                   onClick={() => setActiveImage(img)}
                   className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-white" : "border-zinc-700"}`}
                 >
-                  <img src={img} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+                  <img src={img} alt="" aria-hidden="true" onError={onImageError} className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

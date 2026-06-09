@@ -98,7 +98,8 @@ export function Favorites() {
                     </div>
                   )}
                   <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
-                  <p className="text-xs text-zinc-400 mb-2">{perfume.size}</p>
+                  <p className="text-xs text-zinc-400 mb-1">{perfume.size}</p>
+                  {!perfume.inStock && <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>}
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="font-medium">{fmt(perfume.price)}</span>

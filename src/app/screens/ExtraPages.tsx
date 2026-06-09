@@ -382,13 +382,13 @@ export function CampaignsPage() {
               <div className="flex items-center justify-between gap-3">
                 <p className="text-lg font-medium">{c.code}</p>
                 <span className="text-sm font-medium text-emerald-400">
-                  {c.discount_type === "percent" ? `-${Number(c.discount_value)}%` : `-${Number(c.discount_value)} ₼`}
+                  {c.discount_type === "percent" ? `-${Number(c.discount_value)}%` : `-${formatCurrency(Number(c.discount_value))}`}
                 </span>
               </div>
               {c.title && <p className="text-zinc-300 mt-1">{c.title}</p>}
               {c.description && <p className="text-zinc-400 text-sm mt-0.5">{c.description}</p>}
               {Number(c.min_subtotal) > 0 && (
-                <p className="text-xs text-zinc-500 mt-1">Minimum sifariş: {Number(c.min_subtotal)} ₼</p>
+                <p className="text-xs text-zinc-500 mt-1">Minimum sifariş: {formatCurrency(Number(c.min_subtotal))}</p>
               )}
             </div>
           ))}
@@ -485,8 +485,8 @@ export function ShippingReturnsPage() {
           <ul className="space-y-2">
             <li>• Şəhər daxili çatdırılma — Yango, Bolt və s.</li>
             <li>• Özünüz ödəniş edərək Bolt və ya Yango ilə çatdırılma qəbul edə bilərsiniz.</li>
-            <li>• AzerPoçt ilə göndəriş — 3 AZN</li>
-            <li>• N.Nərimanov və Gənclik metrosuna çatdırılma — 2 AZN</li>
+            <li>• AzerPoçt ilə göndəriş — 3 ₼</li>
+            <li>• N.Nərimanov və Gənclik metrosuna çatdırılma — 2 ₼</li>
             <li>• Depodan təhvil alma — Pulsuz</li>
           </ul>
         </div>

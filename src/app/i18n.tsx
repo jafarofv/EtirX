@@ -316,6 +316,7 @@ const dict: Dict = {
   "profile.save": { az: "Yadda saxla", en: "Save", ru: "Сохранить" },
   "profile.updated": { az: "Profil yeniləndi.", en: "Profile updated.", ru: "Профиль обновлён." },
   "profile.updateFailed": { az: "Profil yenilənmədi.", en: "Could not update profile.", ru: "Не удалось обновить профиль." },
+  "profile.loadFailed": { az: "Profil məlumatı yüklənmədi.", en: "Could not load your profile.", ru: "Не удалось загрузить профиль." },
   "profile.passwordTitle": { az: "Şifrəni dəyiş", en: "Change Password", ru: "Сменить пароль" },
   "profile.currentPassword": { az: "Cari şifrə", en: "Current password", ru: "Текущий пароль" },
   "profile.newPassword": { az: "Yeni şifrə", en: "New password", ru: "Новый пароль" },
