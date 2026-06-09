@@ -66,7 +66,8 @@ const toDeliveryMethod = (method: ApiDeliveryMethod): DeliveryMethod => ({
   requiresAddress: method.requires_address,
 });
 
-const FALLBACK_DELIVERY_METHODS: DeliveryMethod[] = API_FALLBACK_DELIVERY_METHODS.map(toDeliveryMethod);
+const FALLBACK_DELIVERY_METHODS: DeliveryMethod[] =
+  API_FALLBACK_DELIVERY_METHODS.map(toDeliveryMethod);
 
 export function Checkout() {
   const navigate = useNavigate();
@@ -89,7 +90,8 @@ export function Checkout() {
 
   const [deliveryMethods, setDeliveryMethods] = useState<DeliveryMethod[]>([]);
   const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
-  const selectedMethod = deliveryMethods.find((m) => m.code === selectedDelivery) ?? deliveryMethods[0] ?? null;
+  const selectedMethod =
+    deliveryMethods.find((m) => m.code === selectedDelivery) ?? deliveryMethods[0] ?? null;
   const requiresAddress = selectedMethod?.requiresAddress ?? false;
   const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = selectedMethod?.fee ?? 0;
@@ -206,7 +208,8 @@ export function Checkout() {
     (async () => {
       try {
         const methods = await getDeliveryMethods();
-        const normalized = methods.length > 0 ? methods.map(toDeliveryMethod) : FALLBACK_DELIVERY_METHODS;
+        const normalized =
+          methods.length > 0 ? methods.map(toDeliveryMethod) : FALLBACK_DELIVERY_METHODS;
         setDeliveryMethods(normalized);
         setSelectedDelivery((current) => current ?? normalized[0]?.code ?? null);
       } catch {
@@ -495,17 +498,25 @@ export function Checkout() {
                 type="button"
                 onClick={() => setSelectedDelivery(method.code)}
                 className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
-                  selectedDelivery === method.code ? "border-white" : "border-zinc-800 hover:border-zinc-600"
+                  selectedDelivery === method.code
+                    ? "border-white"
+                    : "border-zinc-800 hover:border-zinc-600"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
-                      selectedDelivery === method.code ? "border-white bg-white text-black" : "border-zinc-500 bg-transparent"
+                      selectedDelivery === method.code
+                        ? "border-white bg-white text-black"
+                        : "border-zinc-500 bg-transparent"
                     }`}
                     aria-hidden="true"
                   >
-                    {selectedDelivery === method.code ? <CheckCircle2 className="h-4 w-4" /> : <span className="h-2 w-2 rounded-full bg-zinc-500" />}
+                    {selectedDelivery === method.code ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                    )}
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-3">
@@ -528,7 +539,10 @@ export function Checkout() {
             ))}
             <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
               <div className="flex items-start gap-3">
-                <span className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-transparent" aria-hidden="true">
+                <span
+                  className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-transparent"
+                  aria-hidden="true"
+                >
                   <span className="h-2 w-2 rounded-full bg-zinc-500" />
                 </span>
                 <div className="min-w-0">

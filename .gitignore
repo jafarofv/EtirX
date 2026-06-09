@@ -3,6 +3,10 @@
 .env.*
 !.env.example
 
+# Celery runtime artifacts
+backend/celerybeat-schedule
+backend/celerybeat-schedule.*
+
 # Node / frontend
 node_modules/
 dist/

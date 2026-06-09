@@ -121,7 +121,8 @@ export function Home() {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
             <input
               type="text"
-              placeholder={t("home.search")} aria-label={t("home.search")}
+              placeholder={t("home.search")}
+              aria-label={t("home.search")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
@@ -132,7 +133,9 @@ export function Home() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 shadow-xl shadow-black/20"
             />
           </div>
-          <p className="text-xs text-zinc-500 mt-2">Ətir, marka və notlara görə axtar (məs: oud, rose, vanilla)</p>
+          <p className="text-xs text-zinc-500 mt-2">
+            Ətir, marka və notlara görə axtar (məs: oud, rose, vanilla)
+          </p>
           <div className="flex flex-wrap gap-2 mt-2">
             {noteHints.map((note) => (
               <button

@@ -75,7 +75,10 @@ export function ProductDetails() {
     variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
   const selectedStock = selectedVariant?.stock ?? 0;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
-  const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
+  const activeIndex = Math.max(
+    0,
+    gallery.findIndex((img) => img === activeImage)
+  );
   const premiumVariants = variants.filter((variant) => variant.variantType === "premium");
   const gramVariants = variants.filter((variant) => variant.variantType === "gram");
   const renderVariantCard = (variant: (typeof variants)[number]) => {
@@ -90,7 +93,9 @@ export function ProductDetails() {
           setActiveImage(variant.imageUrl || perfume.image);
         }}
         className={`rounded-2xl border p-4 text-left transition-all ${
-          isSelected ? "border-white bg-white/5" : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+          isSelected
+            ? "border-white bg-white/5"
+            : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
@@ -294,7 +299,9 @@ export function ProductDetails() {
                 <CreditCard className="w-4 h-4 text-zinc-300" />
                 <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
               </div>
-              <p className="text-sm text-zinc-400">Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.</p>
+              <p className="text-sm text-zinc-400">
+                Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.
+              </p>
             </div>
             <a
               href={site.whatsappUrl}
