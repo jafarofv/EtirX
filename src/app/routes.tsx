@@ -67,7 +67,3 @@ export const router = createBrowserRouter([
   },
   { path: "*", Component: NotFoundPage },
 ]);
-
-
-
-

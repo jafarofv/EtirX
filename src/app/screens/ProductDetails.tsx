@@ -1,6 +1,16 @@
 ﻿import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { ArrowLeft, Heart, Star, ShoppingBag, Minus, Plus, Truck, MessageCircle, CreditCard } from "lucide-react";
+import {
+  ArrowLeft,
+  Heart,
+  Star,
+  ShoppingBag,
+  Minus,
+  Plus,
+  Truck,
+  MessageCircle,
+  CreditCard,
+} from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart, isFavorite, toggleFavorite } from "../lib/storage";
 import { loadCatalogProductBySlug, type CatalogProduct } from "../lib/catalog";
@@ -58,14 +68,11 @@ export function ProductDetails() {
   }
 
   const gender =
-    perfume.gender === "qadin"
-      ? "Qadın"
-      : perfume.gender === "kisi"
-        ? "Kişi"
-      : "Uniseks";
+    perfume.gender === "qadin" ? "Qadın" : perfume.gender === "kisi" ? "Kişi" : "Uniseks";
 
   const variants = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
-  const selectedVariant = variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
+  const selectedVariant =
+    variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
   const selectedStock = selectedVariant?.stock ?? 0;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(0, gallery.findIndex((img) => img === activeImage));
@@ -158,7 +165,9 @@ export function ProductDetails() {
             }}
             className="w-10 h-10 rounded-full bg-zinc-900/80 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"
           >
-            <Heart className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`} />
+            <Heart
+              className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
+            />
           </button>
         </div>
       </div>
@@ -177,7 +186,12 @@ export function ProductDetails() {
               setTouchStartX(null);
             }}
           >
-            <img src={activeImage || perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-contain" />
+            <img
+              src={activeImage || perfume.image}
+              alt={perfume.name}
+              onError={onImageError}
+              className="w-full h-full object-contain"
+            />
           </div>
           {gallery.length > 1 && (
             <div className="px-4 sm:px-0 mt-3 pb-2 flex gap-2 overflow-x-auto">
@@ -187,14 +201,22 @@ export function ProductDetails() {
                   onClick={() => setActiveImage(img)}
                   className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-white" : "border-zinc-700"}`}
                 >
-                  <img src={img} alt="" aria-hidden="true" onError={onImageError} className="w-full h-full object-cover" />
+                  <img
+                    src={img}
+                    alt=""
+                    aria-hidden="true"
+                    onError={onImageError}
+                    className="w-full h-full object-cover"
+                  />
                 </button>
               ))}
             </div>
           )}
         </div>
 
-        <div className={`bg-black px-4 sm:px-6 lg:px-0 py-8 ${perfume.images.length > 1 ? "mt-0" : "-mt-8"} lg:mt-0 rounded-t-[40px] lg:rounded-none relative z-10`}>
+        <div
+          className={`bg-black px-4 sm:px-6 lg:px-0 py-8 ${perfume.images.length > 1 ? "mt-0" : "-mt-8"} lg:mt-0 rounded-t-[40px] lg:rounded-none relative z-10`}
+        >
           <div className="flex items-start justify-between mb-4">
             <div>
               <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
@@ -205,13 +227,17 @@ export function ProductDetails() {
                     <Star aria-hidden="true" className="w-4 h-4 fill-white text-white" />
                     <span className="text-sm font-medium">{perfume.rating}</span>
                   </div>
-                  <span className="text-sm text-zinc-500">({perfume.reviews} {t("product.reviews")})</span>
+                  <span className="text-sm text-zinc-500">
+                    ({perfume.reviews} {t("product.reviews")})
+                  </span>
                 </div>
               )}
             </div>
             <div className="text-right">
               <p className="text-2xl font-medium">{fmt(perfume.price)}</p>
-              {perfume.originalPrice && <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>}
+              {perfume.originalPrice && (
+                <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
+              )}
             </div>
           </div>
 
@@ -224,7 +250,9 @@ export function ProductDetails() {
             </div>
             <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.stock")}</p>
-              <p className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}>
+              <p
+                className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+              >
                 {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
               </p>
             </div>
@@ -283,11 +311,17 @@ export function ProductDetails() {
 
           <div className="flex gap-3 mb-6">
             <div className="flex items-center bg-zinc-900 rounded-2xl border border-zinc-800 px-2">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="p-3 hover:bg-zinc-800 rounded-xl transition-all">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="p-3 hover:bg-zinc-800 rounded-xl transition-all"
+              >
                 <Minus className="w-4 h-4" />
               </button>
               <span className="w-12 text-center font-medium">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="p-3 hover:bg-zinc-800 rounded-xl transition-all">
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="p-3 hover:bg-zinc-800 rounded-xl transition-all"
+              >
                 <Plus className="w-4 h-4" />
               </button>
             </div>
@@ -321,8 +355,13 @@ export function ProductDetails() {
                 { label: t("product.heartNotes"), items: perfume.notes.heart },
                 { label: t("product.baseNotes"), items: perfume.notes.base },
               ].map((section) => (
-                <div key={section.label} className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
-                  <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">{section.label}</p>
+                <div
+                  key={section.label}
+                  className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800"
+                >
+                  <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">
+                    {section.label}
+                  </p>
                   {section.items.length > 0 ? (
                     <div className="flex flex-wrap gap-2">
                       {section.items.map((note) => (
@@ -351,7 +390,3 @@ export function ProductDetails() {
     </div>
   );
 }
-
-
-
-

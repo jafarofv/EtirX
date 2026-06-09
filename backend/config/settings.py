@@ -157,10 +157,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # ── REST Framework ─────────────────────────────────────────────────
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        "shop.authentication.ExpiringTokenAuthentication",
     ],
+    # Secure-by-default: any view that omits permission_classes requires
+    # authentication. Public storefront endpoints (catalog, categories,
+    # delivery methods, testimonials, site settings, guest checkout/tracking,
+    # contact form, register/login, public promo list) opt in with an explicit
+    # AllowAny so a newly added view fails closed rather than leaking data.
     "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.AllowAny",
+        "rest_framework.permissions.IsAuthenticated",
     ],
     "DEFAULT_THROTTLE_CLASSES": [
         "rest_framework.throttling.AnonRateThrottle",
@@ -178,6 +183,13 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 24,
 }
+
+# Auth-token TTL: tokens older than this are rejected by
+# shop.authentication.ExpiringTokenAuthentication. Rotated on each login, so the
+# window resets per active session. Default 7 days; tune via AUTH_TOKEN_TTL_HOURS.
+from datetime import timedelta  # noqa: E402
+
+AUTH_TOKEN_TTL = timedelta(hours=int(os.getenv("AUTH_TOKEN_TTL_HOURS", "168")))
 
 # ── Redis / Cache ──────────────────────────────────────────────────
 from .redis_cache import CACHES, SESSION_ENGINE, SESSION_CACHE_ALIAS  # noqa: E402
@@ -213,3 +225,29 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# ── Error monitoring (Sentry, optional) ────────────────────────────
+# Crash/error aggregation is enabled only when SENTRY_DSN is set AND the
+# sentry-sdk package is installed. Both guards mean dev/demo runs without a DSN
+# are completely unaffected — no network calls, no startup failure if the SDK
+# is absent. Structured JSON logs (config/logging_config.py) remain the local
+# observability layer; Sentry adds remote alerting on top in production.
+SENTRY_DSN = os.getenv("SENTRY_DSN", "").strip()
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            environment=os.getenv("SENTRY_ENVIRONMENT", "production" if not DEBUG else "development"),
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.0")),
+            send_default_pii=False,
+        )
+    except ImportError:
+        import logging as _logging
+
+        _logging.getLogger("shop").warning(
+            "SENTRY_DSN is set but sentry-sdk is not installed; error monitoring disabled."
+        )

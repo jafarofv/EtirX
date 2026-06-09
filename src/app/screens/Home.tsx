@@ -39,7 +39,8 @@ export function Home() {
 
   useEffect(() => {
     window.addEventListener("app-storage-updated", refreshFavorites as EventListener);
-    return () => window.removeEventListener("app-storage-updated", refreshFavorites as EventListener);
+    return () =>
+      window.removeEventListener("app-storage-updated", refreshFavorites as EventListener);
   }, []);
 
   useEffect(() => {
@@ -62,17 +63,22 @@ export function Home() {
 
   const latestProductId = Math.max(...products.map((x) => x.id), 0);
   const hasCategory = (p: CatalogProduct, slug: string) => p.categorySlugs.includes(slug);
-  const isWomen = (p: CatalogProduct) => hasCategory(p, "qadin") || /women|qadin/i.test(`${p.name} ${p.description} ${p.category}`);
-  const isMen = (p: CatalogProduct) => hasCategory(p, "kisiler") || /men|kisi/i.test(`${p.name} ${p.description} ${p.category}`);
-  const isUnisex = (p: CatalogProduct) => hasCategory(p, "uniseks") || /unisex/i.test(`${p.name} ${p.description} ${p.category}`);
-  const isNew = (p: CatalogProduct) => p.isNewArrival || hasCategory(p, "yeni-gelenler") || p.id >= latestProductId - 2;
+  const isWomen = (p: CatalogProduct) =>
+    hasCategory(p, "qadin") || /women|qadin/i.test(`${p.name} ${p.description} ${p.category}`);
+  const isMen = (p: CatalogProduct) =>
+    hasCategory(p, "kisiler") || /men|kisi/i.test(`${p.name} ${p.description} ${p.category}`);
+  const isUnisex = (p: CatalogProduct) =>
+    hasCategory(p, "uniseks") || /unisex/i.test(`${p.name} ${p.description} ${p.category}`);
+  const isNew = (p: CatalogProduct) =>
+    p.isNewArrival || hasCategory(p, "yeni-gelenler") || p.id >= latestProductId - 2;
   const bestSellerIds = new Set(
     [...products]
       .sort((a, b) => b.reviews - a.reviews || b.rating - a.rating)
       .slice(0, 8)
       .map((p) => p.id)
   );
-  const isBest = (p: CatalogProduct) => p.isBestSeller || hasCategory(p, "en-cox-satanlar") || bestSellerIds.has(p.id);
+  const isBest = (p: CatalogProduct) =>
+    p.isBestSeller || hasCategory(p, "en-cox-satanlar") || bestSellerIds.has(p.id);
 
   const filteredPerfumes = products.filter(
     (p) =>
@@ -165,7 +171,9 @@ export function Home() {
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
               <TrendingUp className="w-4 h-4 text-white" />
-              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{t("home.offer.badge")}</span>
+              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
+                {t("home.offer.badge")}
+              </span>
             </div>
             <h3 className="text-xl mb-1">{t("home.offer.title")}</h3>
             <p className="text-sm text-zinc-400 mb-4">{t("home.offer.desc")}</p>
@@ -182,7 +190,10 @@ export function Home() {
       <div className="px-4 sm:px-6 lg:px-8 mb-8">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-medium">{t("home.featured")}</h2>
-          <button onClick={() => navigate("/perfumes")} className="text-sm text-zinc-400 hover:text-white transition-colors">
+          <button
+            onClick={() => navigate("/perfumes")}
+            className="text-sm text-zinc-400 hover:text-white transition-colors"
+          >
             {t("home.viewAll")}
           </button>
         </div>
@@ -194,7 +205,12 @@ export function Home() {
               className="min-w-[260px] sm:min-w-[280px] lg:min-w-[320px] bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
-                <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img
+                  src={perfume.image}
+                  alt={perfume.name}
+                  onError={onImageError}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -205,9 +221,15 @@ export function Home() {
                   aria-label={t("a11y.favorite")}
                   className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
                 >
-                  <Heart className={`w-4 h-4 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`} />
+                  <Heart
+                    className={`w-4 h-4 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
+                  />
                 </button>
-                {getBadge(perfume) && <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 rounded-full text-xs font-medium">{getBadge(perfume)}</div>}
+                {getBadge(perfume) && (
+                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 rounded-full text-xs font-medium">
+                    {getBadge(perfume)}
+                  </div>
+                )}
               </div>
               <div className="p-5">
                 {perfume.reviews > 0 && (
@@ -219,10 +241,15 @@ export function Home() {
                 )}
                 <h3 className="font-medium mb-1">{perfume.name}</h3>
                 <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
-                {!perfume.inStock && <p className="text-xs text-zinc-400 mb-2">• {t("product.outOfStock")}</p>}
+                {!perfume.inStock && (
+                  <p className="text-xs text-zinc-400 mb-2">• {t("product.outOfStock")}</p>
+                )}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {perfume.notes.top.slice(0, 3).map((note) => (
-                    <span key={`${perfume.id}-featured-note-${note}`} className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs ${noteChipClass(note)}`}>
+                    <span
+                      key={`${perfume.id}-featured-note-${note}`}
+                      className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs ${noteChipClass(note)}`}
+                    >
                       {noteToAz(note)}
                     </span>
                   ))}
@@ -230,19 +257,30 @@ export function Home() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xl font-medium">{fmt(perfume.price)}</span>
-                    {perfume.originalPrice && <span className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</span>}
+                    {perfume.originalPrice && (
+                      <span className="text-sm text-zinc-500 line-through">
+                        {fmt(perfume.originalPrice)}
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(perfume.id, 1, perfume.slug, perfume.defaultVariant ? {
-                        id: perfume.defaultVariant.id,
-                        label: perfume.defaultVariant.label,
-                        variantType: perfume.defaultVariant.variantType,
-                        sizeMl: perfume.defaultVariant.sizeMl,
-                        price: perfume.defaultVariant.price,
-                        imageUrl: perfume.defaultVariant.imageUrl,
-                      } : undefined);
+                      addToCart(
+                        perfume.id,
+                        1,
+                        perfume.slug,
+                        perfume.defaultVariant
+                          ? {
+                              id: perfume.defaultVariant.id,
+                              label: perfume.defaultVariant.label,
+                              variantType: perfume.defaultVariant.variantType,
+                              sizeMl: perfume.defaultVariant.sizeMl,
+                              price: perfume.defaultVariant.price,
+                              imageUrl: perfume.defaultVariant.imageUrl,
+                            }
+                          : undefined
+                      );
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
@@ -269,74 +307,101 @@ export function Home() {
           <p className="text-zinc-400">{t("shop.noProducts")}</p>
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {filteredPerfumes.map((perfume) => (
-            <div
-              key={perfume.id}
-              onClick={() => navigate(`/product/${perfume.slug}`)}
-              className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
-            >
-              <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
-                <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite(perfume.id, perfume.slug);
-                    setPulseFavorite(perfume.id);
-                    setTimeout(() => setPulseFavorite(null), 180);
-                  }}
-                  aria-label={t("a11y.favorite")}
-                  className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
-                >
-                  <Heart className={`w-3.5 h-3.5 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`} />
-                </button>
-                {getBadge(perfume) && <div className="absolute top-3 right-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">{getBadge(perfume)}</div>}
-              </div>
-              <div className="p-4">
-                {perfume.reviews > 0 && (
-                  <div className="flex items-center gap-1 mb-1.5">
-                    <Star aria-hidden="true" className="w-3 h-3 fill-white text-white" />
-                    <span className="text-xs font-medium">{perfume.rating}</span>
-                  </div>
-                )}
-                <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
-                <p className="text-xs text-zinc-400 mb-1">{perfume.brand}</p>
-                {!perfume.inStock && <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>}
-                <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">
-                  {perfume.notes.top.slice(0, 2).map((note) => (
-                    <span key={`${perfume.id}-all-note-${note}`} className={`px-1.5 py-0.5 rounded-full text-[10px] leading-none ${noteChipClass(note)}`}>
-                      {noteToAz(note)}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col items-start leading-tight">
-                    <span className="font-medium whitespace-nowrap">{fmt(perfume.price)}</span>
-                    {perfume.originalPrice && <span className="text-[11px] text-zinc-500 line-through whitespace-nowrap">{fmt(perfume.originalPrice)}</span>}
-                  </div>
+            {filteredPerfumes.map((perfume) => (
+              <div
+                key={perfume.id}
+                onClick={() => navigate(`/product/${perfume.slug}`)}
+                className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
+              >
+                <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
+                  <img
+                    src={perfume.image}
+                    alt={perfume.name}
+                    onError={onImageError}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(perfume.id, 1, perfume.slug, perfume.defaultVariant ? {
-                        id: perfume.defaultVariant.id,
-                        label: perfume.defaultVariant.label,
-                        variantType: perfume.defaultVariant.variantType,
-                        sizeMl: perfume.defaultVariant.sizeMl,
-                        price: perfume.defaultVariant.price,
-                        imageUrl: perfume.defaultVariant.imageUrl,
-                      } : undefined);
-                      setPulseCart(perfume.id);
-                      setTimeout(() => setPulseCart(null), 180);
+                      toggleFavorite(perfume.id, perfume.slug);
+                      setPulseFavorite(perfume.id);
+                      setTimeout(() => setPulseFavorite(null), 180);
                     }}
-                    aria-label={t("a11y.addToCart")}
-                    disabled={!perfume.inStock}
-                    className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                    aria-label={t("a11y.favorite")}
+                    className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
                   >
-                    <ShoppingBag className="w-3.5 h-3.5" />
+                    <Heart
+                      className={`w-3.5 h-3.5 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
+                    />
                   </button>
+                  {getBadge(perfume) && (
+                    <div className="absolute top-3 right-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+                      {getBadge(perfume)}
+                    </div>
+                  )}
+                </div>
+                <div className="p-4">
+                  {perfume.reviews > 0 && (
+                    <div className="flex items-center gap-1 mb-1.5">
+                      <Star aria-hidden="true" className="w-3 h-3 fill-white text-white" />
+                      <span className="text-xs font-medium">{perfume.rating}</span>
+                    </div>
+                  )}
+                  <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
+                  <p className="text-xs text-zinc-400 mb-1">{perfume.brand}</p>
+                  {!perfume.inStock && (
+                    <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
+                  )}
+                  <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">
+                    {perfume.notes.top.slice(0, 2).map((note) => (
+                      <span
+                        key={`${perfume.id}-all-note-${note}`}
+                        className={`px-1.5 py-0.5 rounded-full text-[10px] leading-none ${noteChipClass(note)}`}
+                      >
+                        {noteToAz(note)}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col items-start leading-tight">
+                      <span className="font-medium whitespace-nowrap">{fmt(perfume.price)}</span>
+                      {perfume.originalPrice && (
+                        <span className="text-[11px] text-zinc-500 line-through whitespace-nowrap">
+                          {fmt(perfume.originalPrice)}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        addToCart(
+                          perfume.id,
+                          1,
+                          perfume.slug,
+                          perfume.defaultVariant
+                            ? {
+                                id: perfume.defaultVariant.id,
+                                label: perfume.defaultVariant.label,
+                                variantType: perfume.defaultVariant.variantType,
+                                sizeMl: perfume.defaultVariant.sizeMl,
+                                price: perfume.defaultVariant.price,
+                                imageUrl: perfume.defaultVariant.imageUrl,
+                              }
+                            : undefined
+                        );
+                        setPulseCart(perfume.id);
+                        setTimeout(() => setPulseCart(null), 180);
+                      }}
+                      aria-label={t("a11y.addToCart")}
+                      disabled={!perfume.inStock}
+                      className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                    >
+                      <ShoppingBag className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         )}
       </div>

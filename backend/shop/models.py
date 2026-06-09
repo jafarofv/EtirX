@@ -341,6 +341,11 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
 
+    @property
+    def line_total(self):
+        """Per-line subtotal (unit_price * quantity); used in order emails/templates."""
+        return self.unit_price * self.quantity
+
 
 class ContactMessage(models.Model):
     name = models.CharField(max_length=120)
