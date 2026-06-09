@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
-from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod, Testimonial, SiteSettings
+from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod, Testimonial, SiteSettings, StaticPage
 from .email_notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
@@ -20,6 +20,7 @@ from .serializers import (
     DeliveryMethodSerializer,
     TestimonialSerializer,
     SiteSettingsSerializer,
+    StaticPageSerializer,
     UserFavoriteSerializer,
     UserCartItemSerializer,
     OrderCreateSerializer,
@@ -514,6 +515,27 @@ class SiteSettingsView(APIView):
 
     def get(self, request):
         return Response(SiteSettingsSerializer(SiteSettings.load()).data)
+
+
+class StaticPageView(APIView):
+    """Public read of an admin-managed static page for a slug + language.
+
+    Falls back to Azerbaijani if the requested language has no published row;
+    404 if nothing is published for the slug (the client then renders its own
+    built-in copy).
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request, slug):
+        lang = (request.query_params.get("lang") or "az").strip().lower()
+        page = (
+            StaticPage.objects.filter(slug=slug, language=lang, is_published=True).first()
+            or StaticPage.objects.filter(slug=slug, language="az", is_published=True).first()
+        )
+        if page is None:
+            return Response({"detail": "Page not found."}, status=status.HTTP_404_NOT_FOUND)
+        return Response(StaticPageSerializer(page).data)
 
 
 class RegisterView(APIView):

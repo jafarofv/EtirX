@@ -401,3 +401,41 @@ class UserCartItem(models.Model):
 
     def __str__(self):
         return f"{self.user.username} -> {self.product.name} ({self.variant.label if self.variant else 'default'}) x{self.quantity}"
+
+
+class StaticPage(models.Model):
+    """Admin-managed static content (About / FAQ / Privacy / Terms).
+
+    One row per (slug, language). The public API serves the published row for a
+    slug+language; the frontend falls back to its built-in content when no row
+    exists, so adding the CMS never breaks an existing page.
+    """
+
+    SLUG_ABOUT = "about"
+    SLUG_FAQ = "faq"
+    SLUG_PRIVACY = "privacy"
+    SLUG_TERMS = "terms"
+    SLUG_CHOICES = [
+        (SLUG_ABOUT, "About"),
+        (SLUG_FAQ, "FAQ"),
+        (SLUG_PRIVACY, "Privacy"),
+        (SLUG_TERMS, "Terms"),
+    ]
+    LANGUAGE_CHOICES = [("az", "Azərbaycan"), ("en", "English"), ("ru", "Русский")]
+
+    slug = models.CharField(max_length=40, choices=SLUG_CHOICES)
+    language = models.CharField(max_length=5, choices=LANGUAGE_CHOICES, default="az")
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=300, blank=True)
+    # Plain text; blank lines separate paragraphs. Rendered as text (not HTML)
+    # on the client, so admin content cannot inject markup.
+    body = models.TextField()
+    is_published = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("slug", "language")
+        ordering = ("slug", "language")
+
+    def __str__(self):
+        return f"{self.get_slug_display()} [{self.language}]"

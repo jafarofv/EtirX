@@ -262,6 +262,30 @@ export async function getProductBySlug(slug: string) {
   return request<ApiProduct>(`/products/${slug}/`);
 }
 
+export type ApiStaticPage = {
+  slug: string;
+  language: string;
+  title: string;
+  subtitle: string;
+  body: string;
+  updated_at: string;
+};
+
+/**
+ * Fetch an admin-managed static page (about/faq/privacy/terms) for a language.
+ * Returns null when the page is not published, so callers can fall back to
+ * their built-in content.
+ */
+export async function getStaticPage(slug: string, lang: string): Promise<ApiStaticPage | null> {
+  try {
+    return await request<ApiStaticPage>(
+      `/pages/${encodeURIComponent(slug)}/?lang=${encodeURIComponent(lang)}`
+    );
+  } catch {
+    return null;
+  }
+}
+
 export async function validatePromoCode(payload: { code: string; subtotal: string }) {
   return request<{
     valid: true;

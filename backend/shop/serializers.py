@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.validators import RegexValidator
-from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod, Testimonial, SiteSettings
+from .models import Category, Product, ProductImage, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, UserFavorite, UserCartItem, PromoCode, DeliveryMethod, Testimonial, SiteSettings, StaticPage
 
 # Shared phone-format validator for registration, profile update and order create.
 # Accepts an optional leading + and 9-15 digits (e.g. +994501112233 or 0501112233).
@@ -173,6 +173,12 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "gram_image_50_url",
             "gram_image_100_url",
         ]
+
+
+class StaticPageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StaticPage
+        fields = ["slug", "language", "title", "subtitle", "body", "updated_at"]
 
 
 class OrderItemInputSerializer(serializers.Serializer):
