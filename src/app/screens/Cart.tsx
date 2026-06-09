@@ -148,15 +148,12 @@ export function Cart() {
   if (cartItems.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800">
-          <ShoppingBag className="w-10 h-10 text-zinc-600" />
+        <div className="w-20 h-20 glass rounded-full flex items-center justify-center mb-6">
+          <ShoppingBag className="w-10 h-10 text-gold" />
         </div>
-        <h2 className="text-xl mb-2">{t("cart.empty")}</h2>
+        <h2 className="font-display text-3xl mb-2">{t("cart.empty")}</h2>
         <p className="text-sm text-zinc-400 mb-8 text-center">{t("cart.emptySub")}</p>
-        <button
-          onClick={() => navigate("/")}
-          className="bg-white text-black px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
-        >
+        <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
           {t("cart.start")}
         </button>
       </div>
@@ -167,7 +164,7 @@ export function Cart() {
     <div className="min-h-screen bg-black text-white pb-8">
       <Seo title="Səbət | ƏtirX" description="Səbət səhifəsi." path="/cart" noindex />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
-        <h1 className="text-2xl mb-1">{t("cart.title")}</h1>
+        <h1 className="font-display text-4xl mb-1">{t("cart.title")}</h1>
         <p className="text-sm text-zinc-400">
           {cartItems.length} {t("cart.items")}
         </p>
@@ -181,10 +178,7 @@ export function Cart() {
         )}
         <div className="space-y-4">
           {cartItems.map((item) => (
-            <div
-              key={lineKey(item)}
-              className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4"
-            >
+            <div key={lineKey(item)} className="glass premium-card rounded-3xl p-4 flex gap-4">
               <div className="w-24 h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl overflow-hidden flex-shrink-0">
                 <img
                   src={item.variant.imageUrl || item.perfume.image}
@@ -202,10 +196,10 @@ export function Cart() {
                       ? t("product.premiumPack")
                       : `${item.variant.label} ${t("product.gramSale")}`}
                   </p>
-                  <p className="text-lg font-medium">{fmt(item.variant.price)}</p>
+                  <p className="text-gold text-lg font-medium">{fmt(item.variant.price)}</p>
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center bg-zinc-800 rounded-xl px-1">
+                  <div className="flex items-center glass rounded-xl px-1">
                     <button
                       aria-label={t("a11y.decreaseQty")}
                       onClick={() => updateQuantity(lineKey(item), -1)}
@@ -237,7 +231,7 @@ export function Cart() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+        <div className="glass rounded-2xl p-4">
           <div className="flex gap-3">
             <input
               type="text"
@@ -281,7 +275,7 @@ export function Cart() {
                   setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
                 }
               }}
-              className="bg-white text-black px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-zinc-100 transition-all"
+              className="btn-gold px-6 py-2.5 rounded-xl text-sm"
             >
               {t("cart.apply")}
             </button>
@@ -292,8 +286,8 @@ export function Cart() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
-        <div className="bg-zinc-900 rounded-3xl p-6 border border-zinc-800">
-          <h3 className="font-medium mb-4">{t("cart.summary")}</h3>
+        <div className="glass rounded-3xl p-6">
+          <h3 className="font-display text-2xl mb-4">{t("cart.summary")}</h3>
           <div className="space-y-3 mb-4">
             <div className="flex justify-between text-sm">
               <span className="text-zinc-400">{t("cart.subtotal")}</span>
@@ -309,10 +303,10 @@ export function Cart() {
               <span className="text-zinc-400">{t("cart.shipping")}</span>
               <span className="font-medium text-zinc-400">{t("cart.shippingAtCheckout")}</span>
             </div>
-            <div className="border-t border-zinc-800 pt-3">
-              <div className="flex justify-between">
+            <div className="border-t border-white/10 pt-3">
+              <div className="flex justify-between items-baseline">
                 <span className="font-medium">{t("cart.total")}</span>
-                <span className="text-xl font-medium">{fmt(total)}</span>
+                <span className="text-gold text-2xl font-medium">{fmt(total)}</span>
               </div>
             </div>
           </div>
@@ -328,7 +322,7 @@ export function Cart() {
             }
             navigate("/checkout");
           }}
-          className="w-full bg-white text-black rounded-2xl py-4 font-medium hover:bg-zinc-100 transition-all"
+          className="btn-gold w-full rounded-2xl py-4"
         >
           {t("cart.checkout")}
         </button>

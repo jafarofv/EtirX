@@ -233,14 +233,14 @@ export function Checkout() {
     return (
       <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-[28px] p-6 sm:p-8">
+          <div className="glass rounded-[28px] p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center border border-green-500/20 shrink-0">
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
                 </div>
                 <div>
-                  <h2 className="text-2xl mb-1">{t("checkout.success")}</h2>
+                  <h2 className="font-display text-4xl mb-1">{t("checkout.success")}</h2>
                   <p className="text-sm text-zinc-400">{t("checkout.successSub")}</p>
                 </div>
               </div>
@@ -248,7 +248,9 @@ export function Checkout() {
                 <p className="text-xs text-zinc-500 uppercase tracking-wider">
                   {t("checkout.orderCode")}
                 </p>
-                <p className="text-lg font-medium">{order?.code ? `#${order.code}` : "N/A"}</p>
+                <p className="text-gold text-lg font-medium">
+                  {order?.code ? `#${order.code}` : "N/A"}
+                </p>
                 <span
                   className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}
                 >
@@ -258,7 +260,7 @@ export function Checkout() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-              <div className="bg-black/40 border border-zinc-800 rounded-2xl p-4 space-y-3">
+              <div className="glass rounded-2xl p-4 space-y-3">
                 <div>
                   <p className="text-xs text-zinc-500 mb-1">{t("checkout.fullName")}</p>
                   <p className="font-medium">{order?.full_name || fullName}</p>
@@ -287,7 +289,7 @@ export function Checkout() {
                 )}
               </div>
 
-              <div className="bg-black/40 border border-zinc-800 rounded-2xl p-4">
+              <div className="glass rounded-2xl p-4">
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">
                   {t("cart.summary")}
                 </p>
@@ -297,7 +299,7 @@ export function Checkout() {
                       key={`${item.product}-${item.variant_label || "variant"}-${item.unit_price}`}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden glass shrink-0">
                         <img
                           src={item.product_image}
                           alt={item.product_name}
@@ -337,24 +339,23 @@ export function Checkout() {
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
                     <span className="font-medium">{t("cart.total")}</span>
-                    <span className="text-xl font-medium">{fmt(order?.total || "0")}</span>
+                    <span className="text-gold text-xl font-medium">
+                      {fmt(order?.total || "0")}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              <button
-                onClick={() => navigate("/")}
-                className="bg-white text-black px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
-              >
+              <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
                 {t("checkout.continue")}
               </button>
               <button
                 onClick={() => navigate("/profile")}
-                className="bg-zinc-800 text-white px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-700 transition-all"
+                className="glass px-8 py-3.5 rounded-2xl font-medium hover:border-gold transition-all"
               >
                 {t("checkout.orderDetails")}
               </button>
@@ -377,11 +378,11 @@ export function Checkout() {
         <div className="flex items-center gap-4 mb-6">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"
+            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl">{t("checkout.title")}</h1>
+          <h1 className="font-display text-4xl">{t("checkout.title")}</h1>
         </div>
       </div>
 
@@ -393,14 +394,14 @@ export function Checkout() {
               onChange={(e) => setFullName(e.target.value)}
               placeholder={t("checkout.fullName")}
               aria-label={t("checkout.fullName")}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+              className="w-full glass premium-input rounded-2xl p-3"
             />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               placeholder={t("checkout.phone")}
               aria-label={t("checkout.phone")}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+              className="w-full glass premium-input rounded-2xl p-3"
             />
             <textarea
               value={notes}
@@ -408,7 +409,7 @@ export function Checkout() {
               placeholder={t("checkout.notes")}
               aria-label={t("checkout.notes")}
               rows={2}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+              className="w-full glass premium-input rounded-2xl p-3"
             />
             <div className="flex gap-3">
               <input
@@ -421,7 +422,7 @@ export function Checkout() {
                 }}
                 placeholder={t("checkout.promo")}
                 aria-label={t("checkout.promo")}
-                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+                className="flex-1 glass premium-input rounded-2xl p-3"
               />
               <button
                 type="button"
@@ -453,7 +454,7 @@ export function Checkout() {
                     setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
                   }
                 }}
-                className="bg-white text-black px-5 py-3 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
+                className="btn-gold px-5 py-3 rounded-2xl"
               >
                 {t("cart.apply")}
               </button>
@@ -475,10 +476,10 @@ export function Checkout() {
               placeholder={t("checkout.addrInput")}
               aria-label={t("checkout.addrInput")}
               rows={3}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+              className="w-full glass premium-input rounded-2xl p-3"
             />
           ) : (
-            <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 mb-3 space-y-2">
+            <div className="glass rounded-2xl p-4 mb-3 space-y-2">
               <p className="font-medium mb-1">{t("checkout.savedAddress")}</p>
               <p className="text-sm text-zinc-400">{address || t("checkout.defaultAddress")}</p>
               <p className="text-xs text-zinc-500">{t("checkout.addressOptionalHint")}</p>
@@ -497,17 +498,17 @@ export function Checkout() {
                 key={method.code}
                 type="button"
                 onClick={() => setSelectedDelivery(method.code)}
-                className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
+                className={`w-full glass rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
                   selectedDelivery === method.code
-                    ? "border-white"
-                    : "border-zinc-800 hover:border-zinc-600"
+                    ? "border-gold bg-[var(--gold-soft)]"
+                    : "hover:border-gold/50"
                 }`}
               >
                 <div className="flex items-start gap-3">
                   <span
                     className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                       selectedDelivery === method.code
-                        ? "border-white bg-white text-black"
+                        ? "border-gold bg-gold text-[#1a1206]"
                         : "border-zinc-500 bg-transparent"
                     }`}
                     aria-hidden="true"
@@ -537,7 +538,7 @@ export function Checkout() {
                 </div>
               </button>
             ))}
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
+            <div className="glass rounded-3xl p-4">
               <div className="flex items-start gap-3">
                 <span
                   className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-transparent"
@@ -608,7 +609,7 @@ export function Checkout() {
               setSubmitting(false);
             }
           }}
-          className="w-full bg-white text-black rounded-2xl py-4 font-medium hover:bg-zinc-100 transition-all"
+          className="btn-gold w-full rounded-2xl py-4"
         >
           {submitting ? t("checkout.submitting") : t("checkout.place")}
         </button>
