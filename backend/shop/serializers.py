@@ -43,11 +43,18 @@ class ProductSerializer(serializers.ModelSerializer):
                 urls.append(value)
         return urls
 
+    def _gram_fallback_image(self):
+        # Configurable shared packaging image for gram variants without their own
+        # image, so they don't fall back to the full-bottle product photo.
+        if not hasattr(self, "_gram_image_cache"):
+            self._gram_image_cache = SiteSettings.load().gram_image_url
+        return self._gram_image_cache
+
     def get_variants(self, obj: Product):
         request = self.context.get("request")
         variants = []
         for variant in obj.variants.filter(is_active=True).order_by("sort_order", "id"):
-            image_url = variant.image_url or obj.image_url
+            image_url = variant.image_url or (self._gram_fallback_image() if variant.variant_type == "gram" else "") or obj.image_url
             if request is not None and image_url.startswith("/"):
                 image_url = request.build_absolute_uri(image_url)
             variants.append(
@@ -80,7 +87,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 "is_active": True,
                 "sort_order": 0,
             }
-        image_url = variant.image_url or obj.image_url
+        image_url = variant.image_url or (self._gram_fallback_image() if variant.variant_type == "gram" else "") or obj.image_url
         request = self.context.get("request")
         if request is not None and image_url.startswith("/"):
             image_url = request.build_absolute_uri(image_url)
@@ -151,6 +158,8 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "tiktok_url",
             "tiktok_handle",
             "store_address",
+            "banner_text",
+            "gram_image_url",
         ]
 
 

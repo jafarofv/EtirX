@@ -160,6 +160,15 @@ class SiteSettings(models.Model):
     tiktok_url = models.URLField(blank=True)
     tiktok_handle = models.CharField(max_length=80, blank=True)
     store_address = models.CharField(max_length=255, blank=True)
+    banner_text = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text="Promo strip headline. Leave blank to use the default translated line.",
+    )
+    gram_image_url = models.URLField(
+        blank=True,
+        help_text="Shared packaging image used for gram variants that have no image of their own.",
+    )
 
     class Meta:
         verbose_name = "Site settings"
