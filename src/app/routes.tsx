@@ -22,6 +22,7 @@ import {
   ShopPage,
   TermsPage,
 } from "./screens/ExtraPages";
+import { OrderTracking } from "./screens/OrderTracking";
 
 function RequireAuth() {
   const location = useLocation();
@@ -61,6 +62,7 @@ export const router = createBrowserRouter([
       { path: "elaqe", Component: ContactPage },
       { path: "gizlilik", Component: PrivacyPage },
       { path: "sertler", Component: TermsPage },
+      { path: "sifaris-izleme", Component: OrderTracking },
     ],
   },
   { path: "*", Component: NotFoundPage },

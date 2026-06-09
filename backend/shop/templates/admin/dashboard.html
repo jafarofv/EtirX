@@ -1,0 +1,106 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+<style>
+  .dashboard-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .metric-card { background: linear-gradient(135deg, #2d1b4e, #6b1d5e); color: #fff; border-radius: 8px; padding: 20px; text-align: center; }
+  .metric-card .value { font-size: 32px; font-weight: bold; }
+  .metric-card .label { font-size: 14px; opacity: 0.85; margin-top: 4px; }
+  .metric-card.green { background: linear-gradient(135deg, #1b5e20, #388e3c); }
+  .metric-card.blue { background: linear-gradient(135deg, #0d47a1, #1976d2); }
+  .metric-card.orange { background: linear-gradient(135deg, #e65100, #ef6c00); }
+  .metric-card.red { background: linear-gradient(135deg, #b71c1c, #d32f2f); }
+  .chart-container { background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+  .chart-container h2 { margin: 0 0 12px 0; color: #333; }
+  table.data-table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+  table.data-table th, table.data-table td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #eee; }
+  table.data-table th { background: #f5f5f5; color: #555; }
+  .status-pending { color: #e65100; }
+  .status-confirmed { color: #1976d2; }
+  .status-shipped { color: #0d47a1; }
+  .status-delivered { color: #1b5e20; }
+  .status-cancelled { color: #b71c1c; }
+  #loading { text-align: center; padding: 40px; color: #888; }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>📊 EtirX Admin Dashboard</h1>
+<div id="loading">Yüklənir...</div>
+
+<div id="dashboard-content" style="display:none;">
+  <!-- Cards populated by JS -->
+  <div class="dashboard-metrics" id="metrics"></div>
+
+  <!-- Revenue chart -->
+  <div class="chart-container">
+    <h2>📈 Son 30 Gün – Gündəlik Gəlir (AZN)</h2>
+    <div id="revenue-chart" style="overflow-x:auto;"></div>
+  </div>
+
+  <!-- Top products -->
+  <div class="chart-container">
+    <h2>🏆 Ən Çox Satılan Məhsullar (Son 30 gün)</h2>
+    <div id="top-products"></div>
+  </div>
+
+  <!-- Order status -->
+  <div class="chart-container">
+    <h2>📦 Sifariş Statusları</h2>
+    <div id="status-breakdown"></div>
+  </div>
+</div>
+
+<script>
+const STATUS_LABELS = {
+  pending: "Gözləmədə", confirmed: "Təsdiqləndi",
+  shipped: "Yolda", delivered: "Çatdırıldı", cancelled: "Ləğv edildi"
+};
+const STATUS_CLASSES = {
+  pending: "status-pending", confirmed: "status-confirmed",
+  shipped: "status-shipped", delivered: "status-delivered", cancelled: "status-cancelled"
+};
+
+fetch("/admin/stats/data/")
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("dashboard-content").style.display = "block";
+
+    // Metrics
+    const metrics = [
+      { cls:"blue", value: data.orders.last_30_days, label:"Sifariş (30 gün)" },
+      { cls:"green", value: data.orders.total, label:"Ümumi Sifariş" },
+      { cls:"orange", value: data.orders.revenue_last_30_days + " ₼", label:"Gəlir (30 gün)" },
+      { cls:"red", value: data.products.out_of_stock, label:"Stokda Yoxdur" },
+      { cls:"", value: data.users.last_30_days, label:"Yeni İstifadəçi (30 gün)" },
+      { cls:"", value: data.messages.unread, label:"Oxunmamış Mesaj" },
+    ];
+    document.getElementById("metrics").innerHTML = metrics.map(m =>
+      `<div class="metric-card ${m.cls}"><div class="value">${m.value}</div><div class="label">${m.label}</div></div>`
+    ).join("");
+
+    // Revenue chart
+    document.getElementById("revenue-chart").innerHTML =
+      `<table class="data-table"><tr><th>Tarix</th><th>Sifariş</th><th>Gəlir (AZN)</th></tr>` +
+      data.revenue_chart.map(d =>
+        `<tr><td>${d.day}</td><td>${d.orders}</td><td>${d.revenue} ₼</td></tr>`
+      ).join("") + "</table>";
+
+    // Top products
+    document.getElementById("top-products").innerHTML =
+      `<table class="data-table"><tr><th>Məhsul</th><th>Satış</th><th>Gəlir</th></tr>` +
+      data.top_products.map(p =>
+        `<tr><td>${p.name}</td><td>${p.sold_count}</td><td>${p.revenue} ₼</td></tr>`
+      ).join("") + "</table>";
+
+    // Status breakdown
+    document.getElementById("status-breakdown").innerHTML =
+      `<table class="data-table"><tr><th>Status</th><th>Say</th></tr>` +
+      data.orders.status_breakdown.map(s =>
+        `<tr><td class="${STATUS_CLASSES[s.status] || ''}">${STATUS_LABELS[s.status] || s.status}</td><td>${s.count}</td></tr>`
+      ).join("") + "</table>";
+  });
+</script>
+{% endblock %}

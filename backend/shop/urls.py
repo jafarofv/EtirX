@@ -17,6 +17,7 @@ from .views import (
     MeView,
     LogoutView,
 )
+from .admin_dashboard import admin_statistics, admin_dashboard_html
 
 router = DefaultRouter()
 router.register("categories", CategoryViewSet, basename="category")
@@ -37,4 +38,7 @@ urlpatterns = [
     path("promo-codes/", PublicPromoCodeListView.as_view()),
     path("site-settings/", SiteSettingsView.as_view()),
     path("", include(router.urls)),
+    # Admin dashboard
+    path("admin/stats/", admin_dashboard_html, name="admin-dashboard"),
+    path("admin/stats/data/", admin_statistics, name="admin-stats-data"),
 ]

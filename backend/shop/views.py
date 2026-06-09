@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from django.utils import timezone
 from .models import Category, Product, ProductVariant, Order, OrderItem, ContactMessage, UserProfile, PromoCode, PromoRedemption, DeliveryMethod, Testimonial, SiteSettings
-from .notifications import send_order_notification_async
+from .email_notifications import send_order_notification_async
 from .serializers import (
     CategorySerializer,
     ProductSerializer,
@@ -295,6 +295,25 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
             .order_by("-created_at")
         )
         return Response(OrderSerializer(orders, many=True).data)
+
+    @action(detail=False, methods=["get"], url_path="by-code", permission_classes=[permissions.AllowAny])
+    def by_code(self, request):
+        """Public order-lookup endpoint for the tracking page.
+        Returns minimal info: code, status, total, created_at.
+        """
+        code = (request.query_params.get("code") or "").strip()
+        if not code:
+            return Response({"detail": "Sifariş kodu tələb olunur."}, status=status.HTTP_400_BAD_REQUEST)
+        order = Order.objects.filter(code__iexact=code).first()
+        if order is None:
+            return Response({"detail": "Sifariş tapılmadı."}, status=status.HTTP_404_NOT_FOUND)
+        return Response({
+            "code": order.code,
+            "status": order.status,
+            "status_display": order.get_status_display(),
+            "total": str(order.total),
+            "created_at": order.created_at.isoformat(),
+        })
 
 
 class ContactMessageViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):

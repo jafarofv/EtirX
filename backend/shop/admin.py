@@ -1,4 +1,6 @@
 from django.contrib import admin
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from .models import (
     Category,
     Product,
@@ -17,6 +19,38 @@ from .models import (
     Testimonial,
     SiteSettings,
 )
+from .cache_utils import (
+    invalidate_product_cache,
+    invalidate_category_cache,
+    invalidate_testimonial_cache,
+    invalidate_site_settings_cache,
+    invalidate_delivery_methods_cache,
+    invalidate_promo_cache,
+)
+
+
+def _push_order_ws_update(order):
+    """Push real-time order status update via Channels WebSocket."""
+    try:
+        channel_layer = get_channel_layer()
+        if channel_layer is None:
+            return
+        group_name = f"order_{order.code}"
+        async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                "type": "order.update",
+                "data": {
+                    "code": order.code,
+                    "status": order.status,
+                    "status_display": order.get_status_display(),
+                    "total": str(order.total),
+                    "created_at": order.created_at.isoformat(),
+                },
+            },
+        )
+    except Exception:
+        pass
 
 class ProductImageInline(admin.TabularInline):
     model = ProductImage
