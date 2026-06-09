@@ -111,11 +111,13 @@ def validate_promo_for_user(promo: PromoCode, user, subtotal: Decimal) -> str | 
 
 
 class CategoryViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [permissions.AllowAny]  # public storefront data
     queryset = Category.objects.all().order_by("name")
     serializer_class = CategorySerializer
 
 
 class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    permission_classes = [permissions.AllowAny]  # public storefront catalog
     queryset = Product.objects.filter(is_active=True).select_related("category").prefetch_related("categories", "images", "variants").order_by("-id")
     serializer_class = ProductSerializer
     lookup_field = "slug"
@@ -143,11 +145,13 @@ class ProductViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.
 
 
 class DeliveryMethodViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [permissions.AllowAny]  # public storefront data
     queryset = DeliveryMethod.objects.filter(is_active=True).order_by("sort_order", "id")
     serializer_class = DeliveryMethodSerializer
 
 
 class TestimonialViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [permissions.AllowAny]  # public storefront data
     queryset = Testimonial.objects.filter(is_active=True).order_by("sort_order", "-created_at", "id")
     serializer_class = TestimonialSerializer
 
@@ -158,11 +162,14 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
     lookup_field = "code"
 
     def get_permissions(self):
-        # Full order detail (name/phone/address/items) is owner-only.
-        # tracking (status/date only) and create (guest checkout) stay public.
-        if self.action == "retrieve":
+        # Explicit per-action permissions (do NOT fall back to the global
+        # default, which is now IsAuthenticated). Authenticated-only: full order
+        # detail (retrieve), the user's own order list (my-orders) and
+        # cancellation. Public: guest checkout (create), status tracking and the
+        # by-code lookup used by the tracking page.
+        if self.action in {"retrieve", "my_orders", "cancel"}:
             return [permissions.IsAuthenticated()]
-        return super().get_permissions()
+        return [permissions.AllowAny()]
 
     def get_throttles(self):
         # Tighter limit on order creation (guest checkout spam guard); other
@@ -349,6 +356,7 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
 
 
 class ContactMessageViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    permission_classes = [permissions.AllowAny]  # public contact form (create-only)
     queryset = ContactMessage.objects.all()
     serializer_class = ContactMessageSerializer
     throttle_classes = [ScopedRateThrottle]
