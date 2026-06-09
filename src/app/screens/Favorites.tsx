@@ -118,7 +118,8 @@ export function Favorites() {
                           imageUrl: perfume.defaultVariant.imageUrl,
                         } : undefined);
                       }}
-                      className="bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all"
+                      disabled={!perfume.inStock}
+                      className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </button>

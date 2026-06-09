@@ -15,6 +15,8 @@ export function Home() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<CatalogProduct[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>(() => {
     try {
       return JSON.parse(localStorage.getItem("favorites") ?? "[]");
@@ -41,7 +43,10 @@ export function Home() {
   }, []);
 
   useEffect(() => {
-    loadCatalogProducts().then(setProducts);
+    loadCatalogProducts()
+      .then(setProducts)
+      .catch(() => setLoadError(true))
+      .finally(() => setLoading(false));
   }, []);
 
   const featuredPerfumes = products.slice(0, 3);
@@ -237,7 +242,8 @@ export function Home() {
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
-                    className={`bg-white text-black p-2.5 rounded-xl hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""}`}
+                    disabled={!perfume.inStock}
+                    className={`bg-white text-black p-2.5 rounded-xl hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
                     <ShoppingBag className="w-4 h-4" />
                   </button>
@@ -250,7 +256,14 @@ export function Home() {
 
       <div className="px-4 sm:px-6 lg:px-8 pb-8">
         <h2 className="text-lg font-medium mb-4">{t("home.all")}</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {loading ? (
+          <p className="text-zinc-400">{t("shop.loading")}</p>
+        ) : loadError ? (
+          <p className="text-amber-400">{t("shop.fallback")}</p>
+        ) : filteredPerfumes.length === 0 ? (
+          <p className="text-zinc-400">{t("shop.noProducts")}</p>
+        ) : (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {filteredPerfumes.map((perfume) => (
             <div
               key={perfume.id}
@@ -307,7 +320,8 @@ export function Home() {
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
-                    className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""}`}
+                    disabled={!perfume.inStock}
+                    className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
                     <ShoppingBag className="w-3.5 h-3.5" />
                   </button>
@@ -315,7 +329,8 @@ export function Home() {
               </div>
             </div>
           ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
