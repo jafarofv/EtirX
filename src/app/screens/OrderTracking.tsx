@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router";
+import { formatCurrency } from "../lib/formatCurrency";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const WS_BASE =
@@ -284,7 +285,7 @@ export function OrderTracking() {
             <div>
               <div style={{ fontSize: 12, color: "#888" }}>Ümumi məbləğ</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "#6b1d5e" }}>
-                {status.total} ₼
+                {formatCurrency(Number(status.total))}
               </div>
             </div>
             <div style={{ textAlign: "right" }}>

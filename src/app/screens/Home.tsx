@@ -215,7 +215,8 @@ export function Home() {
                   </div>
                 )}
                 <h3 className="font-medium mb-1">{perfume.name}</h3>
-                <p className="text-sm text-zinc-400 mb-3">{perfume.brand}</p>
+                <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
+                {!perfume.inStock && <p className="text-xs text-zinc-400 mb-2">• {t("product.outOfStock")}</p>}
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {perfume.notes.top.slice(0, 3).map((note) => (
                     <span key={`${perfume.id}-featured-note-${note}`} className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs ${noteChipClass(note)}`}>
@@ -293,7 +294,8 @@ export function Home() {
                   </div>
                 )}
                 <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
-                <p className="text-xs text-zinc-400 mb-2">{perfume.brand}</p>
+                <p className="text-xs text-zinc-400 mb-1">{perfume.brand}</p>
+                {!perfume.inStock && <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>}
                 <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">
                   {perfume.notes.top.slice(0, 2).map((note) => (
                     <span key={`${perfume.id}-all-note-${note}`} className={`px-1.5 py-0.5 rounded-full text-[10px] leading-none ${noteChipClass(note)}`}>

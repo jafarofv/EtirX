@@ -109,11 +109,15 @@ export function Cart() {
     };
   }, [hydrated, promoCode, subtotal]);
 
-  const updateQuantity = (id: number, delta: number) => {
+  // Composite (product + variant) identity so a default/null-variant line for one
+  // product cannot collide with a variant line whose variant id equals that product id.
+  const lineKey = (item: CartItem) => `${item.perfume.id}-${item.variant.id ?? "default"}`;
+
+  const updateQuantity = (key: string, delta: number) => {
     setCartItems((items) =>
       items
         .map((item) =>
-          (item.variant.id ?? item.perfume.id) === id
+          lineKey(item) === key
             ? { ...item, quantity: Math.max(0, item.quantity + delta) }
             : item
         )
@@ -121,8 +125,8 @@ export function Cart() {
     );
   };
 
-  const removeItem = (id: number) => {
-    setCartItems((items) => items.filter((item) => (item.variant.id ?? item.perfume.id) !== id));
+  const removeItem = (key: string) => {
+    setCartItems((items) => items.filter((item) => lineKey(item) !== key));
   };
 
   if (!hydrated) {
@@ -162,7 +166,7 @@ export function Cart() {
       <div className="px-4 sm:px-6 lg:px-8 mb-6">
         <div className="space-y-4">
           {cartItems.map((item) => (
-            <div key={`${item.perfume.id}-${item.variant.id ?? "default"}`} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
+            <div key={lineKey(item)} className="bg-zinc-900 rounded-3xl p-4 border border-zinc-800 flex gap-4">
               <div className="w-24 h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-2xl overflow-hidden flex-shrink-0">
                 <img src={item.variant.imageUrl || item.perfume.image} alt={item.perfume.name} onError={onImageError} className="w-full h-full object-cover" />
               </div>
@@ -176,15 +180,15 @@ export function Cart() {
                 </div>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center bg-zinc-800 rounded-xl px-1">
-                    <button onClick={() => updateQuantity(item.variant.id ?? item.perfume.id, -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button onClick={() => updateQuantity(lineKey(item), -1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
                       <Minus className="w-3.5 h-3.5" />
                     </button>
                     <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
-                    <button onClick={() => updateQuantity(item.variant.id ?? item.perfume.id, 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
+                    <button onClick={() => updateQuantity(lineKey(item), 1)} className="p-2 hover:bg-zinc-700 rounded-lg transition-all">
                       <Plus className="w-3.5 h-3.5" />
                     </button>
                   </div>
-                  <button onClick={() => removeItem(item.variant.id ?? item.perfume.id)} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
+                  <button onClick={() => removeItem(lineKey(item))} className="p-2 hover:bg-zinc-800 rounded-xl transition-all text-red-500">
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
