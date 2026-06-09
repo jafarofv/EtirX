@@ -13,7 +13,7 @@ import {
   type AuthUser,
   type UserOrder,
 } from "../lib/auth";
-import { syncStoredCollections } from "../lib/storage";
+import { syncStoredCollections, hydrateCollectionsFromServer } from "../lib/storage";
 import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
@@ -103,6 +103,7 @@ export function Profile() {
       setUser(created);
       setPassword("");
       setSuccess(t("profile.accountCreated"));
+      await hydrateCollectionsFromServer();
       await syncStoredCollections();
       await loadOrders();
       if (nextPath) navigate(nextPath);
@@ -130,6 +131,7 @@ export function Profile() {
       setUser(logged);
       setPassword("");
       setSuccess(t("profile.loginSuccess"));
+      await hydrateCollectionsFromServer();
       await syncStoredCollections();
       await loadOrders();
       if (nextPath) navigate(nextPath);
