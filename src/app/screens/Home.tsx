@@ -114,7 +114,7 @@ export function Home() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
           <input
             type="text"
-            placeholder={t("home.search")}
+            placeholder={t("home.search")} aria-label={t("home.search")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -200,6 +200,7 @@ export function Home() {
                     setPulseFavorite(perfume.id);
                     setTimeout(() => setPulseFavorite(null), 180);
                   }}
+                  aria-label={t("a11y.favorite")}
                   className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
                 >
                   <Heart className={`w-4 h-4 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`} />
@@ -243,6 +244,7 @@ export function Home() {
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
+                    aria-label={t("a11y.addToCart")}
                     disabled={!perfume.inStock}
                     className={`bg-white text-black p-2.5 rounded-xl hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
@@ -280,6 +282,7 @@ export function Home() {
                     setPulseFavorite(perfume.id);
                     setTimeout(() => setPulseFavorite(null), 180);
                   }}
+                  aria-label={t("a11y.favorite")}
                   className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
                 >
                   <Heart className={`w-3.5 h-3.5 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`} />
@@ -322,6 +325,7 @@ export function Home() {
                       setPulseCart(perfume.id);
                       setTimeout(() => setPulseCart(null), 180);
                     }}
+                    aria-label={t("a11y.addToCart")}
                     disabled={!perfume.inStock}
                     className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                   >

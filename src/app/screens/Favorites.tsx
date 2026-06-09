@@ -78,6 +78,7 @@ export function Favorites() {
                 <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
                   <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <button
+                      aria-label={t("favorites.title")}
                       onClick={(e) => {
                         e.stopPropagation();
                         removeFavorite(perfume.id);
@@ -119,6 +120,7 @@ export function Favorites() {
                           imageUrl: perfume.defaultVariant.imageUrl,
                         } : undefined);
                       }}
+                      aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
                       className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                     >

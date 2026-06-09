@@ -107,12 +107,14 @@ export function ProductDetails() {
       <div className="fixed top-[28px] md:top-[24px] left-0 right-0 z-10 bg-black/50 backdrop-blur-xl">
         <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <button
+            aria-label={t("a11y.back")}
             onClick={() => navigate(-1)}
             className="w-10 h-10 rounded-full bg-zinc-900/80 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <button
+            aria-label={t("a11y.favorite")}
             onClick={() => {
               setFavorite(toggleFavorite(perfume.id, perfume.slug));
               setPulseFavorite(true);

@@ -346,19 +346,19 @@ export function Checkout() {
             <input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder={t("checkout.fullName")}
+              placeholder={t("checkout.fullName")} aria-label={t("checkout.fullName")}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
             <input
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder={t("checkout.phone")}
+              placeholder={t("checkout.phone")} aria-label={t("checkout.phone")}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("checkout.notes")}
+              placeholder={t("checkout.notes")} aria-label={t("checkout.notes")}
               rows={2}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />
@@ -371,7 +371,7 @@ export function Checkout() {
                   setPromoMsg(null);
                   setPromoDiscount(0);
                 }}
-                placeholder={t("checkout.promo")}
+                placeholder={t("checkout.promo")} aria-label={t("checkout.promo")}
                 className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
               />
               <button
@@ -421,7 +421,7 @@ export function Checkout() {
             <textarea
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder={t("checkout.addrInput")}
+              placeholder={t("checkout.addrInput")} aria-label={t("checkout.addrInput")}
               rows={3}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
             />

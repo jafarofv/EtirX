@@ -116,6 +116,7 @@ export function OrderTracking() {
         <input
           type="text"
           placeholder="Sifariş kodu (məs: ETX-ABC123)"
+          aria-label="Sifariş kodu"
           value={orderCode}
           onChange={(e) => setOrderCode(e.target.value.toUpperCase())}
           style={{
