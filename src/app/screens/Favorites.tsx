@@ -47,15 +47,12 @@ export function Favorites() {
   if (favorites.length === 0) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="w-20 h-20 bg-zinc-900 rounded-full flex items-center justify-center mb-6 border border-zinc-800">
-          <Heart className="w-10 h-10 text-zinc-600" />
+        <div className="w-20 h-20 glass rounded-full flex items-center justify-center mb-6">
+          <Heart className="w-10 h-10 text-gold" />
         </div>
-        <h2 className="text-xl mb-2">{t("favorites.empty")}</h2>
+        <h2 className="font-display text-3xl mb-2">{t("favorites.empty")}</h2>
         <p className="text-sm text-zinc-400 mb-8 text-center">{t("favorites.explore")}</p>
-        <button
-          onClick={() => navigate("/")}
-          className="bg-white text-black px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
-        >
+        <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
           {t("favorites.explore")}
         </button>
       </div>
@@ -71,7 +68,7 @@ export function Favorites() {
         noindex
       />
       <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
-        <h1 className="text-2xl mb-1">{t("favorites.title")}</h1>
+        <h1 className="font-display text-4xl mb-1">{t("favorites.title")}</h1>
         <p className="text-sm text-zinc-400">
           {favorites.length} {t("shop.count")}
         </p>
@@ -80,17 +77,14 @@ export function Favorites() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {favorites.map((perfume) => (
-            <div
-              key={perfume.id}
-              className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 group"
-            >
+            <div key={perfume.id} className="glass premium-card rounded-3xl overflow-hidden group">
               <div onClick={() => navigate(`/product/${perfume.slug}`)} className="cursor-pointer">
-                <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
+                <div className="aspect-square relative overflow-hidden">
                   <img
                     src={perfume.image}
                     alt={perfume.name}
                     onError={onImageError}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="zoom-img w-full h-full object-cover"
                   />
                   <button
                     aria-label={t("favorites.title")}
@@ -98,12 +92,12 @@ export function Favorites() {
                       e.stopPropagation();
                       removeFavorite(perfume.id);
                     }}
-                    className="absolute top-3 right-3 w-9 h-9 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-black/70 transition-all border border-zinc-700"
+                    className="absolute top-3 right-3 w-9 h-9 glass rounded-full flex items-center justify-center hover:border-gold transition-all"
                   >
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
                   </button>
                   {perfume.originalPrice && (
-                    <div className="absolute top-3 left-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+                    <div className="badge-lux badge-sale absolute top-3 left-3 px-2.5 py-1 rounded-full text-[10px]">
                       {t("common.sale")}
                     </div>
                   )}
@@ -111,18 +105,18 @@ export function Favorites() {
                 <div className="p-4">
                   {perfume.reviews > 0 && (
                     <div className="flex items-center gap-1 mb-1.5">
-                      <Star aria-hidden="true" className="w-3 h-3 fill-white text-white" />
+                      <Star aria-hidden="true" className="w-3 h-3 fill-gold text-gold" />
                       <span className="text-xs font-medium">{perfume.rating}</span>
                     </div>
                   )}
-                  <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
+                  <h3 className="font-display text-lg mb-1 truncate">{perfume.name}</h3>
                   <p className="text-xs text-zinc-400 mb-1">{perfume.size}</p>
                   {!perfume.inStock && (
                     <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
                   )}
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="font-medium">{fmt(perfume.price)}</span>
+                      <span className="text-gold font-medium">{fmt(perfume.price)}</span>
                       {perfume.originalPrice && (
                         <span className="text-xs text-zinc-500 line-through ml-1.5">
                           {fmt(perfume.originalPrice)}
@@ -150,7 +144,7 @@ export function Favorites() {
                       }}
                       aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
-                      className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                      className={`btn-gold p-2 rounded-lg ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </button>

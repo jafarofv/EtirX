@@ -166,12 +166,12 @@ export function Profile() {
           path="/profile"
           noindex
         />
-        <h1 className="text-2xl mb-6">{title}</h1>
+        <h1 className="font-display text-4xl mb-6">{title}</h1>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-4">
+        <div className="glass rounded-3xl p-6 mb-4">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-14 h-14 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-              <User className="w-7 h-7" />
+            <div className="w-14 h-14 rounded-full glass flex items-center justify-center">
+              <User className="w-7 h-7 text-gold" />
             </div>
             <div>
               <p className="font-medium">{user.full_name}</p>
@@ -182,7 +182,7 @@ export function Profile() {
           </div>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-2 mb-4">
+        <div className="glass rounded-3xl p-2 mb-4">
           <button
             onClick={() => navigate("/profile/edit")}
             className="w-full px-4 py-3 rounded-2xl hover:bg-zinc-800 flex items-center justify-between"
@@ -203,14 +203,14 @@ export function Profile() {
           </button>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 mb-6">
-          <h2 className="text-lg mb-3">{t("profile.myOrders")}</h2>
+        <div className="glass rounded-3xl p-6 mb-6">
+          <h2 className="font-display text-2xl mb-3">{t("profile.myOrders")}</h2>
           <div className="space-y-4">
             {orders.length === 0 && (
               <p className="text-sm text-zinc-500">{t("profile.noOrders")}</p>
             )}
             {orders.map((o) => (
-              <div key={o.code} className="bg-black/40 rounded-[20px] p-4 border border-zinc-800">
+              <div key={o.code} className="glass rounded-[20px] p-4">
                 <div className="flex items-start justify-between gap-4 mb-4">
                   <div>
                     <div className="flex items-center gap-3 flex-wrap mb-2">
@@ -229,7 +229,7 @@ export function Profile() {
                     <p className="text-xs text-zinc-500 uppercase tracking-wider">
                       {t("profile.total")}
                     </p>
-                    <p className="text-xl font-medium">{fmt(o.total)}</p>
+                    <p className="text-gold text-xl font-medium">{fmt(o.total)}</p>
                   </div>
                 </div>
 
@@ -237,7 +237,7 @@ export function Profile() {
                   {o.items.slice(0, 3).map((item) => (
                     <div
                       key={`${o.code}-${item.product}`}
-                      className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0"
+                      className="w-12 h-12 rounded-xl overflow-hidden glass shrink-0"
                     >
                       <img
                         src={item.product_image}
@@ -248,7 +248,7 @@ export function Profile() {
                     </div>
                   ))}
                   {o.items.length > 3 && (
-                    <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-xs text-zinc-300 shrink-0">
+                    <div className="w-12 h-12 rounded-xl glass flex items-center justify-center text-xs text-zinc-300 shrink-0">
                       +{o.items.length - 3}
                     </div>
                   )}
@@ -304,7 +304,7 @@ export function Profile() {
 
         <button
           onClick={onLogout}
-          className="w-full bg-zinc-900 hover:bg-red-950 border border-zinc-800 hover:border-red-900 rounded-2xl p-4 flex items-center justify-center gap-2"
+          className="w-full glass hover:bg-red-950/40 hover:border-red-900 rounded-2xl p-4 flex items-center justify-center gap-2 transition-all"
         >
           <LogOut className="w-4 h-4 text-red-500" />
           <span className="text-red-500">{t("profile.logout")}</span>
@@ -323,17 +323,17 @@ export function Profile() {
       />
       <h1 className="text-2xl mb-6">{title}</h1>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6">
+      <div className="glass rounded-3xl p-6">
         <div className="flex gap-2 mb-5">
           <button
             onClick={() => setMode("login")}
-            className={`px-4 py-2 rounded-xl text-sm ${mode === "login" ? "bg-white text-black" : "bg-zinc-800 text-zinc-300"}`}
+            className={`px-4 py-2 rounded-xl text-sm transition-all ${mode === "login" ? "bg-gold text-[#1a1206] font-semibold" : "glass text-zinc-300"}`}
           >
             {t("profile.login")}
           </button>
           <button
             onClick={() => setMode("register")}
-            className={`px-4 py-2 rounded-xl text-sm ${mode === "register" ? "bg-white text-black" : "bg-zinc-800 text-zinc-300"}`}
+            className={`px-4 py-2 rounded-xl text-sm transition-all ${mode === "register" ? "bg-gold text-[#1a1206] font-semibold" : "glass text-zinc-300"}`}
           >
             {t("profile.register")}
           </button>
@@ -348,7 +348,7 @@ export function Profile() {
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t("profile.fullName")}
                 aria-label={t("profile.fullName")}
-                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : "border-zinc-700"}`}
+                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : ""}`}
               />
             </div>
             <div className="relative">
@@ -359,7 +359,7 @@ export function Profile() {
                 placeholder={t("profile.email")}
                 aria-label={t("profile.email")}
                 type="email"
-                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
               />
             </div>
             <div className="relative">
@@ -369,7 +369,7 @@ export function Profile() {
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={t("profile.phone")}
                 aria-label={t("profile.phone")}
-                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
+                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
               />
             </div>
 
@@ -381,13 +381,13 @@ export function Profile() {
                 placeholder={t("profile.password")}
                 aria-label={t("profile.password")}
                 type="password"
-                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
               />
             </div>
             <button
               disabled={loading}
               onClick={onRegister}
-              className="w-full bg-white text-black rounded-xl py-3"
+              className="btn-gold w-full rounded-xl py-3"
             >
               {loading ? "..." : t("profile.createAccount")}
             </button>
@@ -404,7 +404,7 @@ export function Profile() {
                 placeholder={t("profile.email")}
                 aria-label={t("profile.email")}
                 type="email"
-                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
               />
             </div>
             <div className="relative">
@@ -415,13 +415,13 @@ export function Profile() {
                 placeholder={t("profile.password")}
                 aria-label={t("profile.password")}
                 type="password"
-                className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
               />
             </div>
             <button
               disabled={loading}
               onClick={onLogin}
-              className="w-full bg-white text-black rounded-xl py-3"
+              className="btn-gold w-full rounded-xl py-3"
             >
               {loading ? "..." : t("profile.login")}
             </button>
@@ -485,32 +485,32 @@ export function EditProfilePage() {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate("/profile")}
-          className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center"
+          className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl">{t("profile.editTitle")}</h1>
+        <h1 className="font-display text-4xl">{t("profile.editTitle")}</h1>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-3">
+      <div className="glass rounded-3xl p-6 space-y-3">
         <input
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          className="w-full glass premium-input rounded-xl py-3 px-3"
           placeholder={t("profile.fullName")}
           aria-label={t("profile.fullName")}
         />
         <input
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          className="w-full glass premium-input rounded-xl py-3 px-3"
           placeholder={t("profile.phone")}
           aria-label={t("profile.phone")}
         />
         <textarea
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          className="w-full glass premium-input rounded-xl py-3 px-3"
           rows={4}
           placeholder={t("profile.address")}
           aria-label={t("profile.address")}
@@ -534,7 +534,7 @@ export function EditProfilePage() {
               setLoading(false);
             }
           }}
-          className="w-full bg-white text-black rounded-xl py-3"
+          className="btn-gold w-full rounded-xl py-3"
         >
           {loading ? "..." : t("profile.save")}
         </button>
@@ -565,19 +565,19 @@ export function ChangePasswordPage() {
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => navigate("/profile")}
-          className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center"
+          className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-2xl">{t("profile.passwordTitle")}</h1>
+        <h1 className="font-display text-4xl">{t("profile.passwordTitle")}</h1>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 space-y-3">
+      <div className="glass rounded-3xl p-6 space-y-3">
         <input
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           type="password"
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          className="w-full glass premium-input rounded-xl py-3 px-3"
           placeholder={t("profile.currentPassword")}
           aria-label={t("profile.currentPassword")}
         />
@@ -585,7 +585,7 @@ export function ChangePasswordPage() {
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
           type="password"
-          className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 px-3"
+          className="w-full glass premium-input rounded-xl py-3 px-3"
           placeholder={t("profile.newPassword")}
           aria-label={t("profile.newPassword")}
         />
@@ -609,7 +609,7 @@ export function ChangePasswordPage() {
               setLoading(false);
             }
           }}
-          className="w-full bg-white text-black rounded-xl py-3"
+          className="btn-gold w-full rounded-xl py-3"
         >
           {loading ? "..." : t("profile.updatePasswordBtn")}
         </button>
