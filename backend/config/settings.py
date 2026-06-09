@@ -163,6 +163,8 @@ REST_FRAMEWORK = {
         "user": "400/min",
         "auth": "10/min",
         "order": "15/min",
+        "contact": "20/min",
+        "promo": "60/min",
     },
     "EXCEPTION_HANDLER": "shop.handlers.custom_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
