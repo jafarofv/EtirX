@@ -93,9 +93,7 @@ export function ProductDetails() {
           setActiveImage(variant.imageUrl || perfume.image);
         }}
         className={`rounded-2xl border p-4 text-left transition-all ${
-          isSelected
-            ? "border-white bg-white/5"
-            : "border-zinc-800 bg-zinc-900 hover:border-zinc-600"
+          isSelected ? "border-gold bg-[var(--gold-soft)]" : "glass hover:border-gold/50"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
@@ -108,7 +106,7 @@ export function ProductDetails() {
             </p>
           </div>
           <div className="text-right shrink-0">
-            <p className="font-medium">{fmt(variant.price)}</p>
+            <p className="font-medium text-gold">{fmt(variant.price)}</p>
             <p className={`text-xs mt-1 ${variant.stock > 0 ? "text-green-400" : "text-red-400"}`}>
               {variant.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
             </p>
@@ -157,7 +155,7 @@ export function ProductDetails() {
           <button
             aria-label={t("a11y.back")}
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-zinc-900/80 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"
+            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
@@ -168,7 +166,7 @@ export function ProductDetails() {
               setPulseFavorite(true);
               setTimeout(() => setPulseFavorite(false), 180);
             }}
-            className="w-10 h-10 rounded-full bg-zinc-900/80 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"
+            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
           >
             <Heart
               className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
@@ -204,7 +202,7 @@ export function ProductDetails() {
                 <button
                   key={`${perfume.id}-img-${idx}`}
                   onClick={() => setActiveImage(img)}
-                  className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-white" : "border-zinc-700"}`}
+                  className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-gold" : "border-white/15"}`}
                 >
                   <img
                     src={img}
@@ -224,12 +222,14 @@ export function ProductDetails() {
         >
           <div className="flex items-start justify-between mb-4">
             <div>
-              <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
-              <h1 className="text-2xl mb-2">{perfume.name}</h1>
+              <p className="text-sm text-gold/80 tracking-wide uppercase mb-1">{perfume.brand}</p>
+              <h1 className="font-display text-4xl sm:text-5xl leading-tight mb-2">
+                {perfume.name}
+              </h1>
               {perfume.reviews > 0 && (
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
-                    <Star aria-hidden="true" className="w-4 h-4 fill-white text-white" />
+                    <Star aria-hidden="true" className="w-4 h-4 fill-gold text-gold" />
                     <span className="text-sm font-medium">{perfume.rating}</span>
                   </div>
                   <span className="text-sm text-zinc-500">
@@ -239,7 +239,7 @@ export function ProductDetails() {
               )}
             </div>
             <div className="text-right">
-              <p className="text-2xl font-medium">{fmt(perfume.price)}</p>
+              <p className="text-gold text-3xl font-medium">{fmt(perfume.price)}</p>
               {perfume.originalPrice && (
                 <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
               )}
@@ -247,13 +247,13 @@ export function ProductDetails() {
           </div>
 
           <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
-            <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
+            <div className="glass rounded-2xl px-2.5 sm:px-4 py-3">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.size")}</p>
               <p className="text-xs sm:text-sm font-medium">
                 {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
               </p>
             </div>
-            <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
+            <div className="glass rounded-2xl px-2.5 sm:px-4 py-3">
               <p className="text-xs text-zinc-500 mb-0.5">{t("product.stock")}</p>
               <p
                 className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
@@ -261,7 +261,7 @@ export function ProductDetails() {
                 {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
               </p>
             </div>
-            <div className="bg-zinc-900 rounded-2xl px-2.5 sm:px-4 py-3 border border-zinc-800">
+            <div className="glass rounded-2xl px-2.5 sm:px-4 py-3">
               <p className="text-xs text-zinc-500 mb-0.5">Cins</p>
               <p className="text-xs sm:text-sm font-medium">{gender}</p>
             </div>
@@ -287,14 +287,14 @@ export function ProductDetails() {
           </div>
 
           <div className="mb-8 space-y-3">
-            <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+            <div className="glass rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-1">
                 <Truck className="w-4 h-4 text-zinc-300" />
                 <p className="text-sm font-medium">Çatdırılma şərtləri</p>
               </div>
               <p className="text-sm text-zinc-400">Bakı: 1-2 iş günü, regionlar: 2-4 iş günü.</p>
             </div>
-            <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800">
+            <div className="glass rounded-2xl p-4">
               <div className="flex items-center gap-2 mb-1">
                 <CreditCard className="w-4 h-4 text-zinc-300" />
                 <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
@@ -317,7 +317,7 @@ export function ProductDetails() {
           </div>
 
           <div className="flex gap-3 mb-6">
-            <div className="flex items-center bg-zinc-900 rounded-2xl border border-zinc-800 px-2">
+            <div className="flex items-center glass rounded-2xl px-2">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="p-3 hover:bg-zinc-800 rounded-xl transition-all"
@@ -347,7 +347,7 @@ export function ProductDetails() {
                 setTimeout(() => setPulseCart(false), 180);
               }}
               disabled={!selectedVariant || selectedVariant.stock <= 0}
-              className={`flex-1 bg-white text-black rounded-2xl py-4 font-medium flex items-center justify-center gap-2 hover:bg-zinc-100 transition-all ${pulseCart ? "scale-105" : ""}`}
+              className={`btn-gold flex-1 rounded-2xl py-4 flex items-center justify-center gap-2 ${pulseCart ? "scale-105" : ""} ${!selectedVariant || selectedVariant.stock <= 0 ? "opacity-40 cursor-not-allowed" : ""}`}
             >
               <ShoppingBag className="w-5 h-5" />
               {t("product.addToCart")}
@@ -362,10 +362,7 @@ export function ProductDetails() {
                 { label: t("product.heartNotes"), items: perfume.notes.heart },
                 { label: t("product.baseNotes"), items: perfume.notes.base },
               ].map((section) => (
-                <div
-                  key={section.label}
-                  className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800"
-                >
+                <div key={section.label} className="glass rounded-2xl p-4">
                   <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">
                     {section.label}
                   </p>
