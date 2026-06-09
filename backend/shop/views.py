@@ -299,6 +299,35 @@ class OrderViewSet(mixins.CreateModelMixin, mixins.RetrieveModelMixin, viewsets.
         )
         return Response(OrderSerializer(orders, many=True, context={"request": request}).data)
 
+    @action(detail=True, methods=["post"], url_path="cancel", permission_classes=[permissions.IsAuthenticated])
+    def cancel(self, request, code=None):
+        """Owner-only order cancellation. Atomically restores stock for each
+        line item and sets status to 'cancelled'. Only orders that have not yet
+        shipped (status new/confirmed) can be cancelled, and the restock runs
+        once (a re-cancel is rejected)."""
+        CANCELLABLE = {"new", "confirmed"}
+        with transaction.atomic():
+            order = (
+                Order.objects.select_for_update()
+                .filter(code=code, user=request.user)
+                .first()
+            )
+            if order is None:
+                return Response({"detail": "Sifariş tapılmadı."}, status=status.HTTP_404_NOT_FOUND)
+            if order.status not in CANCELLABLE:
+                return Response(
+                    {"detail": "Bu sifarişi ləğv etmək mümkün deyil."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            for item in order.items.all():
+                if item.variant_id is not None:
+                    ProductVariant.objects.filter(pk=item.variant_id).update(stock=F("stock") + item.quantity)
+                else:
+                    Product.objects.filter(pk=item.product_id).update(stock=F("stock") + item.quantity)
+            order.status = "cancelled"
+            order.save(update_fields=["status", "updated_at"])
+        return Response(OrderSerializer(order, context={"request": request}).data)
+
     @action(detail=False, methods=["get"], url_path="by-code", permission_classes=[permissions.AllowAny])
     def by_code(self, request):
         """Public order-lookup endpoint for the tracking page.
