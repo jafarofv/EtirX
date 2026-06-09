@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router";
 import { formatCurrency } from "../lib/formatCurrency";
+import { useI18n } from "../i18n";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const WS_BASE =
@@ -15,17 +16,19 @@ interface OrderStatus {
   created_at: string;
 }
 
-const STATUS_MAP: Record<string, { label: string; color: string; icon: string }> = {
-  new: { label: "Gözləmədə", color: "#e65100", icon: "📝" },
-  confirmed: { label: "Təsdiqləndi", color: "#1976d2", icon: "✅" },
-  shipped: { label: "Yolda", color: "#0d47a1", icon: "🚚" },
-  delivered: { label: "Çatdırıldı", color: "#1b5e20", icon: "🎉" },
-  cancelled: { label: "Ləğv edildi", color: "#b71c1c", icon: "❌" },
+// Visual styling only — labels are routed through i18n (status.* keys).
+const STATUS_STYLE: Record<string, { color: string; icon: string }> = {
+  new: { color: "#e65100", icon: "📝" },
+  confirmed: { color: "#1976d2", icon: "✅" },
+  shipped: { color: "#0d47a1", icon: "🚚" },
+  delivered: { color: "#1b5e20", icon: "🎉" },
+  cancelled: { color: "#b71c1c", icon: "❌" },
 };
 
 const ORDER_STATUSES = ["new", "confirmed", "shipped", "delivered"];
 
 export function OrderTracking() {
+  const { t, language } = useI18n();
   const [searchParams] = useSearchParams();
   const codeFromUrl = searchParams.get("code") || "";
   const [orderCode, setOrderCode] = useState(codeFromUrl);
@@ -35,29 +38,32 @@ export function OrderTracking() {
   const [wsConnected, setWsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
 
-  const fetchStatus = useCallback(async (code: string) => {
-    if (!code.trim()) return;
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${API_BASE}/orders/by-code/?code=${encodeURIComponent(code)}`);
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError("Sifariş tapılmadı. Kodu yoxlayın.");
-        } else {
-          setError("Xəta baş verdi. Yenidən cəhd edin.");
+  const fetchStatus = useCallback(
+    async (code: string) => {
+      if (!code.trim()) return;
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch(`${API_BASE}/orders/by-code/?code=${encodeURIComponent(code)}`);
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError(t("tracking.notFoundCheck"));
+          } else {
+            setError(t("tracking.genericError"));
+          }
+          setStatus(null);
+          return;
         }
-        setStatus(null);
-        return;
+        const data = await res.json();
+        setStatus(data);
+      } catch {
+        setError(t("tracking.networkError"));
+      } finally {
+        setLoading(false);
       }
-      const data = await res.json();
-      setStatus(data);
-    } catch {
-      setError("Şəbəkə xətası. İnternet bağlantınızı yoxlayın.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [t]
+  );
 
   const connectWebSocket = useCallback((code: string) => {
     if (wsRef.current) {
@@ -103,11 +109,9 @@ export function OrderTracking() {
   return (
     <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 20px" }}>
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "#2d1b4e" }}>
-        📦 Sifariş İzləmə
+        {t("tracking.heading")}
       </h1>
-      <p style={{ color: "#666", marginBottom: 24 }}>
-        Sifariş kodunuzu daxil edərək statusunu izləyə bilərsiniz.
-      </p>
+      <p style={{ color: "#666", marginBottom: 24 }}>{t("tracking.intro")}</p>
 
       <form
         onSubmit={handleSearch}
@@ -115,8 +119,8 @@ export function OrderTracking() {
       >
         <input
           type="text"
-          placeholder="Sifariş kodu (məs: ETX-ABC123)"
-          aria-label="Sifariş kodu"
+          placeholder={t("tracking.codePlaceholder")}
+          aria-label={t("tracking.codeLabel")}
           value={orderCode}
           onChange={(e) => setOrderCode(e.target.value.toUpperCase())}
           style={{
@@ -144,7 +148,7 @@ export function OrderTracking() {
             opacity: loading ? 0.6 : 1,
           }}
         >
-          {loading ? "..." : "İzlə"}
+          {loading ? "..." : t("tracking.track")}
         </button>
       </form>
 
@@ -174,7 +178,7 @@ export function OrderTracking() {
           }}
         >
           <div style={{ marginBottom: 16 }}>
-            <span style={{ color: "#888", fontSize: 14 }}>Sifariş kodu</span>
+            <span style={{ color: "#888", fontSize: 14 }}>{t("tracking.codeLabel")}</span>
             <h2 style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 700 }}>
               {status.code}
             </h2>
@@ -205,14 +209,14 @@ export function OrderTracking() {
                   animation: "pulse 2s infinite",
                 }}
               />
-              Canlı
+              {t("tracking.live")}
             </div>
           )}
 
           {/* Progress stepper */}
           <div style={{ display: "flex", justifyContent: "space-between", margin: "24px 0", position: "relative" }}>
             {ORDER_STATUSES.map((s, idx) => {
-              const info = STATUS_MAP[s];
+              const info = STATUS_STYLE[s];
               const isActive = idx <= currentStep;
               const isCurrent = idx === currentStep;
               return (
@@ -254,7 +258,7 @@ export function OrderTracking() {
                       textAlign: "center",
                     }}
                   >
-                    {info.label}
+                    {t(`status.${s}`)}
                   </span>
                 </div>
               );
@@ -284,15 +288,15 @@ export function OrderTracking() {
             }}
           >
             <div>
-              <div style={{ fontSize: 12, color: "#888" }}>Ümumi məbləğ</div>
+              <div style={{ fontSize: 12, color: "#888" }}>{t("tracking.total")}</div>
               <div style={{ fontSize: 18, fontWeight: 700, color: "#6b1d5e" }}>
                 {formatCurrency(Number(status.total))}
               </div>
             </div>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: "#888" }}>Tarix</div>
+              <div style={{ fontSize: 12, color: "#888" }}>{t("tracking.date")}</div>
               <div style={{ fontSize: 14 }}>
-                {new Date(status.created_at).toLocaleDateString("az", {
+                {new Date(status.created_at).toLocaleDateString(language, {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
@@ -315,7 +319,7 @@ export function OrderTracking() {
                 textAlign: "center",
               }}
             >
-              Bu sifariş ləğv edilib.
+              {t("tracking.cancelledNotice")}
             </div>
           )}
         </div>
