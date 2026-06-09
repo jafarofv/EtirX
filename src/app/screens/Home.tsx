@@ -7,6 +7,7 @@ import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 
 export function Home() {
   const navigate = useNavigate();
@@ -186,7 +187,7 @@ export function Home() {
               className="min-w-[260px] sm:min-w-[280px] lg:min-w-[320px] bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
             >
               <div className="aspect-[4/3] bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
-                <img src={perfume.image} alt={perfume.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -203,7 +204,7 @@ export function Home() {
               <div className="p-5">
                 {perfume.reviews > 0 && (
                   <div className="flex items-center gap-1 mb-2">
-                    <Star className="w-4 h-4 fill-white text-white" />
+                    <Star aria-hidden="true" className="w-4 h-4 fill-white text-white" />
                     <span className="text-sm font-medium">{perfume.rating}</span>
                     <span className="text-xs text-zinc-500">({perfume.reviews})</span>
                   </div>
@@ -257,7 +258,7 @@ export function Home() {
               className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
             >
               <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
-                <img src={perfume.image} alt={perfume.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
@@ -274,7 +275,7 @@ export function Home() {
               <div className="p-4">
                 {perfume.reviews > 0 && (
                   <div className="flex items-center gap-1 mb-1.5">
-                    <Star className="w-3 h-3 fill-white text-white" />
+                    <Star aria-hidden="true" className="w-3 h-3 fill-white text-white" />
                     <span className="text-xs font-medium">{perfume.rating}</span>
                   </div>
                 )}

@@ -6,6 +6,7 @@ import { addToCart, getFavoriteIds } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { syncStoredCollections } from "../lib/storage";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 import { Seo } from "../components/Seo";
 
 export function Favorites() {
@@ -75,7 +76,7 @@ export function Favorites() {
             <div key={perfume.id} className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 group">
               <div onClick={() => navigate(`/product/${perfume.slug}`)} className="cursor-pointer">
                 <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
-                  <img src={perfume.image} alt={perfume.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={perfume.image} alt={perfume.name} onError={onImageError} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -92,7 +93,7 @@ export function Favorites() {
                 <div className="p-4">
                   {perfume.reviews > 0 && (
                     <div className="flex items-center gap-1 mb-1.5">
-                      <Star className="w-3 h-3 fill-white text-white" />
+                      <Star aria-hidden="true" className="w-3 h-3 fill-white text-white" />
                       <span className="text-xs font-medium">{perfume.rating}</span>
                     </div>
                   )}

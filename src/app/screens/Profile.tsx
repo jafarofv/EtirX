@@ -16,6 +16,7 @@ import {
 import { syncStoredCollections } from "../lib/storage";
 import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
 import { formatCurrency } from "../lib/formatCurrency";
+import { onImageError } from "../lib/imageFallback";
 import { Seo } from "../components/Seo";
 
 function useAuthState() {
@@ -194,7 +195,7 @@ export function Profile() {
                 <div className="flex items-center gap-2 mb-3 overflow-hidden">
                   {o.items.slice(0, 3).map((item) => (
                     <div key={`${o.code}-${item.product}`} className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
-                      <img src={item.product_image} alt={item.product_name} className="w-full h-full object-cover" />
+                      <img src={item.product_image} alt={item.product_name} onError={onImageError} className="w-full h-full object-cover" />
                     </div>
                   ))}
                   {o.items.length > 3 && (

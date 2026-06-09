@@ -367,7 +367,7 @@ export function Layout() {
                             </div>
                             <div className="flex items-center gap-1 text-amber-400 shrink-0">
                               {Array.from({ length: review.rating }).map((_, i) => (
-                                <Star key={`${review.id}-${i}`} className="w-3.5 h-3.5 fill-current" />
+                                <Star key={`${review.id}-${i}`} aria-hidden="true" className="w-3.5 h-3.5 fill-current" />
                               ))}
                             </div>
                           </div>
