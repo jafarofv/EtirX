@@ -12,6 +12,8 @@ const FALLBACK_SETTINGS: ApiSiteSettings = {
   tiktok_url: "https://www.tiktok.com/@etirx.az",
   tiktok_handle: "@etirx.az",
   store_address: "Fəxrəddin Musayev küçəsi, Adore Plaza",
+  banner_text: "",
+  gram_image_url: "",
 };
 
 type SiteSettingsContextValue = ApiSiteSettings & { whatsappUrl: string };

@@ -190,6 +190,8 @@ export type ApiSiteSettings = {
   tiktok_url: string;
   tiktok_handle: string;
   store_address: string;
+  banner_text: string;
+  gram_image_url: string;
 };
 
 export async function getSiteSettings() {

@@ -72,7 +72,7 @@ export function Layout() {
     { to: "/gizlilik", label: t("menu.privacy") },
     { to: "/sertler", label: t("menu.terms") },
   ];
-  const promoLines = [t("promo.line1"), t("promo.line2"), t("promo.line3")];
+  const promoLines = [site.banner_text || t("promo.line1"), t("promo.line2"), t("promo.line3")];
   const socialLinks = [
     { href: site.whatsappUrl, label: "WhatsApp", kind: "whatsapp" },
     { href: site.instagram_url, label: "Instagram", kind: "instagram" },
