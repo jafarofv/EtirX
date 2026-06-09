@@ -18,6 +18,7 @@ from .models import (
     DeliveryMethod,
     Testimonial,
     SiteSettings,
+    StaticPage,
 )
 from .cache_utils import (
     invalidate_product_cache,
@@ -231,3 +232,13 @@ admin.site.register(UserCartItem, UserCartItemAdmin)
 admin.site.register(PromoCode, PromoCodeAdmin)
 admin.site.register(PromoRedemption, PromoRedemptionAdmin)
 admin.site.register(FragranceNote, FragranceNoteAdmin)
+
+
+class StaticPageAdmin(admin.ModelAdmin):
+    list_display = ("slug", "language", "title", "is_published", "updated_at")
+    list_filter = ("slug", "language", "is_published")
+    search_fields = ("title", "subtitle", "body")
+    list_editable = ("is_published",)
+
+
+admin.site.register(StaticPage, StaticPageAdmin)
