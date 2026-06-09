@@ -134,7 +134,8 @@ export async function getProducts(params?: { category?: string; q?: string }) {
   if (params?.category) search.set("category", params.category);
   if (params?.q) search.set("q", params.q);
   const qs = search.toString();
-  return request<ApiProduct[]>(`/products/${qs ? `?${qs}` : ""}`);
+  const data = await request<{ results: ApiProduct[]; count: number } | ApiProduct[]>(`/products/${qs ? `?${qs}` : ""}`);
+  return Array.isArray(data) ? data : (data.results ?? []);
 }
 
 export async function getCategories() {

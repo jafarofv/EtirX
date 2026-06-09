@@ -4,20 +4,22 @@ Uses django-redis with connection pooling.
 """
 import os
 
+_redis_url = os.getenv("REDIS_URL", "")
+_use_redis = bool(_redis_url)  # Fallback to LocMemCache when Redis is not configured
+
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0"),
+        "BACKEND": "django_redis.cache.RedisCache" if _use_redis else "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": _redis_url if _use_redis else "etirx-local",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "CONNECTION_POOL_KWARGS": {
                 "max_connections": 50,
                 "retry_on_timeout": True,
             },
-            "PARSER_CLASS": "redis.connection.HiredisParser",  # not required, but faster
-        },
+        } if _use_redis else {},
         "KEY_PREFIX": "etirx",
-        "TIMEOUT": 300,  # 5 minutes default
+        "TIMEOUT": 300,
     },
 }
 

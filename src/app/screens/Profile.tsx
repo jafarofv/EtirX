@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { User, Mail, Lock, LogOut, Shield, Phone, MapPin, ChevronRight, ArrowLeft } from "lucide-react";
+import { User, Mail, Lock, LogOut, Shield, Phone, ChevronRight, ArrowLeft } from "lucide-react";
 import { useI18n } from "../i18n";
 import {
   changePassword,
@@ -129,7 +129,6 @@ export function Profile() {
         full_name: fullName.trim(),
         email: email.trim().toLowerCase(),
         phone: phone.trim(),
-        address: address.trim(),
         password,
       });
       setUser(created);
@@ -320,10 +319,7 @@ export function Profile() {
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t("profile.phone")} className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`} />
             </div>
-            <div className="relative">
-              <MapPin className="absolute left-3 top-4 w-4 h-4 text-zinc-500" />
-              <textarea value={address} onChange={(e) => setAddress(e.target.value)} placeholder={t("profile.address")} rows={3} className="w-full bg-zinc-800 border border-zinc-700 rounded-xl py-3 pl-10 pr-3" />
-            </div>
+
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
               <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("profile.password")} type="password" className={`w-full bg-zinc-800 border rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`} />
