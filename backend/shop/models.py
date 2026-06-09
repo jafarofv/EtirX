@@ -269,7 +269,10 @@ class PromoRedemption(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ("promo_code", "user")
+        # No unique_together on (promo_code, user): the per-user cap is enforced
+        # by validate_promo_for_user counting existing redemptions against
+        # max_uses_per_user. A DB-unique pair would raise IntegrityError 500
+        # whenever max_uses_per_user > 1 allowed a legitimate second redemption.
         ordering = ("-created_at",)
 
     def __str__(self):
@@ -278,6 +281,9 @@ class PromoRedemption(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")
+    # PROTECT is intentional: a Product referenced by a sold OrderItem must not be
+    # deletable, so historical orders always retain an intact product reference.
+    # Deactivate (is_active=False) products instead of deleting them.
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     variant = models.ForeignKey("ProductVariant", on_delete=models.SET_NULL, null=True, blank=True, related_name="order_items")
     quantity = models.PositiveIntegerField(default=1)
@@ -325,6 +331,16 @@ class UserCartItem(models.Model):
     class Meta:
         unique_together = ("user", "variant")
         ordering = ("-updated_at",)
+        constraints = [
+            # unique_together("user","variant") does NOT cover the default
+            # (null-variant) line because SQL treats NULLs as distinct. This
+            # partial unique constraint guarantees one default line per product.
+            models.UniqueConstraint(
+                fields=["user", "product"],
+                condition=models.Q(variant__isnull=True),
+                name="uniq_default_cart_item_per_user_product",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.user.username} -> {self.product.name} ({self.variant.label if self.variant else 'default'}) x{self.quantity}"
