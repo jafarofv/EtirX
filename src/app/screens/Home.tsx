@@ -142,56 +142,58 @@ export function Home() {
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-12 pb-10 sm:pt-16 sm:pb-14">
-          <div className="animate-fade-up max-w-2xl">
-            <p className="text-gold text-[11px] sm:text-xs tracking-[0.34em] uppercase mb-3">
-              {t("home.tagline")}
-            </p>
-            <h1 className="font-display font-semibold text-6xl sm:text-7xl lg:text-8xl leading-[0.92] mb-4">
-              {t("brand.name")}
-            </h1>
-            <div className="gold-rule mb-5" />
-            <p className="text-zinc-300/90 text-sm sm:text-base max-w-md leading-relaxed">
-              {t("footer.about")}
-            </p>
-          </div>
-
-          {/* Search */}
-          <div className="animate-fade-up fade-d1 mt-8 max-w-2xl">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-              <input
-                type="text"
-                placeholder={t("home.search")}
-                aria-label={t("home.search")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-                  }
-                }}
-                className="premium-input w-full glass rounded-2xl pl-12 pr-4 py-4 text-sm text-white placeholder:text-zinc-500"
-              />
+        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-12 pb-10 sm:pt-16 sm:pb-14 lg:pt-24 lg:pb-20">
+          <div className="mx-auto max-w-7xl">
+            <div className="animate-fade-up max-w-2xl">
+              <p className="text-gold text-[11px] sm:text-xs tracking-[0.34em] uppercase mb-3">
+                {t("home.tagline")}
+              </p>
+              <h1 className="font-display font-semibold text-6xl sm:text-7xl lg:text-8xl leading-[0.92] mb-4">
+                {t("brand.name")}
+              </h1>
+              <div className="gold-rule mb-5" />
+              <p className="text-zinc-300/90 text-sm sm:text-base max-w-md leading-relaxed">
+                {t("footer.about")}
+              </p>
             </div>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {noteHints.map((note) => (
-                <button
-                  key={note}
-                  onClick={() => navigate(`/search?q=${encodeURIComponent(note)}`)}
-                  className="px-3 py-1.5 rounded-full text-xs border border-white/10 bg-white/5 text-zinc-300 hover:border-gold hover:text-gold transition-all"
-                >
-                  #{note}
-                </button>
-              ))}
+
+            {/* Search */}
+            <div className="animate-fade-up fade-d1 mt-8 max-w-2xl">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
+                <input
+                  type="text"
+                  placeholder={t("home.search")}
+                  aria-label={t("home.search")}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+                    }
+                  }}
+                  className="premium-input w-full glass rounded-2xl pl-12 pr-4 py-4 text-sm text-white placeholder:text-zinc-500"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {noteHints.map((note) => (
+                  <button
+                    key={note}
+                    onClick={() => navigate(`/search?q=${encodeURIComponent(note)}`)}
+                    className="px-3 py-1.5 rounded-full text-xs border border-white/10 bg-white/5 text-zinc-300 hover:border-gold hover:text-gold transition-all"
+                  >
+                    #{note}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── Category tabs ────────────────────────────────── */}
-      <div className="px-4 sm:px-6 lg:px-8 mt-8 mb-8">
-        <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8 mb-8">
+        <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar md:flex-wrap md:justify-center">
           {tabs.map((category) => (
             <button
               key={category.key}
@@ -209,7 +211,7 @@ export function Home() {
       </div>
 
       {/* ── Featured ─────────────────────────────────────── */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-12">
         <div className="flex items-end justify-between mb-5">
           <div>
             <h2 className="font-display text-3xl sm:text-4xl">{t("home.featured")}</h2>
@@ -223,12 +225,12 @@ export function Home() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex gap-5 overflow-x-auto pb-4 hide-scrollbar">
+        <div className="flex gap-5 overflow-x-auto pb-4 hide-scrollbar md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
           {featuredPerfumes.map((perfume) => (
             <div
               key={perfume.id}
               onClick={() => navigate(`/product/${perfume.slug}`)}
-              className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] rounded-3xl overflow-hidden cursor-pointer group"
+              className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] md:min-w-0 rounded-3xl overflow-hidden cursor-pointer group"
             >
               <div className="aspect-[4/3] relative overflow-hidden">
                 <img
@@ -309,7 +311,7 @@ export function Home() {
       </div>
 
       {/* ── All products ─────────────────────────────────── */}
-      <div className="px-4 sm:px-6 lg:px-8 pb-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
         <div className="mb-5">
           <h2 className="font-display text-3xl sm:text-4xl">{t("home.all")}</h2>
           <div className="gold-rule mt-2" />
