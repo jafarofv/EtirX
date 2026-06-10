@@ -208,27 +208,6 @@ export function Home() {
         </div>
       </div>
 
-      {/* ── Offer banner ─────────────────────────────────── */}
-      <div className="px-4 sm:px-6 lg:px-8 mb-10">
-        <div className="glass rounded-3xl p-6 sm:p-8 relative overflow-hidden">
-          <div className="absolute -top-10 -right-10 w-44 h-44 rounded-full bg-[var(--gold-soft)] blur-3xl" />
-          <div className="relative">
-            <span className="text-gold text-[11px] font-medium uppercase tracking-[0.24em]">
-              {t("home.offer.badge")}
-            </span>
-            <h3 className="font-display text-3xl sm:text-4xl mt-2 mb-1">{t("home.offer.title")}</h3>
-            <p className="text-sm text-zinc-400 mb-5">{t("home.offer.desc")}</p>
-            <button
-              onClick={() => navigate("/perfumes")}
-              className="btn-gold inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm"
-            >
-              {t("home.offer.cta")}
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* ── Featured ─────────────────────────────────────── */}
       <div className="px-4 sm:px-6 lg:px-8 mb-12">
         <div className="flex items-end justify-between mb-5">
