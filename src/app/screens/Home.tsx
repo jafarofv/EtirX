@@ -142,23 +142,23 @@ export function Home() {
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-12 pb-10 sm:pt-16 sm:pb-14 lg:pt-24 lg:pb-20">
-          <div className="mx-auto max-w-7xl">
-            <div className="animate-fade-up max-w-2xl">
-              <p className="text-gold text-[11px] sm:text-xs tracking-[0.34em] uppercase mb-3">
+        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-9 pb-8 sm:pt-11 sm:pb-9 lg:pt-14 lg:pb-12">
+          <div className="mx-auto max-w-7xl lg:flex lg:items-end lg:justify-between lg:gap-12">
+            <div className="animate-fade-up max-w-xl">
+              <p className="text-gold text-[11px] sm:text-xs tracking-[0.34em] uppercase mb-2.5">
                 {t("home.tagline")}
               </p>
-              <h1 className="font-display font-semibold text-6xl sm:text-7xl lg:text-8xl leading-[0.92] mb-4">
+              <h1 className="font-display font-semibold text-5xl sm:text-6xl lg:text-7xl leading-[0.95] mb-3">
                 {t("brand.name")}
               </h1>
-              <div className="gold-rule mb-5" />
-              <p className="text-zinc-300/90 text-sm sm:text-base max-w-md leading-relaxed">
+              <div className="gold-rule mb-3.5" />
+              <p className="text-zinc-300/90 text-sm sm:text-[15px] max-w-md leading-relaxed">
                 {t("footer.about")}
               </p>
             </div>
 
             {/* Search */}
-            <div className="animate-fade-up fade-d1 mt-8 max-w-2xl">
+            <div className="animate-fade-up fade-d1 mt-6 lg:mt-0 w-full lg:w-[400px] shrink-0">
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
                 <input
@@ -172,7 +172,7 @@ export function Home() {
                       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
                     }
                   }}
-                  className="premium-input w-full glass rounded-2xl pl-12 pr-4 py-4 text-sm text-white placeholder:text-zinc-500"
+                  className="premium-input w-full glass rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder:text-zinc-500"
                 />
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
