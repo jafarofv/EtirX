@@ -67,6 +67,12 @@ export function ProductDetails() {
     );
   }
 
+  const handleToggleFavorite = () => {
+    setFavorite(toggleFavorite(perfume.id, perfume.slug));
+    setPulseFavorite(true);
+    setTimeout(() => setPulseFavorite(false), 180);
+  };
+
   const gender =
     perfume.gender === "qadin" ? "Qadın" : perfume.gender === "kisi" ? "Kişi" : "Uniseks";
 
@@ -150,7 +156,7 @@ export function ProductDetails() {
           },
         }}
       />
-      <div className="fixed top-[28px] md:top-[24px] left-0 right-0 z-10 bg-black/50 backdrop-blur-xl">
+      <div className="fixed top-[28px] md:top-[24px] left-0 right-0 z-10 bg-black/50 backdrop-blur-xl lg:hidden">
         <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
           <button
             aria-label={t("a11y.back")}
@@ -161,11 +167,7 @@ export function ProductDetails() {
           </button>
           <button
             aria-label={t("a11y.favorite")}
-            onClick={() => {
-              setFavorite(toggleFavorite(perfume.id, perfume.slug));
-              setPulseFavorite(true);
-              setTimeout(() => setPulseFavorite(false), 180);
-            }}
+            onClick={handleToggleFavorite}
             className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
           >
             <Heart
@@ -177,6 +179,13 @@ export function ProductDetails() {
 
       <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24">
         <div>
+          <button
+            onClick={() => navigate(-1)}
+            className="hidden lg:inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-gold transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {t("a11y.back")}
+          </button>
           <div
             className="aspect-square lg:aspect-square lg:max-h-[720px] bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden rounded-b-3xl lg:rounded-3xl"
             onTouchStart={(e) => setTouchStartX(e.changedTouches[0].clientX)}
@@ -238,11 +247,22 @@ export function ProductDetails() {
                 </div>
               )}
             </div>
-            <div className="text-right">
-              <p className="text-gold text-3xl font-medium">{fmt(perfume.price)}</p>
-              {perfume.originalPrice && (
-                <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
-              )}
+            <div className="flex flex-col items-end gap-3">
+              <button
+                aria-label={t("a11y.favorite")}
+                onClick={handleToggleFavorite}
+                className="hidden lg:flex w-10 h-10 rounded-full glass items-center justify-center hover:border-gold transition-all"
+              >
+                <Heart
+                  className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
+                />
+              </button>
+              <div className="text-right">
+                <p className="text-gold text-3xl font-medium">{fmt(perfume.price)}</p>
+                {perfume.originalPrice && (
+                  <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
+                )}
+              </div>
             </div>
           </div>
 
