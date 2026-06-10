@@ -68,6 +68,7 @@ export function Layout() {
   const searchDesktopRef = useRef<HTMLDivElement | null>(null);
   const searchMobileRef = useRef<HTMLDivElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
+  const mainScrollRef = useRef<HTMLDivElement | null>(null);
   const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
 
   const submitSearch = (q?: string) => {
@@ -176,6 +177,11 @@ export function Layout() {
   useEffect(() => {
     setIsPagesOpen(false);
     setIsSearchOpen(false);
+    // Reset scroll on route change. Scrolling happens on the inner container
+    // (not window), so the new page would otherwise keep the previous scroll
+    // position — landing at the bottom on shorter pages.
+    mainScrollRef.current?.scrollTo({ top: 0, left: 0 });
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -332,7 +338,7 @@ export function Layout() {
             </nav>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
+        <div ref={mainScrollRef} className="flex-1 overflow-y-auto pb-20 md:pb-0">
           <Outlet />
           {showReviews && (
             <section className="px-4 sm:px-6 lg:px-8 py-10 md:py-14">
