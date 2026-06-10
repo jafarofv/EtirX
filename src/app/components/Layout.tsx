@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import {
   Home,
@@ -13,6 +13,7 @@ import {
   Instagram,
   Star,
   ChevronRight,
+  Search,
 } from "lucide-react";
 import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
@@ -61,11 +62,61 @@ export function Layout() {
   const [isPagesOpen, setIsPagesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [favoritesCount, setFavoritesCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const langDesktopRef = useRef<HTMLDivElement | null>(null);
   const langMobileRef = useRef<HTMLDivElement | null>(null);
   const pagesDesktopRef = useRef<HTMLDivElement | null>(null);
   const pagesMobileRef = useRef<HTMLDivElement | null>(null);
+  const searchDesktopRef = useRef<HTMLDivElement | null>(null);
+  const searchMobileRef = useRef<HTMLDivElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
+  const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
+
+  const submitSearch = (q?: string) => {
+    const query = (q ?? searchQuery).trim();
+    setIsSearchOpen(false);
+    if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
+
+  const renderSearch = (ref: MutableRefObject<HTMLDivElement | null>) => (
+    <div ref={ref} className="relative w-full">
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onFocus={() => setIsSearchOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") submitSearch();
+        }}
+        placeholder={t("home.search")}
+        aria-label={t("home.search")}
+        className="premium-input w-full glass rounded-full pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500"
+      />
+      {isSearchOpen && (
+        <div className="absolute right-0 mt-2 w-full sm:w-72 glass rounded-2xl p-3 z-50 animate-fade-up">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2.5 px-1">
+            {t("menu.search")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {noteHints.map((note) => (
+              <button
+                key={`hs-${note}`}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  submitSearch(note);
+                }}
+                className="px-3 py-1.5 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold transition-all"
+              >
+                #{note}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   const navItems = [
     { icon: Home, label: t("nav.home"), path: "/" },
@@ -108,13 +159,17 @@ export function Layout() {
       const inPagesDesktop = pagesDesktopRef.current?.contains(target);
       const inPagesMobile = pagesMobileRef.current?.contains(target);
       const inDrawer = drawerRef.current?.contains(target);
+      const inSearchDesktop = searchDesktopRef.current?.contains(target);
+      const inSearchMobile = searchMobileRef.current?.contains(target);
       if (!inLangDesktop && !inLangMobile) setIsLangOpen(false);
       if (!inPagesDesktop && !inPagesMobile && !inDrawer) setIsPagesOpen(false);
+      if (!inSearchDesktop && !inSearchMobile) setIsSearchOpen(false);
     };
     const onEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setIsLangOpen(false);
         setIsPagesOpen(false);
+        setIsSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", onClick);
@@ -128,6 +183,7 @@ export function Layout() {
   useEffect(() => {
     setIsPagesOpen(false);
     setIsLangOpen(false);
+    setIsSearchOpen(false);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -277,18 +333,22 @@ export function Layout() {
                 </div>
               </div>
             </div>
+            <div className="px-4 pb-3">{renderSearch(searchMobileRef)}</div>
           </header>
         </div>
         <header className="hidden md:block sticky top-[56px] z-20 border-b border-white/5 bg-black/70 backdrop-blur-xl">
-          <div className="w-full px-6 lg:px-8 h-16 flex items-center justify-between">
+          <div className="w-full px-6 lg:px-8 h-16 flex items-center gap-4">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center"
+              className="inline-flex items-center shrink-0"
               aria-label="EtirX home"
             >
               <img src={logoSrc} alt="EtirX" className="h-14 w-14 object-cover" />
             </button>
-            <nav className="flex items-center gap-2">
+            <div className="flex-1 flex justify-center">
+              <div className="w-full max-w-sm">{renderSearch(searchDesktopRef)}</div>
+            </div>
+            <nav className="flex items-center gap-2 shrink-0">
               <div ref={langDesktopRef} className="relative mr-2">
                 <button
                   onClick={() => {

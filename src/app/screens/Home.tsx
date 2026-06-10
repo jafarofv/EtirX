@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Heart, Search, Star, ShoppingBag, ArrowRight } from "lucide-react";
+import { Heart, Star, ShoppingBag, ArrowRight } from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart, toggleFavorite } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
@@ -13,7 +13,6 @@ export function Home() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -26,7 +25,6 @@ export function Home() {
   });
   const [pulseFavorite, setPulseFavorite] = useState<number | null>(null);
   const [pulseCart, setPulseCart] = useState<number | null>(null);
-  const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
   const fmt = (v: number) => formatCurrency(v);
 
   const refreshFavorites = () => {
@@ -82,16 +80,13 @@ export function Home() {
 
   const filteredPerfumes = products.filter(
     (p) =>
-      (selectedCategory === "all" ||
-        (selectedCategory === "new" && isNew(p)) ||
-        (selectedCategory === "women" && isWomen(p)) ||
-        (selectedCategory === "men" && isMen(p)) ||
-        (selectedCategory === "unisex" && isUnisex(p)) ||
-        (selectedCategory === "sale" && Boolean(p.originalPrice)) ||
-        (selectedCategory === "best" && isBest(p))) &&
-      (searchQuery === "" ||
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchQuery.toLowerCase()))
+      selectedCategory === "all" ||
+      (selectedCategory === "new" && isNew(p)) ||
+      (selectedCategory === "women" && isWomen(p)) ||
+      (selectedCategory === "men" && isMen(p)) ||
+      (selectedCategory === "unisex" && isUnisex(p)) ||
+      (selectedCategory === "sale" && Boolean(p.originalPrice)) ||
+      (selectedCategory === "best" && isBest(p))
   );
 
   const getBadge = (perfume: CatalogProduct) => {
@@ -142,8 +137,8 @@ export function Home() {
 
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="relative overflow-hidden border-b border-white/5">
-        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-9 pb-8 sm:pt-11 sm:pb-9 lg:pt-14 lg:pb-12">
-          <div className="mx-auto max-w-7xl lg:flex lg:items-end lg:justify-between lg:gap-12">
+        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-8 pb-7 sm:pt-10 sm:pb-8 lg:pt-12 lg:pb-10">
+          <div className="mx-auto max-w-7xl">
             <div className="animate-fade-up max-w-xl">
               <p className="text-gold text-[11px] sm:text-xs tracking-[0.34em] uppercase mb-2.5">
                 {t("home.tagline")}
@@ -155,37 +150,6 @@ export function Home() {
               <p className="text-zinc-300/90 text-sm sm:text-[15px] max-w-md leading-relaxed">
                 {t("footer.about")}
               </p>
-            </div>
-
-            {/* Search */}
-            <div className="animate-fade-up fade-d1 mt-6 lg:mt-0 w-full lg:w-[400px] shrink-0">
-              <div className="relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-                <input
-                  type="text"
-                  placeholder={t("home.search")}
-                  aria-label={t("home.search")}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-                    }
-                  }}
-                  className="premium-input w-full glass rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder:text-zinc-500"
-                />
-              </div>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {noteHints.map((note) => (
-                  <button
-                    key={note}
-                    onClick={() => navigate(`/search?q=${encodeURIComponent(note)}`)}
-                    className="px-3 py-1.5 rounded-full text-xs border border-white/10 bg-white/5 text-zinc-300 hover:border-gold hover:text-gold transition-all"
-                  >
-                    #{note}
-                  </button>
-                ))}
-              </div>
             </div>
           </div>
         </div>
