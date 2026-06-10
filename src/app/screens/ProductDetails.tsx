@@ -177,8 +177,8 @@ export function ProductDetails() {
         </div>
       </div>
 
-      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24">
-        <div>
+      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24 lg:items-start">
+        <div className="lg:sticky lg:top-24 lg:self-start">
           <button
             onClick={() => navigate(-1)}
             className="hidden lg:inline-flex items-center gap-1.5 text-sm text-zinc-400 hover:text-gold transition-colors mb-4"
@@ -187,7 +187,7 @@ export function ProductDetails() {
             {t("a11y.back")}
           </button>
           <div
-            className="aspect-square lg:aspect-square lg:max-h-[720px] bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden rounded-b-3xl lg:rounded-3xl"
+            className="aspect-square lg:aspect-square lg:max-h-[560px] bg-gradient-to-br from-zinc-900 to-black relative overflow-hidden rounded-b-3xl lg:rounded-3xl"
             onTouchStart={(e) => setTouchStartX(e.changedTouches[0].clientX)}
             onTouchEnd={(e) => {
               if (touchStartX === null) return;
@@ -306,36 +306,6 @@ export function ProductDetails() {
             )}
           </div>
 
-          <div className="mb-8 space-y-3">
-            <div className="glass rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Truck className="w-4 h-4 text-zinc-300" />
-                <p className="text-sm font-medium">Çatdırılma şərtləri</p>
-              </div>
-              <p className="text-sm text-zinc-400">Bakı: 1-2 iş günü, regionlar: 2-4 iş günü.</p>
-            </div>
-            <div className="glass rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <CreditCard className="w-4 h-4 text-zinc-300" />
-                <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
-              </div>
-              <p className="text-sm text-zinc-400">
-                Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.
-              </p>
-            </div>
-            <a
-              href={site.whatsappUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="block bg-emerald-700/20 rounded-2xl p-4 border border-emerald-600/40 hover:bg-emerald-700/30 transition-all"
-            >
-              <div className="flex items-center gap-2">
-                <MessageCircle className="w-4 h-4 text-emerald-300" />
-                <p className="text-sm font-medium text-emerald-200">WhatsApp-da bizə yaz</p>
-              </div>
-            </a>
-          </div>
-
           <div className="flex gap-3 mb-6">
             <div className="flex items-center glass rounded-2xl px-2">
               <button
@@ -374,41 +344,71 @@ export function ProductDetails() {
             </button>
           </div>
 
-          <div className="mb-8">
-            <h3 className="text-sm font-medium mb-3">{t("product.notes")}</h3>
-            <div className="grid gap-3 sm:grid-cols-3">
-              {[
-                { label: t("product.topNotes"), items: perfume.notes.top },
-                { label: t("product.heartNotes"), items: perfume.notes.heart },
-                { label: t("product.baseNotes"), items: perfume.notes.base },
-              ].map((section) => (
-                <div key={section.label} className="glass rounded-2xl p-4">
-                  <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">
-                    {section.label}
-                  </p>
-                  {section.items.length > 0 ? (
-                    <div className="flex flex-wrap gap-2">
-                      {section.items.map((note) => (
-                        <span
-                          key={`${section.label}-${note}`}
-                          className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs ${noteChipClass(note)}`}
-                        >
-                          {noteToAz(note)}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-zinc-400">-</p>
-                  )}
-                </div>
-              ))}
+          <div className="glass rounded-2xl divide-y divide-white/10">
+            <div className="flex items-start gap-3 p-4">
+              <Truck className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Çatdırılma şərtləri</p>
+                <p className="text-sm text-zinc-400">Bakı: 1-2 iş günü, regionlar: 2-4 iş günü.</p>
+              </div>
             </div>
+            <div className="flex items-start gap-3 p-4">
+              <CreditCard className="w-4 h-4 text-gold mt-0.5 shrink-0" />
+              <div>
+                <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
+                <p className="text-sm text-zinc-400">
+                  Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.
+                </p>
+              </div>
+            </div>
+            <a
+              href={site.whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-3 p-4 hover:bg-emerald-700/10 transition-all"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-300 shrink-0" />
+              <p className="text-sm font-medium text-emerald-200">WhatsApp-da bizə yaz</p>
+            </a>
           </div>
+        </div>
+      </div>
 
-          <div className="mb-6">
-            <h3 className="text-sm font-medium mb-2">{t("product.description")}</h3>
-            <p className="text-sm text-zinc-400 leading-relaxed">{perfume.description}</p>
+      <div className="px-4 sm:px-6 lg:px-6 pt-2 lg:pt-12 pb-12 space-y-8">
+        <div>
+          <h3 className="font-display text-2xl mb-4">{t("product.notes")}</h3>
+          <div className="grid gap-3 sm:grid-cols-3">
+            {[
+              { label: t("product.topNotes"), items: perfume.notes.top },
+              { label: t("product.heartNotes"), items: perfume.notes.heart },
+              { label: t("product.baseNotes"), items: perfume.notes.base },
+            ].map((section) => (
+              <div key={section.label} className="glass rounded-2xl p-4">
+                <p className="text-xs text-zinc-500 mb-3 uppercase tracking-wider">
+                  {section.label}
+                </p>
+                {section.items.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {section.items.map((note) => (
+                      <span
+                        key={`${section.label}-${note}`}
+                        className={`px-2.5 sm:px-3 py-1.5 rounded-full text-[11px] sm:text-xs ${noteChipClass(note)}`}
+                      >
+                        {noteToAz(note)}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-zinc-400">-</p>
+                )}
+              </div>
+            ))}
           </div>
+        </div>
+
+        <div>
+          <h3 className="font-display text-2xl mb-3">{t("product.description")}</h3>
+          <p className="max-w-3xl text-sm text-zinc-400 leading-relaxed">{perfume.description}</p>
         </div>
       </div>
     </div>
