@@ -86,10 +86,13 @@ function PageWrap({
   children: ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-10">
-      <h1 className="font-display text-4xl mb-2">{title}</h1>
-      {subtitle && <p className="text-zinc-400 mb-6">{subtitle}</p>}
-      {children}
+    <div className="min-h-screen bg-black text-white pt-8 sm:pt-12 pb-12">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <h1 className="font-display text-4xl mb-3">{title}</h1>
+        <div className="gold-rule mb-4" />
+        {subtitle && <p className="text-zinc-400 mb-6">{subtitle}</p>}
+        {children}
+      </div>
     </div>
   );
 }
@@ -318,7 +321,7 @@ export function CategoriesPage() {
           <Link
             key={c.slug}
             to={`/kateqoriya/${c.slug}`}
-            className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5 hover:border-zinc-600 transition-all"
+            className="glass rounded-2xl p-5 hover:border-gold/50 transition-all"
           >
             <h3 className="text-lg font-medium mb-1">{c.name}</h3>
             <p className="text-sm text-zinc-400">{c.desc}</p>
@@ -529,7 +532,7 @@ export function CampaignsPage() {
       ) : (
         <div className="space-y-3">
           {campaigns.map((c) => (
-            <div key={c.code} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+            <div key={c.code} className="glass rounded-2xl p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-lg font-medium">{c.code}</p>
                 <span className="text-sm font-medium text-emerald-400">
@@ -629,10 +632,7 @@ export function AboutPage() {
           <h2 className="text-xl text-white mb-3">{t("about.valuesTitle")}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {values.map((value) => (
-              <div
-                key={value}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-white"
-              >
+              <div key={value} className="glass rounded-xl px-4 py-3 text-sm text-white">
                 {value}
               </div>
             ))}
@@ -669,7 +669,7 @@ export function ShippingReturnsPage() {
   return (
     <PageWrap title={t("shipret.title")} subtitle={t("shipret.subtitle")}>
       <div className="space-y-4 text-zinc-300">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+        <div className="glass rounded-2xl p-4">
           <h3 className="text-white text-lg mb-3">🚚 Çatdırılma üsulları</h3>
           <div className="space-y-3">
             {deliveryMethods.map((method) => (
@@ -708,12 +708,12 @@ export function ShippingReturnsPage() {
           </div>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+        <div className="glass rounded-2xl p-4">
           <h4 className="text-white mb-2">📍 Depo Ünvanı:</h4>
           <p>{site.store_address}</p>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+        <div className="glass rounded-2xl p-4">
           <h4 className="text-white mb-2">💳 Ödəniş</h4>
           <p>Ödəniş məhsul çatdırıldıqda edilir.</p>
           <p>Nağd və ya bank kartı vasitəsilə ödəniş mümkündür.</p>
@@ -787,7 +787,7 @@ export function FAQPage() {
             <h2 className="text-xl text-white mb-3">{section.title}</h2>
             <div className="space-y-3">
               {section.items.map(([question, answer]) => (
-                <div key={question} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+                <div key={question} className="glass rounded-2xl p-4">
                   <strong>{question}</strong>
                   <p className="text-zinc-400 mt-1">{answer}</p>
                 </div>
@@ -834,7 +834,7 @@ export function ContactPage() {
         path="/elaqe"
       />
       <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-5">
+        <div className="glass rounded-2xl p-5">
           <div className="flex items-start gap-3">
             <div className="w-11 h-11 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
               <MapPin className="w-5 h-5" />
@@ -856,7 +856,7 @@ export function ContactPage() {
                 href={item.href}
                 target="_blank"
                 rel="noreferrer"
-                className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 hover:border-zinc-600 transition-all flex items-center justify-between gap-4"
+                className="glass rounded-2xl p-4 hover:border-gold/50 transition-all flex items-center justify-between gap-4"
               >
                 <span className="flex items-center gap-3 min-w-0">
                   <span className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
@@ -907,7 +907,7 @@ export function PrivacyPage() {
     <PageWrap title={t("privacy.title")} subtitle={t("privacy.subtitle")}>
       <div className="max-w-4xl space-y-3">
         {sections.map(([titleKey, bodyKey], index) => (
-          <section key={titleKey} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <section key={titleKey} className="glass rounded-2xl p-4">
             <h2 className="text-lg text-white mb-2">
               {index + 1}. {t(titleKey)}
             </h2>
@@ -947,7 +947,7 @@ export function TermsPage() {
     <PageWrap title={t("terms.title")} subtitle={t("terms.subtitle")}>
       <div className="max-w-4xl space-y-3">
         {sections.map(([titleKey, bodyKey], index) => (
-          <section key={titleKey} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4">
+          <section key={titleKey} className="glass rounded-2xl p-4">
             <h2 className="text-lg text-white mb-2">
               {index + 1}. {t(titleKey)}
             </h2>
@@ -967,7 +967,7 @@ export function NotFoundPage() {
       <div className="text-center">
         <h1 className="text-5xl mb-3">404</h1>
         <p className="text-zinc-400 mb-6">{t("notFound.text")}</p>
-        <Link to="/" className="bg-white text-black px-5 py-2.5 rounded-xl">
+        <Link to="/" className="btn-gold px-5 py-2.5 rounded-xl">
           {t("notFound.home")}
         </Link>
       </div>
