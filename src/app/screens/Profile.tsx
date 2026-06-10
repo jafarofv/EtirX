@@ -314,126 +314,132 @@ export function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+    <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-10 sm:pt-16">
       <Seo
         title="Giriş / Qeydiyyat | ƏtirX"
         description="İstifadəçi girişi və qeydiyyat."
         path="/profile"
         noindex
       />
-      <h1 className="text-2xl mb-6">{title}</h1>
-
-      <div className="glass rounded-3xl p-6">
-        <div className="flex gap-2 mb-5">
-          <button
-            onClick={() => setMode("login")}
-            className={`px-4 py-2 rounded-xl text-sm transition-all ${mode === "login" ? "bg-gold text-[#1a1206] font-semibold" : "glass text-zinc-300"}`}
-          >
-            {t("profile.login")}
-          </button>
-          <button
-            onClick={() => setMode("register")}
-            className={`px-4 py-2 rounded-xl text-sm transition-all ${mode === "register" ? "bg-gold text-[#1a1206] font-semibold" : "glass text-zinc-300"}`}
-          >
-            {t("profile.register")}
-          </button>
+      <div className="mx-auto w-full max-w-md">
+        <div className="text-center mb-7">
+          <div className="w-14 h-14 rounded-full glass flex items-center justify-center mx-auto mb-4">
+            <User className="w-7 h-7 text-gold" />
+          </div>
+          <h1 className="font-display text-3xl">{title}</h1>
         </div>
 
-        {mode === "register" && (
-          <div className="space-y-3 mb-3">
-            <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder={t("profile.fullName")}
-                aria-label={t("profile.fullName")}
-                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : ""}`}
-              />
-            </div>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("profile.email")}
-                aria-label={t("profile.email")}
-                type="email"
-                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
-              />
-            </div>
-            <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={t("profile.phone")}
-                aria-label={t("profile.phone")}
-                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
-              />
-            </div>
-
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("profile.password")}
-                aria-label={t("profile.password")}
-                type="password"
-                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
-              />
-            </div>
+        <div className="glass rounded-3xl p-6">
+          <div className="grid grid-cols-2 gap-1 p-1 glass rounded-2xl mb-5">
             <button
-              disabled={loading}
-              onClick={onRegister}
-              className="btn-gold w-full rounded-xl py-3"
+              onClick={() => setMode("login")}
+              className={`py-2.5 rounded-xl text-sm transition-all ${mode === "login" ? "bg-gold text-[#1a1206] font-semibold" : "text-zinc-300 hover:text-white"}`}
             >
-              {loading ? "..." : t("profile.createAccount")}
+              {t("profile.login")}
+            </button>
+            <button
+              onClick={() => setMode("register")}
+              className={`py-2.5 rounded-xl text-sm transition-all ${mode === "register" ? "bg-gold text-[#1a1206] font-semibold" : "text-zinc-300 hover:text-white"}`}
+            >
+              {t("profile.register")}
             </button>
           </div>
-        )}
 
-        {mode === "login" && (
-          <div className="space-y-3 mb-3">
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t("profile.email")}
-                aria-label={t("profile.email")}
-                type="email"
-                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
-              />
+          {mode === "register" && (
+            <div className="space-y-2.5">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder={t("profile.fullName")}
+                  aria-label={t("profile.fullName")}
+                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : ""}`}
+                />
+              </div>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("profile.email")}
+                  aria-label={t("profile.email")}
+                  type="email"
+                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+                />
+              </div>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t("profile.phone")}
+                  aria-label={t("profile.phone")}
+                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
+                />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t("profile.password")}
+                  aria-label={t("profile.password")}
+                  type="password"
+                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+                />
+              </div>
+              <button
+                disabled={loading}
+                onClick={onRegister}
+                className="btn-gold w-full rounded-xl py-3 mt-1"
+              >
+                {loading ? "..." : t("profile.createAccount")}
+              </button>
             </div>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t("profile.password")}
-                aria-label={t("profile.password")}
-                type="password"
-                className={`w-full glass premium-input rounded-xl py-3 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
-              />
+          )}
+
+          {mode === "login" && (
+            <div className="space-y-2.5">
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={t("profile.email")}
+                  aria-label={t("profile.email")}
+                  type="email"
+                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+                />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder={t("profile.password")}
+                  aria-label={t("profile.password")}
+                  type="password"
+                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+                />
+              </div>
+              <button
+                disabled={loading}
+                onClick={onLogin}
+                className="btn-gold w-full rounded-xl py-3 mt-1"
+              >
+                {loading ? "..." : t("profile.login")}
+              </button>
             </div>
-            <button
-              disabled={loading}
-              onClick={onLogin}
-              className="btn-gold w-full rounded-xl py-3"
-            >
-              {loading ? "..." : t("profile.login")}
-            </button>
+          )}
+
+          {error && <p className="text-red-400 text-sm mt-3">{error}</p>}
+          {success && <p className="text-green-400 text-sm mt-3">{success}</p>}
+
+          <div className="mt-5 pt-4 border-t border-white/10 text-xs text-zinc-500 flex items-center justify-center gap-2">
+            <Shield className="w-4 h-4" />
+            {t("profile.authEnabled")}
           </div>
-        )}
-
-        {error && <p className="text-red-400 text-sm mt-2">{error}</p>}
-        {success && <p className="text-green-400 text-sm mt-2">{success}</p>}
-
-        <div className="mt-5 text-xs text-zinc-500 flex items-center gap-2">
-          <Shield className="w-4 h-4" />
-          {t("profile.authEnabled")}
         </div>
       </div>
     </div>
