@@ -45,30 +45,30 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
         <Link
           key={p.id}
           to={`/product/${p.slug}`}
-          className="bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-all"
+          className="glass premium-card rounded-2xl overflow-hidden"
         >
           <div className="aspect-[4/5] overflow-hidden relative">
             <img
               src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")}
               alt={p.name}
               onError={onImageError}
-              className="w-full h-full object-cover"
+              className="zoom-img w-full h-full object-cover"
             />
             {badgeFor(p) && (
-              <div className="absolute top-2 right-2 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+              <div className="badge-lux badge-best absolute top-2 right-2 px-2.5 py-1 rounded-full text-[10px]">
                 {badgeFor(p)}
               </div>
             )}
           </div>
           <div className="p-3">
             <p className="text-sm text-zinc-400">{p.brand}</p>
-            <h3 className="font-medium text-sm truncate">{p.name}</h3>
+            <h3 className="font-display text-lg truncate">{p.name}</h3>
             <p className="text-xs text-zinc-500 mt-0.5">
               {p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks"} •{" "}
               {p.volume_ml ?? 100}ml •{" "}
               {hasStock(p) ? t("product.inStock") : t("product.outOfStock")}
             </p>
-            <p className="mt-1 font-medium">{fmt(p.price)}</p>
+            <p className="mt-1 text-gold font-medium">{fmt(p.price)}</p>
           </div>
         </Link>
       ))}
@@ -87,7 +87,7 @@ function PageWrap({
 }) {
   return (
     <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-10">
-      <h1 className="text-3xl mb-2">{title}</h1>
+      <h1 className="font-display text-4xl mb-2">{title}</h1>
       {subtitle && <p className="text-zinc-400 mb-6">{subtitle}</p>}
       {children}
     </div>
@@ -196,13 +196,13 @@ export function ShopPage() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("shop.search")}
           aria-label={t("shop.search")}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
+          className="glass premium-input rounded-xl px-3 py-2 text-sm"
         />
         <select
           value={brand}
           onChange={(e) => setBrand(e.target.value)}
           aria-label={t("shop.brand")}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
+          className="glass premium-input rounded-xl px-3 py-2 text-sm"
         >
           <option value="all">{t("shop.allBrands")}</option>
           {brands.map((b) => (
@@ -215,7 +215,7 @@ export function ShopPage() {
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
           aria-label={t("shop.sort")}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
+          className="glass premium-input rounded-xl px-3 py-2 text-sm"
         >
           <option value="newest">{t("shop.sort.newest")}</option>
           <option value="priceAsc">{t("shop.sort.priceAsc")}</option>
@@ -231,7 +231,7 @@ export function ShopPage() {
           <button
             key={`shop-note-${note}`}
             onClick={() => setQuery(note)}
-            className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+            className="px-2.5 py-1 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold"
           >
             #{note}
           </button>
@@ -478,7 +478,7 @@ export function SearchPage() {
           <Link
             key={`search-note-${note}`}
             to={`/search?q=${encodeURIComponent(note)}`}
-            className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+            className="px-2.5 py-1 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold"
           >
             #{note}
           </Link>
@@ -488,7 +488,7 @@ export function SearchPage() {
         <select
           value={categoryFilter}
           onChange={(e) => setCategoryFilter(e.target.value)}
-          className="bg-zinc-900 border border-zinc-800 rounded-xl px-3 py-2 text-sm"
+          className="glass premium-input rounded-xl px-3 py-2 text-sm"
         >
           <option value="all">{t("search.allCategories")}</option>
           {categories.map((category) => (
