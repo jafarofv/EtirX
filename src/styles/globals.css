@@ -175,16 +175,23 @@
   letter-spacing: 0.01em;
 }
 
-/* Frosted glass panel */
+/* Frosted glass panel — layered surface with subtle elevation so cards read
+   as distinct from the near-black base (depth instead of a flat black field). */
 .glass {
   background: rgba(255, 255, 255, 0.045);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 30px -18px rgba(0, 0, 0, 0.85);
 }
 .light-mode .glass {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.72);
   border-color: rgba(0, 0, 0, 0.06);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 10px 30px -18px rgba(0, 0, 0, 0.12);
 }
 
 /* Premium card hover: lift + gold hairline + depth */

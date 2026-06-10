@@ -122,6 +122,12 @@
      (hover:, /opacity) all generate. */
   --color-gold: #c8a96a;
   --color-gold-bright: #e6c780;
+  /* Comfortable dark palette: a soft near-black base instead of harsh pure
+     #000 (reduces halation / eye strain and lets surfaces layer), and a soft
+     off-white instead of glaring pure #fff. Applies everywhere bg-black /
+     text-black / text-white / white opacity utilities are used. */
+  --color-black: #0a0a0c;
+  --color-white: #f3f3f4;
 }
 
 @layer base {
