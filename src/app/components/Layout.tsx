@@ -58,14 +58,11 @@ export function Layout() {
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
   const site = useSiteSettings();
-  const [isLangOpen, setIsLangOpen] = useState(false);
   const [isPagesOpen, setIsPagesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const langDesktopRef = useRef<HTMLDivElement | null>(null);
-  const langMobileRef = useRef<HTMLDivElement | null>(null);
   const pagesDesktopRef = useRef<HTMLDivElement | null>(null);
   const pagesMobileRef = useRef<HTMLDivElement | null>(null);
   const searchDesktopRef = useRef<HTMLDivElement | null>(null);
@@ -154,20 +151,16 @@ export function Layout() {
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       const target = event.target as Node;
-      const inLangDesktop = langDesktopRef.current?.contains(target);
-      const inLangMobile = langMobileRef.current?.contains(target);
       const inPagesDesktop = pagesDesktopRef.current?.contains(target);
       const inPagesMobile = pagesMobileRef.current?.contains(target);
       const inDrawer = drawerRef.current?.contains(target);
       const inSearchDesktop = searchDesktopRef.current?.contains(target);
       const inSearchMobile = searchMobileRef.current?.contains(target);
-      if (!inLangDesktop && !inLangMobile) setIsLangOpen(false);
       if (!inPagesDesktop && !inPagesMobile && !inDrawer) setIsPagesOpen(false);
       if (!inSearchDesktop && !inSearchMobile) setIsSearchOpen(false);
     };
     const onEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setIsLangOpen(false);
         setIsPagesOpen(false);
         setIsSearchOpen(false);
       }
@@ -182,7 +175,6 @@ export function Layout() {
 
   useEffect(() => {
     setIsPagesOpen(false);
-    setIsLangOpen(false);
     setIsSearchOpen(false);
   }, [location.pathname]);
 
@@ -271,60 +263,9 @@ export function Layout() {
                 <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
               </button>
               <div className="flex items-center gap-2">
-                <div ref={langMobileRef} className="relative">
-                  <button
-                    onClick={() => {
-                      setIsLangOpen((v) => !v);
-                    }}
-                    aria-label={t("a11y.language")}
-                    className="px-3 py-1.5 text-base rounded-lg glass hover:border-gold flex items-center gap-2"
-                  >
-                    <Globe className="w-3.5 h-3.5" />
-                    {langFlags[language]}
-                  </button>
-                  {isLangOpen && (
-                    <div className="absolute right-0 mt-2 w-24 rounded-xl glass hover:border-gold p-1">
-                      {langs.map((lang) => (
-                        <button
-                          key={`m-${lang}`}
-                          onClick={() => {
-                            setLanguage(lang);
-                            setIsLangOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                            language === lang
-                              ? "bg-gold text-[#1a1206]"
-                              : "text-zinc-300 hover:bg-zinc-800"
-                          }`}
-                        >
-                          {langFlags[lang]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <button
-                    onClick={() => {
-                      setIsLangOpen(false);
-                      setTheme(theme === "dark" ? "light" : "dark");
-                    }}
-                    className="px-3 py-1.5 text-xs rounded-lg glass hover:border-gold flex items-center gap-2"
-                  >
-                    {theme === "dark" ? (
-                      <Moon className="w-3.5 h-3.5" />
-                    ) : (
-                      <Sun className="w-3.5 h-3.5" />
-                    )}
-                    <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
-                  </button>
-                </div>
                 <div ref={pagesMobileRef} className="relative">
                   <button
-                    onClick={() => {
-                      setIsPagesOpen((v) => !v);
-                      setIsLangOpen(false);
-                    }}
+                    onClick={() => setIsPagesOpen((v) => !v)}
                     aria-label={t("a11y.menu")}
                     className="px-3 py-1.5 text-xs rounded-lg glass hover:border-gold flex items-center gap-2"
                   >
@@ -349,60 +290,9 @@ export function Layout() {
               <div className="w-full max-w-sm">{renderSearch(searchDesktopRef)}</div>
             </div>
             <nav className="flex items-center gap-2 shrink-0">
-              <div ref={langDesktopRef} className="relative mr-2">
-                <button
-                  onClick={() => {
-                    setIsLangOpen((v) => !v);
-                  }}
-                  aria-label={t("a11y.language")}
-                  className="px-3 py-2 text-xs rounded-xl glass hover:border-gold uppercase flex items-center gap-2"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span className="text-base leading-none">{langFlags[language]}</span>
-                </button>
-                {isLangOpen && (
-                  <div className="absolute right-0 mt-2 w-28 rounded-xl glass hover:border-gold p-1">
-                    {langs.map((lang) => (
-                      <button
-                        key={lang}
-                        onClick={() => {
-                          setLanguage(lang);
-                          setIsLangOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                          language === lang
-                            ? "bg-gold text-[#1a1206]"
-                            : "text-zinc-300 hover:bg-zinc-800"
-                        }`}
-                      >
-                        {langFlags[lang]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="mr-2">
-                <button
-                  onClick={() => {
-                    setIsLangOpen(false);
-                    setTheme(theme === "dark" ? "light" : "dark");
-                  }}
-                  className="px-3 py-2 text-xs rounded-xl glass hover:border-gold flex items-center gap-2"
-                >
-                  {theme === "dark" ? (
-                    <Moon className="w-3.5 h-3.5" />
-                  ) : (
-                    <Sun className="w-3.5 h-3.5" />
-                  )}
-                  <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
-                </button>
-              </div>
               <div ref={pagesDesktopRef} className="relative mr-3">
                 <button
-                  onClick={() => {
-                    setIsPagesOpen((v) => !v);
-                    setIsLangOpen(false);
-                  }}
+                  onClick={() => setIsPagesOpen((v) => !v)}
                   aria-label={t("a11y.menu")}
                   className="px-3 py-2 text-xs rounded-xl glass hover:border-gold flex items-center gap-2"
                 >
@@ -655,6 +545,48 @@ export function Layout() {
                     <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 ))}
+
+                <div className="pt-4 mt-3 border-t border-white/10 space-y-4">
+                  <div>
+                    <p className="flex items-center gap-2 px-1 mb-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                      <Globe className="w-3.5 h-3.5" /> {t("a11y.language")}
+                    </p>
+                    <div className="flex gap-2">
+                      {langs.map((lang) => (
+                        <button
+                          key={`drawer-lang-${lang}`}
+                          onClick={() => setLanguage(lang)}
+                          className={`flex-1 px-3 py-2 rounded-xl text-sm flex items-center justify-center gap-1.5 transition-all ${
+                            language === lang
+                              ? "bg-gold text-[#1a1206] font-semibold"
+                              : "glass text-zinc-300 hover:border-gold"
+                          }`}
+                        >
+                          <span className="text-base leading-none">{langFlags[lang]}</span>
+                          <span className="uppercase">{lang}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="px-1 mb-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                      {t("theme.label")}
+                    </p>
+                    <button
+                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="w-full glass rounded-xl px-3.5 py-3 flex items-center gap-2 hover:border-gold transition-all"
+                    >
+                      {theme === "dark" ? (
+                        <Moon className="w-4 h-4" />
+                      ) : (
+                        <Sun className="w-4 h-4" />
+                      )}
+                      <span className="text-sm">
+                        {theme === "dark" ? t("theme.dark") : t("theme.light")}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </aside>
           </>
