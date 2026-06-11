@@ -11,6 +11,7 @@ import {
   MessageCircle,
   CreditCard,
   Droplets,
+  CheckCircle2,
   User,
 } from "lucide-react";
 import { useI18n } from "../i18n";
@@ -81,6 +82,7 @@ export function ProductDetails() {
   const variants = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
   const selectedVariant =
     variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
+  const selectedStock = selectedVariant?.stock ?? 0;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(
     0,
@@ -282,7 +284,7 @@ export function ProductDetails() {
 
           <div className="gold-rule mt-4 mb-4" />
 
-          <div className="grid grid-cols-2 divide-x divide-white/10 border-b border-white/10 pb-4 mb-6">
+          <div className="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10 pb-4 mb-6">
             <div className="flex items-start gap-2 px-3 sm:px-4">
               <Droplets className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
@@ -291,6 +293,21 @@ export function ProductDetails() {
                 </p>
                 <p className="text-xs sm:text-sm font-medium truncate">
                   {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-2 px-3 sm:px-4">
+              <CheckCircle2
+                className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+              />
+              <div className="min-w-0">
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
+                  {t("product.stock")}
+                </p>
+                <p
+                  className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+                >
+                  {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
                 </p>
               </div>
             </div>
