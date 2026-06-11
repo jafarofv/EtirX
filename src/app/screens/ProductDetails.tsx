@@ -101,7 +101,7 @@ export function ProductDetails() {
           setSelectedVariantId(variant.id);
           setActiveImage(variant.imageUrl || perfume.image);
         }}
-        className={`rounded-2xl border p-4 text-left transition-all ${
+        className={`rounded-2xl border p-3.5 text-left transition-all ${
           isSelected
             ? "border-gold bg-[var(--gold-soft)]"
             : "glass border-white/10 hover:border-gold/50"
@@ -227,7 +227,7 @@ export function ProductDetails() {
                 <button
                   key={`${perfume.id}-img-${idx}`}
                   onClick={() => setActiveImage(img)}
-                  className={`shrink-0 w-16 h-16 rounded-xl overflow-hidden border ${activeImage === img ? "border-gold" : "border-white/15"}`}
+                  className={`shrink-0 w-14 h-14 rounded-xl overflow-hidden border ${activeImage === img ? "border-gold" : "border-white/15"}`}
                 >
                   <img
                     src={img}
@@ -245,14 +245,13 @@ export function ProductDetails() {
         <div
           className={`bg-black px-4 sm:px-6 lg:px-0 py-8 ${perfume.images.length > 1 ? "mt-0" : "-mt-8"} lg:mt-0 rounded-t-[40px] lg:rounded-none relative z-10`}
         >
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <p className="text-sm text-gold/80 tracking-wide uppercase mb-1">{perfume.brand}</p>
-              <h1 className="font-display text-4xl sm:text-5xl leading-tight mb-2">
-                {perfume.name}
-              </h1>
+          <div className="mb-4">
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <p className="min-w-0 truncate text-sm text-gold/80 tracking-wide uppercase">
+                {perfume.brand}
+              </p>
               {perfume.reviews > 0 && (
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2">
                   <div className="flex items-center gap-1">
                     <Star aria-hidden="true" className="w-4 h-4 fill-gold text-gold" />
                     <span className="text-sm font-medium">{perfume.rating}</span>
@@ -263,27 +262,30 @@ export function ProductDetails() {
                 </div>
               )}
             </div>
-            <div className="flex flex-col items-end gap-3">
+            <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-3">{perfume.name}</h1>
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-baseline gap-2.5">
+                <p className="text-gold text-2xl font-medium">{fmt(perfume.price)}</p>
+                {perfume.originalPrice && (
+                  <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
+                )}
+              </div>
               <button
                 aria-label={t("a11y.favorite")}
                 onClick={handleToggleFavorite}
-                className="hidden lg:flex w-10 h-10 rounded-full glass items-center justify-center hover:border-gold transition-all"
+                className="hidden lg:flex w-10 h-10 rounded-full glass items-center justify-center hover:border-gold transition-all shrink-0"
               >
                 <Heart
                   className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
                 />
               </button>
-              <div className="text-right">
-                <p className="text-gold text-3xl font-medium">{fmt(perfume.price)}</p>
-                {perfume.originalPrice && (
-                  <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
-                )}
-              </div>
             </div>
           </div>
 
-          <div className="glass rounded-2xl grid grid-cols-3 divide-x divide-white/10 mb-6">
-            <div className="flex items-start gap-2 px-3 sm:px-4 py-3.5">
+          <div className="gold-rule mt-4 mb-4" />
+
+          <div className="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10 pb-4 mb-6">
+            <div className="flex items-start gap-2 px-3 sm:px-4">
               <Droplets className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
@@ -294,7 +296,7 @@ export function ProductDetails() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-2 px-3 sm:px-4 py-3.5">
+            <div className="flex items-start gap-2 px-3 sm:px-4">
               <CheckCircle2
                 className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
               />
@@ -309,7 +311,7 @@ export function ProductDetails() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-2 px-3 sm:px-4 py-3.5">
+            <div className="flex items-start gap-2 px-3 sm:px-4">
               <User className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Cins</p>
@@ -318,13 +320,13 @@ export function ProductDetails() {
             </div>
           </div>
 
-          <div className="mb-8 space-y-5">
+          <div className="mb-6 space-y-4">
             {premiumVariants.length > 0 && (
               <div>
                 <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
                   {t("product.originalPackaging")}
                 </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   {premiumVariants.map(renderVariantCard)}
                 </div>
               </div>
@@ -334,14 +336,14 @@ export function ProductDetails() {
                 <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
                   {t("product.gramSale")}
                 </h3>
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-2.5 sm:grid-cols-2">
                   {gramVariants.map(renderVariantCard)}
                 </div>
               </div>
             )}
           </div>
 
-          <div className="flex gap-3 mb-6">
+          <div className="flex gap-3 mb-5">
             <div className="flex items-center glass rounded-2xl px-2">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -372,7 +374,7 @@ export function ProductDetails() {
                 setTimeout(() => setPulseCart(false), 180);
               }}
               disabled={!selectedVariant || selectedVariant.stock <= 0}
-              className={`btn-gold flex-1 rounded-2xl py-4 flex items-center justify-center gap-2 ${pulseCart ? "scale-105" : ""} ${!selectedVariant || selectedVariant.stock <= 0 ? "opacity-40 cursor-not-allowed" : ""}`}
+              className={`btn-gold flex-1 rounded-2xl py-3.5 flex items-center justify-center gap-2 ${pulseCart ? "scale-105" : ""} ${!selectedVariant || selectedVariant.stock <= 0 ? "opacity-40 cursor-not-allowed" : ""}`}
             >
               <ShoppingBag className="w-5 h-5" />
               {t("product.addToCart")}
@@ -380,14 +382,14 @@ export function ProductDetails() {
           </div>
 
           <div className="glass rounded-2xl divide-y divide-white/10">
-            <div className="flex items-start gap-3 p-4">
+            <div className="flex items-start gap-3 p-3.5">
               <Truck className="w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium">Çatdırılma şərtləri</p>
                 <p className="text-sm text-zinc-400">Bakı: 1-2 iş günü, regionlar: 2-4 iş günü.</p>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-4">
+            <div className="flex items-start gap-3 p-3.5">
               <CreditCard className="w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div>
                 <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
@@ -400,7 +402,7 @@ export function ProductDetails() {
               href={site.whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-3 p-4 hover:bg-emerald-700/10 transition-all"
+              className="flex items-center gap-3 p-3.5 hover:bg-emerald-700/10 transition-all"
             >
               <MessageCircle className="w-4 h-4 text-emerald-300 shrink-0" />
               <p className="text-sm font-medium text-emerald-200">WhatsApp-da bizə yaz</p>
