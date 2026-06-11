@@ -250,26 +250,6 @@ export function ProductDetails() {
               <p className="min-w-0 truncate text-sm text-gold/80 tracking-wide uppercase">
                 {perfume.brand}
               </p>
-              {perfume.reviews > 0 && (
-                <div className="flex shrink-0 items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <Star aria-hidden="true" className="w-4 h-4 fill-gold text-gold" />
-                    <span className="text-sm font-medium">{perfume.rating}</span>
-                  </div>
-                  <span className="text-sm text-zinc-500">
-                    ({perfume.reviews} {t("product.reviews")})
-                  </span>
-                </div>
-              )}
-            </div>
-            <h1 className="font-display text-3xl sm:text-4xl leading-tight mb-3">{perfume.name}</h1>
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-baseline gap-2.5">
-                <p className="text-gold text-2xl font-medium">{fmt(perfume.price)}</p>
-                {perfume.originalPrice && (
-                  <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
-                )}
-              </div>
               <button
                 aria-label={t("a11y.favorite")}
                 onClick={handleToggleFavorite}
@@ -279,6 +259,24 @@ export function ProductDetails() {
                   className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
                 />
               </button>
+            </div>
+            <h1 className="font-display text-3xl sm:text-4xl leading-tight">{perfume.name}</h1>
+            {perfume.reviews > 0 && (
+              <div className="mt-2 flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Star aria-hidden="true" className="w-4 h-4 fill-gold text-gold" />
+                  <span className="text-sm font-medium">{perfume.rating}</span>
+                </div>
+                <span className="text-sm text-zinc-500">
+                  ({perfume.reviews} {t("product.reviews")})
+                </span>
+              </div>
+            )}
+            <div className="mt-3 flex items-baseline gap-2.5">
+              <p className="text-gold text-2xl font-medium">{fmt(perfume.price)}</p>
+              {perfume.originalPrice && (
+                <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
+              )}
             </div>
           </div>
 
