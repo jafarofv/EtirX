@@ -75,7 +75,7 @@ export function Favorites() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {favorites.map((perfume) => (
             <div key={perfume.id} className="glass premium-card rounded-3xl overflow-hidden group">
               <div onClick={() => navigate(`/product/${perfume.slug}`)} className="cursor-pointer">

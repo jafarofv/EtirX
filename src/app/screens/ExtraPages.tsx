@@ -47,7 +47,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
           to={`/product/${p.slug}`}
           className="glass premium-card rounded-2xl overflow-hidden"
         >
-          <div className="aspect-[4/5] overflow-hidden relative">
+          <div className="aspect-square overflow-hidden relative">
             <img
               src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")}
               alt={p.name}

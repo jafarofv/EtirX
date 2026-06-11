@@ -196,7 +196,7 @@ export function Home() {
               onClick={() => navigate(`/product/${perfume.slug}`)}
               className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] md:min-w-0 rounded-3xl overflow-hidden cursor-pointer group"
             >
-              <div className="aspect-[4/3] relative overflow-hidden">
+              <div className="aspect-square relative overflow-hidden">
                 <img
                   src={perfume.image}
                   alt={perfume.name}
@@ -287,7 +287,7 @@ export function Home() {
         ) : filteredPerfumes.length === 0 ? (
           <p className="text-zinc-400">{t("shop.noProducts")}</p>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {filteredPerfumes.map((perfume) => (
               <div
                 key={perfume.id}
