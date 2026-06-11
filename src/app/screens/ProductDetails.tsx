@@ -10,6 +10,9 @@ import {
   Truck,
   MessageCircle,
   CreditCard,
+  Droplets,
+  CheckCircle2,
+  User,
 } from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart, isFavorite, toggleFavorite } from "../lib/storage";
@@ -99,17 +102,30 @@ export function ProductDetails() {
           setActiveImage(variant.imageUrl || perfume.image);
         }}
         className={`rounded-2xl border p-4 text-left transition-all ${
-          isSelected ? "border-gold bg-[var(--gold-soft)]" : "glass hover:border-gold/50"
+          isSelected
+            ? "border-gold bg-[var(--gold-soft)]"
+            : "glass border-white/10 hover:border-gold/50"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-medium">
-              {isPremium ? t("product.premiumPack") : `${variant.label}`}
-            </p>
-            <p className="text-xs text-zinc-500 mt-1">
-              {isPremium ? t("product.originalPackaging") : `${variant.sizeMl ?? variant.label} ml`}
-            </p>
+          <div className="flex min-w-0 items-start gap-2.5">
+            <span
+              className={`mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border transition-all ${
+                isSelected ? "border-gold bg-gold" : "border-zinc-600"
+              }`}
+            >
+              {isSelected && <span className="h-1.5 w-1.5 rounded-full bg-black" />}
+            </span>
+            <div className="min-w-0">
+              <p className="font-medium leading-tight">
+                {isPremium ? t("product.premiumPack") : `${variant.label}`}
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">
+                {isPremium
+                  ? t("product.originalPackaging")
+                  : `${variant.sizeMl ?? variant.label} ml`}
+              </p>
+            </div>
           </div>
           <div className="text-right shrink-0">
             <p className="font-medium text-gold">{fmt(variant.price)}</p>
@@ -266,31 +282,48 @@ export function ProductDetails() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-6">
-            <div className="glass rounded-2xl px-2.5 sm:px-4 py-3">
-              <p className="text-xs text-zinc-500 mb-0.5">{t("product.size")}</p>
-              <p className="text-xs sm:text-sm font-medium">
-                {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
-              </p>
+          <div className="glass rounded-2xl grid grid-cols-3 divide-x divide-white/10 mb-6">
+            <div className="flex items-start gap-2 px-3 sm:px-4 py-3.5">
+              <Droplets className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
+                  {t("product.size")}
+                </p>
+                <p className="text-xs sm:text-sm font-medium truncate">
+                  {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
+                </p>
+              </div>
             </div>
-            <div className="glass rounded-2xl px-2.5 sm:px-4 py-3">
-              <p className="text-xs text-zinc-500 mb-0.5">{t("product.stock")}</p>
-              <p
-                className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
-              >
-                {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
-              </p>
+            <div className="flex items-start gap-2 px-3 sm:px-4 py-3.5">
+              <CheckCircle2
+                className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+              />
+              <div className="min-w-0">
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
+                  {t("product.stock")}
+                </p>
+                <p
+                  className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+                >
+                  {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
+                </p>
+              </div>
             </div>
-            <div className="glass rounded-2xl px-2.5 sm:px-4 py-3">
-              <p className="text-xs text-zinc-500 mb-0.5">Cins</p>
-              <p className="text-xs sm:text-sm font-medium">{gender}</p>
+            <div className="flex items-start gap-2 px-3 sm:px-4 py-3.5">
+              <User className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Cins</p>
+                <p className="text-xs sm:text-sm font-medium truncate">{gender}</p>
+              </div>
             </div>
           </div>
 
-          <div className="mb-8 space-y-4">
+          <div className="mb-8 space-y-5">
             {premiumVariants.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium mb-3">{t("product.originalPackaging")}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
+                  {t("product.originalPackaging")}
+                </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {premiumVariants.map(renderVariantCard)}
                 </div>
@@ -298,7 +331,9 @@ export function ProductDetails() {
             )}
             {gramVariants.length > 0 && (
               <div>
-                <h3 className="text-sm font-medium mb-3">{t("product.gramSale")}</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
+                  {t("product.gramSale")}
+                </h3>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {gramVariants.map(renderVariantCard)}
                 </div>
@@ -376,7 +411,8 @@ export function ProductDetails() {
 
       <div className="px-4 sm:px-6 lg:px-6 pt-2 lg:pt-12 pb-12 space-y-8">
         <div>
-          <h3 className="font-display text-2xl mb-4">{t("product.notes")}</h3>
+          <h3 className="font-display text-2xl mb-3">{t("product.notes")}</h3>
+          <div className="gold-rule mb-5" />
           <div className="grid gap-3 sm:grid-cols-3">
             {[
               { label: t("product.topNotes"), items: perfume.notes.top },
@@ -408,6 +444,7 @@ export function ProductDetails() {
 
         <div>
           <h3 className="font-display text-2xl mb-3">{t("product.description")}</h3>
+          <div className="gold-rule mb-5" />
           <p className="max-w-3xl text-sm text-zinc-400 leading-relaxed">{perfume.description}</p>
         </div>
       </div>
