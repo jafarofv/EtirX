@@ -11,7 +11,6 @@ import {
   MessageCircle,
   CreditCard,
   Droplets,
-  CheckCircle2,
   User,
 } from "lucide-react";
 import { useI18n } from "../i18n";
@@ -82,7 +81,6 @@ export function ProductDetails() {
   const variants = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
   const selectedVariant =
     variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
-  const selectedStock = selectedVariant?.stock ?? 0;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(
     0,
@@ -129,9 +127,9 @@ export function ProductDetails() {
           </div>
           <div className="text-right shrink-0">
             <p className="font-medium text-gold">{fmt(variant.price)}</p>
-            <p className={`text-xs mt-1 ${variant.stock > 0 ? "text-green-400" : "text-red-400"}`}>
-              {variant.stock > 0 ? t("product.inStock") : t("product.outOfStock")}
-            </p>
+            {variant.stock <= 0 && (
+              <p className="text-xs mt-1 text-red-400">{t("product.outOfStock")}</p>
+            )}
           </div>
         </div>
       </button>
@@ -193,7 +191,7 @@ export function ProductDetails() {
         </div>
       </div>
 
-      <div className="lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24 lg:items-start">
+      <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24 lg:items-start">
         <div className="lg:sticky lg:top-24 lg:self-start">
           <button
             onClick={() => navigate(-1)}
@@ -284,7 +282,7 @@ export function ProductDetails() {
 
           <div className="gold-rule mt-4 mb-4" />
 
-          <div className="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10 pb-4 mb-6">
+          <div className="grid grid-cols-2 divide-x divide-white/10 border-b border-white/10 pb-4 mb-6">
             <div className="flex items-start gap-2 px-3 sm:px-4">
               <Droplets className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
@@ -293,21 +291,6 @@ export function ProductDetails() {
                 </p>
                 <p className="text-xs sm:text-sm font-medium truncate">
                   {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-start gap-2 px-3 sm:px-4">
-              <CheckCircle2
-                className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
-              />
-              <div className="min-w-0">
-                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
-                  {t("product.stock")}
-                </p>
-                <p
-                  className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
-                >
-                  {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
                 </p>
               </div>
             </div>
@@ -411,7 +394,7 @@ export function ProductDetails() {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-6 pt-2 lg:pt-12 pb-12 space-y-8">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-6 pt-2 lg:pt-12 pb-12 space-y-8">
         <div>
           <h3 className="font-display text-2xl mb-3">{t("product.notes")}</h3>
           <div className="gold-rule mb-5" />

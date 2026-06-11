@@ -65,8 +65,8 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
             <h3 className="font-display text-lg truncate">{p.name}</h3>
             <p className="text-xs text-zinc-500 mt-0.5">
               {p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks"} •{" "}
-              {p.volume_ml ?? 100}ml •{" "}
-              {hasStock(p) ? t("product.inStock") : t("product.outOfStock")}
+              {p.volume_ml ?? 100}ml
+              {!hasStock(p) && <span className="text-red-400"> • {t("product.outOfStock")}</span>}
             </p>
             <p className="mt-1 text-gold font-medium">{fmt(p.price)}</p>
           </div>
