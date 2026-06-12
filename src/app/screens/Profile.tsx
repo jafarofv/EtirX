@@ -159,7 +159,7 @@ export function Profile() {
 
   if (isLoggedIn && user) {
     return (
-      <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+      <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 mx-auto max-w-2xl">
         <Seo
           title="Profil | ƏtirX"
           description="İstifadəçi profil səhifəsi."
@@ -481,7 +481,7 @@ export function EditProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+    <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 mx-auto max-w-2xl">
       <Seo
         title="Profili redaktə et | ƏtirX"
         description="Profil məlumatlarını yenilə."
@@ -561,7 +561,7 @@ export function ChangePasswordPage() {
   const [err, setErr] = useState<string | null>(null);
 
   return (
-    <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+    <div className="min-h-screen bg-black text-white pb-8 px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 mx-auto max-w-2xl">
       <Seo
         title="Şifrəni dəyiş | ƏtirX"
         description="Hesab şifrəsini yenilə."
