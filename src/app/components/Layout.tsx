@@ -174,6 +174,41 @@ export function Layout() {
     };
   }, []);
 
+  // Accessible dialog behavior for the menu drawer: move focus into it on open,
+  // trap Tab inside, and restore focus to the trigger on close.
+  useEffect(() => {
+    if (!isPagesOpen) return;
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+    const opener = document.activeElement as HTMLElement | null;
+    const getFocusable = () =>
+      Array.from(
+        drawer.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      );
+    getFocusable()[0]?.focus();
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const items = getFocusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    drawer.addEventListener("keydown", onKeyDown);
+    return () => {
+      drawer.removeEventListener("keydown", onKeyDown);
+      opener?.focus?.();
+    };
+  }, [isPagesOpen]);
+
   useEffect(() => {
     setIsPagesOpen(false);
     setIsSearchOpen(false);
@@ -273,6 +308,8 @@ export function Layout() {
                   <button
                     onClick={() => setIsPagesOpen((v) => !v)}
                     aria-label={t("a11y.menu")}
+                    aria-expanded={isPagesOpen}
+                    aria-controls="menu-drawer"
                     className="px-3 py-1.5 text-xs rounded-lg glass hover:border-gold flex items-center gap-2"
                   >
                     <Menu className="w-3.5 h-3.5" />
@@ -300,6 +337,8 @@ export function Layout() {
                 <button
                   onClick={() => setIsPagesOpen((v) => !v)}
                   aria-label={t("a11y.menu")}
+                  aria-expanded={isPagesOpen}
+                  aria-controls="menu-drawer"
                   className="px-3 py-2 text-xs rounded-xl glass hover:border-gold flex items-center gap-2"
                 >
                   <Menu className="w-3.5 h-3.5" />
@@ -528,6 +567,10 @@ export function Layout() {
             />
             <aside
               ref={drawerRef}
+              id="menu-drawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("menu.title")}
               className="menu-drawer fixed top-0 right-0 h-full w-[85%] max-w-sm z-[60] bg-zinc-950 border-l border-zinc-800 transition-transform duration-300 translate-x-0"
             >
               <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
