@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router";
 import {
   Home,
@@ -13,6 +13,7 @@ import {
   Instagram,
   Star,
   ChevronRight,
+  Search,
 } from "lucide-react";
 import { useI18n, type Language } from "../i18n";
 import { useTheme } from "../theme";
@@ -57,15 +58,63 @@ export function Layout() {
   const { t, language, setLanguage } = useI18n();
   const { theme, setTheme } = useTheme();
   const site = useSiteSettings();
-  const [isLangOpen, setIsLangOpen] = useState(false);
   const [isPagesOpen, setIsPagesOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [favoritesCount, setFavoritesCount] = useState(0);
-  const langDesktopRef = useRef<HTMLDivElement | null>(null);
-  const langMobileRef = useRef<HTMLDivElement | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const pagesDesktopRef = useRef<HTMLDivElement | null>(null);
   const pagesMobileRef = useRef<HTMLDivElement | null>(null);
+  const searchDesktopRef = useRef<HTMLDivElement | null>(null);
+  const searchMobileRef = useRef<HTMLDivElement | null>(null);
   const drawerRef = useRef<HTMLElement | null>(null);
+  const mainScrollRef = useRef<HTMLDivElement | null>(null);
+  const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
+
+  const submitSearch = (q?: string) => {
+    const query = (q ?? searchQuery).trim();
+    setIsSearchOpen(false);
+    if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
+  };
+
+  const renderSearch = (ref: MutableRefObject<HTMLDivElement | null>) => (
+    <div ref={ref} className="relative w-full">
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        onFocus={() => setIsSearchOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") submitSearch();
+        }}
+        placeholder={t("home.search")}
+        aria-label={t("home.search")}
+        className="premium-input w-full glass rounded-full pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500"
+      />
+      {isSearchOpen && (
+        <div className="absolute right-0 mt-2 w-full sm:w-72 glass rounded-2xl p-3 z-50 animate-fade-up">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2.5 px-1">
+            {t("menu.search")}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {noteHints.map((note) => (
+              <button
+                key={`hs-${note}`}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  submitSearch(note);
+                }}
+                className="px-3 py-1.5 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold transition-all"
+              >
+                #{note}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   const navItems = [
     { icon: Home, label: t("nav.home"), path: "/" },
@@ -103,18 +152,18 @@ export function Layout() {
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
       const target = event.target as Node;
-      const inLangDesktop = langDesktopRef.current?.contains(target);
-      const inLangMobile = langMobileRef.current?.contains(target);
       const inPagesDesktop = pagesDesktopRef.current?.contains(target);
       const inPagesMobile = pagesMobileRef.current?.contains(target);
       const inDrawer = drawerRef.current?.contains(target);
-      if (!inLangDesktop && !inLangMobile) setIsLangOpen(false);
+      const inSearchDesktop = searchDesktopRef.current?.contains(target);
+      const inSearchMobile = searchMobileRef.current?.contains(target);
       if (!inPagesDesktop && !inPagesMobile && !inDrawer) setIsPagesOpen(false);
+      if (!inSearchDesktop && !inSearchMobile) setIsSearchOpen(false);
     };
     const onEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setIsLangOpen(false);
         setIsPagesOpen(false);
+        setIsSearchOpen(false);
       }
     };
     document.addEventListener("mousedown", onClick);
@@ -127,7 +176,12 @@ export function Layout() {
 
   useEffect(() => {
     setIsPagesOpen(false);
-    setIsLangOpen(false);
+    setIsSearchOpen(false);
+    // Reset scroll on route change. Scrolling happens on the inner container
+    // (not window), so the new page would otherwise keep the previous scroll
+    // position — landing at the bottom on shorter pages.
+    mainScrollRef.current?.scrollTo({ top: 0, left: 0 });
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   useEffect(() => {
@@ -205,7 +259,7 @@ export function Layout() {
               </div>
             </div>
           </div>
-          <header className="md:hidden border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
+          <header className="md:hidden border-b border-white/5 bg-black/70 backdrop-blur-xl">
             <div className="px-4 py-2.5 flex items-center justify-between">
               <button
                 onClick={() => navigate("/")}
@@ -215,136 +269,38 @@ export function Layout() {
                 <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
               </button>
               <div className="flex items-center gap-2">
-                <div ref={langMobileRef} className="relative">
-                  <button
-                    onClick={() => {
-                      setIsLangOpen((v) => !v);
-                    }}
-                    aria-label={t("a11y.language")}
-                    className="px-3 py-1.5 text-base rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                  >
-                    <Globe className="w-3.5 h-3.5" />
-                    {langFlags[language]}
-                  </button>
-                  {isLangOpen && (
-                    <div className="absolute right-0 mt-2 w-24 rounded-xl border border-zinc-700 bg-zinc-900 p-1">
-                      {langs.map((lang) => (
-                        <button
-                          key={`m-${lang}`}
-                          onClick={() => {
-                            setLanguage(lang);
-                            setIsLangOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                            language === lang
-                              ? "bg-white text-black"
-                              : "text-zinc-300 hover:bg-zinc-800"
-                          }`}
-                        >
-                          {langFlags[lang]}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                <div>
-                  <button
-                    onClick={() => {
-                      setIsLangOpen(false);
-                      setTheme(theme === "dark" ? "light" : "dark");
-                    }}
-                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                  >
-                    {theme === "dark" ? (
-                      <Moon className="w-3.5 h-3.5" />
-                    ) : (
-                      <Sun className="w-3.5 h-3.5" />
-                    )}
-                    <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
-                  </button>
-                </div>
                 <div ref={pagesMobileRef} className="relative">
                   <button
-                    onClick={() => {
-                      setIsPagesOpen((v) => !v);
-                      setIsLangOpen(false);
-                    }}
+                    onClick={() => setIsPagesOpen((v) => !v)}
                     aria-label={t("a11y.menu")}
-                    className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                    className="px-3 py-1.5 text-xs rounded-lg glass hover:border-gold flex items-center gap-2"
                   >
                     <Menu className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
             </div>
+            <div className="px-4 pb-3">{renderSearch(searchMobileRef)}</div>
           </header>
         </div>
-        <header className="hidden md:block sticky top-[56px] z-20 border-b border-zinc-800 bg-zinc-950/95 backdrop-blur-xl">
-          <div className="w-full px-6 lg:px-8 h-16 flex items-center justify-between">
+        <header className="hidden md:block sticky top-[56px] z-20 border-b border-white/5 bg-black/70 backdrop-blur-xl">
+          <div className="w-full px-6 lg:px-8 h-16 flex items-center gap-4">
             <button
               onClick={() => navigate("/")}
-              className="inline-flex items-center"
+              className="inline-flex items-center shrink-0"
               aria-label="EtirX home"
             >
               <img src={logoSrc} alt="EtirX" className="h-14 w-14 object-cover" />
             </button>
-            <nav className="flex items-center gap-2">
-              <div ref={langDesktopRef} className="relative mr-2">
-                <button
-                  onClick={() => {
-                    setIsLangOpen((v) => !v);
-                  }}
-                  aria-label={t("a11y.language")}
-                  className="px-3 py-2 text-xs rounded-xl border border-zinc-700 bg-zinc-900 uppercase flex items-center gap-2"
-                >
-                  <Globe className="w-3.5 h-3.5" />
-                  <span className="text-base leading-none">{langFlags[language]}</span>
-                </button>
-                {isLangOpen && (
-                  <div className="absolute right-0 mt-2 w-28 rounded-xl border border-zinc-700 bg-zinc-900 p-1">
-                    {langs.map((lang) => (
-                      <button
-                        key={lang}
-                        onClick={() => {
-                          setLanguage(lang);
-                          setIsLangOpen(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-base rounded-lg ${
-                          language === lang
-                            ? "bg-white text-black"
-                            : "text-zinc-300 hover:bg-zinc-800"
-                        }`}
-                      >
-                        {langFlags[lang]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div className="mr-2">
-                <button
-                  onClick={() => {
-                    setIsLangOpen(false);
-                    setTheme(theme === "dark" ? "light" : "dark");
-                  }}
-                  className="px-3 py-2 text-xs rounded-xl border border-zinc-700 bg-zinc-900 flex items-center gap-2"
-                >
-                  {theme === "dark" ? (
-                    <Moon className="w-3.5 h-3.5" />
-                  ) : (
-                    <Sun className="w-3.5 h-3.5" />
-                  )}
-                  <span>{theme === "dark" ? "Qara" : "Ağ"}</span>
-                </button>
-              </div>
+            <div className="flex-1 flex justify-center">
+              <div className="w-full max-w-sm">{renderSearch(searchDesktopRef)}</div>
+            </div>
+            <nav className="flex items-center gap-2 shrink-0">
               <div ref={pagesDesktopRef} className="relative mr-3">
                 <button
-                  onClick={() => {
-                    setIsPagesOpen((v) => !v);
-                    setIsLangOpen(false);
-                  }}
+                  onClick={() => setIsPagesOpen((v) => !v)}
                   aria-label={t("a11y.menu")}
-                  className="px-3 py-2 text-xs rounded-xl border border-zinc-700 bg-zinc-900 flex items-center gap-2"
+                  className="px-3 py-2 text-xs rounded-xl glass hover:border-gold flex items-center gap-2"
                 >
                   <Menu className="w-3.5 h-3.5" />
                 </button>
@@ -363,7 +319,7 @@ export function Layout() {
                     onClick={() => navigate(item.path)}
                     className={`px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 ${
                       isActive
-                        ? "bg-white text-black font-medium"
+                        ? "bg-gold text-[#1a1206] font-medium"
                         : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
                     }`}
                   >
@@ -382,7 +338,7 @@ export function Layout() {
             </nav>
           </div>
         </header>
-        <div className="flex-1 overflow-y-auto pb-20 md:pb-0">
+        <div ref={mainScrollRef} className="flex-1 overflow-y-auto pb-20 md:pb-0">
           <Outlet />
           {showReviews && (
             <section className="px-4 sm:px-6 lg:px-8 py-10 md:py-14">
@@ -392,7 +348,7 @@ export function Layout() {
                     <p className="text-xs uppercase tracking-[0.24em] text-zinc-500 mb-2">
                       {t("reviews.badge")}
                     </p>
-                    <h2 className="text-2xl sm:text-3xl">{t("reviews.title")}</h2>
+                    <h2 className="font-display text-3xl sm:text-4xl">{t("reviews.title")}</h2>
                     <p className="text-sm text-zinc-400 mt-2">{t("reviews.subtitle")}</p>
                   </div>
                 </div>
@@ -400,12 +356,12 @@ export function Layout() {
                   {reviews.map((review, index) => (
                     <article
                       key={review.id}
-                      className={`rounded-[28px] border border-zinc-800 bg-gradient-to-br from-zinc-900 to-zinc-950 p-5 shadow-lg ${
+                      className={`glass premium-card rounded-[28px] p-5 ${
                         index === 1 ? "md:-translate-y-3" : ""
                       }`}
                     >
                       <div className="flex items-start gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center font-semibold">
+                        <div className="w-12 h-12 rounded-2xl bg-gold text-[#1a1206] flex items-center justify-center font-semibold">
                           {review.name.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -414,7 +370,7 @@ export function Layout() {
                               <p className="font-medium leading-tight">{review.name}</p>
                               <p className="text-xs text-zinc-500">{review.handle}</p>
                             </div>
-                            <div className="flex items-center gap-1 text-amber-400 shrink-0">
+                            <div className="flex items-center gap-1 text-gold shrink-0">
                               {Array.from({ length: review.rating }).map((_, i) => (
                                 <Star
                                   key={`${review.id}-${i}`}
@@ -449,7 +405,7 @@ export function Layout() {
               <div>
                 <Link to="/" className="inline-flex items-center gap-3 mb-4">
                   <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
-                  <span className="text-lg font-medium">{t("brand.name")}</span>
+                  <span className="font-display text-2xl">{t("brand.name")}</span>
                 </Link>
                 <p className="text-sm text-zinc-400 leading-6 max-w-sm">{t("footer.about")}</p>
               </div>
@@ -501,7 +457,7 @@ export function Layout() {
                         target="_blank"
                         rel="noreferrer"
                         aria-label={item.label}
-                        className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:border-zinc-600 hover:bg-zinc-800 transition-all"
+                        className="w-10 h-10 rounded-xl glass flex items-center justify-center hover:border-gold transition-all"
                       >
                         {item.kind === "whatsapp" && (
                           <MessageCircle className="w-5 h-5 text-emerald-400" />
@@ -527,7 +483,7 @@ export function Layout() {
         </div>
 
         {/* Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-zinc-900/95 backdrop-blur-xl border-t border-zinc-800 px-4 sm:px-6 lg:px-8 py-3">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-black/80 backdrop-blur-xl border-t border-white/5 px-4 sm:px-6 lg:px-8 py-3">
           <div className="w-full flex justify-around items-center">
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -542,7 +498,7 @@ export function Layout() {
                 >
                   <div
                     className={`p-2.5 rounded-2xl transition-all relative ${
-                      isActive ? "bg-white text-black" : "text-zinc-400 hover:text-white"
+                      isActive ? "bg-gold text-[#1a1206]" : "text-zinc-400 hover:text-white"
                     }`}
                   >
                     <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
@@ -578,7 +534,7 @@ export function Layout() {
                 <p className="font-medium">{t("menu.title")}</p>
                 <button
                   onClick={() => setIsPagesOpen(false)}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-zinc-700 bg-zinc-900"
+                  className="px-3 py-1.5 text-xs rounded-lg glass hover:border-gold"
                 >
                   {t("menu.close")}
                 </button>
@@ -589,12 +545,54 @@ export function Layout() {
                     key={`drawer-${page.to}`}
                     to={page.to}
                     onClick={() => setIsPagesOpen(false)}
-                    className="group flex items-center justify-between px-3.5 py-3 text-sm rounded-xl text-zinc-200 border border-zinc-800/80 bg-gradient-to-r from-zinc-900 to-zinc-950 hover:from-zinc-800 hover:to-zinc-900 transition-all"
+                    className="group flex items-center justify-between px-3.5 py-3 text-sm rounded-xl text-zinc-200 glass hover:border-gold transition-all"
                   >
                     <span className="font-medium tracking-wide">{page.label}</span>
                     <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
                   </Link>
                 ))}
+
+                <div className="pt-4 mt-3 border-t border-white/10 space-y-4">
+                  <div>
+                    <p className="flex items-center gap-2 px-1 mb-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                      <Globe className="w-3.5 h-3.5" /> {t("a11y.language")}
+                    </p>
+                    <div className="flex gap-2">
+                      {langs.map((lang) => (
+                        <button
+                          key={`drawer-lang-${lang}`}
+                          onClick={() => setLanguage(lang)}
+                          className={`flex-1 px-3 py-2 rounded-xl text-sm flex items-center justify-center gap-1.5 transition-all ${
+                            language === lang
+                              ? "bg-gold text-[#1a1206] font-semibold"
+                              : "glass text-zinc-300 hover:border-gold"
+                          }`}
+                        >
+                          <span className="text-base leading-none">{langFlags[lang]}</span>
+                          <span className="uppercase">{lang}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="px-1 mb-2 text-[10px] uppercase tracking-[0.2em] text-zinc-500">
+                      {t("theme.label")}
+                    </p>
+                    <button
+                      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                      className="w-full glass rounded-xl px-3.5 py-3 flex items-center gap-2 hover:border-gold transition-all"
+                    >
+                      {theme === "dark" ? (
+                        <Moon className="w-4 h-4" />
+                      ) : (
+                        <Sun className="w-4 h-4" />
+                      )}
+                      <span className="text-sm">
+                        {theme === "dark" ? t("theme.dark") : t("theme.light")}
+                      </span>
+                    </button>
+                  </div>
+                </div>
               </div>
             </aside>
           </>

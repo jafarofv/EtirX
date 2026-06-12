@@ -188,6 +188,11 @@ const dict: Dict = {
   "cart.total": { az: "Cəmi", en: "Total", ru: "Итого" },
 
   "checkout.title": { az: "Sifarişin rəsmiləşdirilməsi", en: "Checkout", ru: "Оформление заказа" },
+  "checkout.contactInfo": {
+    az: "Əlaqə məlumatları",
+    en: "Contact details",
+    ru: "Контактные данные",
+  },
   "checkout.success": {
     az: "Sifariş təsdiqləndi!",
     en: "Order Confirmed!",

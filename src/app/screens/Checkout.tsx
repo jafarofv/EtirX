@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, MapPin, Truck, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, MapPin, Truck, CheckCircle2, User } from "lucide-react";
 import { useI18n } from "../i18n";
 import {
   FALLBACK_DELIVERY_METHODS as API_FALLBACK_DELIVERY_METHODS,
@@ -226,6 +226,87 @@ export function Checkout() {
     );
   }, [fullName, phone, address, notes]);
 
+  const handlePlaceOrder = async () => {
+    setError(null);
+    if (!fullName || !phone || (requiresAddress && !address)) {
+      setError(requiresAddress ? t("checkout.requiredError") : t("checkout.basicRequiredError"));
+      return;
+    }
+    if (!selectedMethod) {
+      setError(t("checkout.deliveryRequiredError"));
+      return;
+    }
+    if (promoCode.trim() && !isLoggedIn) {
+      setError(t("checkout.promoLoginRequired"));
+      return;
+    }
+    try {
+      setSubmitting(true);
+      if (cartItems.length === 0) {
+        setError(t("cart.empty"));
+        return;
+      }
+      const result = await createOrder({
+        full_name: fullName,
+        phone,
+        address: requiresAddress ? address : address || t("checkout.defaultAddress"),
+        notes: promoCode.trim() ? `${notes}\nPromo: ${promoCode.trim()}`.trim() : notes,
+        promo_code: promoCode.trim() || undefined,
+        delivery_method: selectedMethod.code,
+        items: cartItems.map((item) => ({
+          product_id: item.perfume.id,
+          product_slug: item.perfume.slug,
+          variant_id: item.variant.id ?? undefined,
+          quantity: item.quantity,
+        })),
+      });
+      if (isLoggedIn && !profileHadAddress && address.trim()) {
+        await updateMe({
+          full_name: fullName.trim(),
+          phone: phone.trim(),
+          address: address.trim(),
+        });
+      }
+      clearCart();
+      localStorage.removeItem("checkout-promo-code");
+      setPlacedOrder(result);
+      setStep("success");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : t("checkout.submitError"));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleApplyPromo = async () => {
+    setPromoErr(null);
+    setPromoMsg(null);
+    const code = promoCode.trim();
+    if (!code) {
+      localStorage.removeItem("checkout-promo-code");
+      setPromoDiscount(0);
+      setPromoMsg(t("cart.promoCleared"));
+      return;
+    }
+    if (!isLoggedIn) {
+      setPromoErr(t("checkout.promoLoginRequired"));
+      return;
+    }
+    try {
+      const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
+      localStorage.setItem("checkout-promo-code", result.promo.code);
+      setPromoCode(result.promo.code);
+      setPromoDiscount(Number(result.discount_amount));
+      setPromoMsg(
+        `${result.promo.code} ${t("cart.promoApplied")} - ${formatCurrency(Number(result.discount_amount))}`
+      );
+    } catch (err) {
+      localStorage.removeItem("checkout-promo-code");
+      setPromoDiscount(0);
+      setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
+    }
+  };
+
   if (step === "success") {
     const order = placedOrder;
     const fmt = (value: string) => formatCurrency(Number(value));
@@ -233,14 +314,14 @@ export function Checkout() {
     return (
       <div className="min-h-screen bg-black text-white px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <div className="max-w-3xl mx-auto">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-[28px] p-6 sm:p-8">
+          <div className="glass rounded-[28px] p-6 sm:p-8">
             <div className="flex items-start justify-between gap-4 mb-6">
               <div className="flex items-center gap-4">
                 <div className="w-16 h-16 bg-green-500/10 rounded-2xl flex items-center justify-center border border-green-500/20 shrink-0">
                   <CheckCircle2 className="w-8 h-8 text-green-500" />
                 </div>
                 <div>
-                  <h2 className="text-2xl mb-1">{t("checkout.success")}</h2>
+                  <h2 className="font-display text-4xl mb-1">{t("checkout.success")}</h2>
                   <p className="text-sm text-zinc-400">{t("checkout.successSub")}</p>
                 </div>
               </div>
@@ -248,7 +329,9 @@ export function Checkout() {
                 <p className="text-xs text-zinc-500 uppercase tracking-wider">
                   {t("checkout.orderCode")}
                 </p>
-                <p className="text-lg font-medium">{order?.code ? `#${order.code}` : "N/A"}</p>
+                <p className="text-gold text-lg font-medium">
+                  {order?.code ? `#${order.code}` : "N/A"}
+                </p>
                 <span
                   className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}
                 >
@@ -258,7 +341,7 @@ export function Checkout() {
             </div>
 
             <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
-              <div className="bg-black/40 border border-zinc-800 rounded-2xl p-4 space-y-3">
+              <div className="glass rounded-2xl p-4 space-y-3">
                 <div>
                   <p className="text-xs text-zinc-500 mb-1">{t("checkout.fullName")}</p>
                   <p className="font-medium">{order?.full_name || fullName}</p>
@@ -287,7 +370,7 @@ export function Checkout() {
                 )}
               </div>
 
-              <div className="bg-black/40 border border-zinc-800 rounded-2xl p-4">
+              <div className="glass rounded-2xl p-4">
                 <p className="text-xs text-zinc-500 uppercase tracking-wider mb-3">
                   {t("cart.summary")}
                 </p>
@@ -297,7 +380,7 @@ export function Checkout() {
                       key={`${item.product}-${item.variant_label || "variant"}-${item.unit_price}`}
                       className="flex items-center gap-3 text-sm"
                     >
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800 shrink-0">
+                      <div className="w-12 h-12 rounded-xl overflow-hidden glass shrink-0">
                         <img
                           src={item.product_image}
                           alt={item.product_name}
@@ -337,24 +420,23 @@ export function Checkout() {
                       </span>
                     </div>
                   )}
-                  <div className="flex items-center justify-between pt-2 border-t border-zinc-800">
+                  <div className="flex items-center justify-between pt-2 border-t border-white/10">
                     <span className="font-medium">{t("cart.total")}</span>
-                    <span className="text-xl font-medium">{fmt(order?.total || "0")}</span>
+                    <span className="text-gold text-xl font-medium">
+                      {fmt(order?.total || "0")}
+                    </span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              <button
-                onClick={() => navigate("/")}
-                className="bg-white text-black px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
-              >
+              <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
                 {t("checkout.continue")}
               </button>
               <button
                 onClick={() => navigate("/profile")}
-                className="bg-zinc-800 text-white px-8 py-3.5 rounded-2xl font-medium hover:bg-zinc-700 transition-all"
+                className="glass px-8 py-3.5 rounded-2xl font-medium hover:border-gold transition-all"
               >
                 {t("checkout.orderDetails")}
               </button>
@@ -366,253 +448,239 @@ export function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white pb-8">
+    <div className="min-h-screen bg-black text-white pb-12">
       <Seo
         title="Checkout | ƏtirX"
         description="Sifarişin rəsmiləşdirilməsi."
         path="/checkout"
         noindex
       />
-      <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
-        <div className="flex items-center gap-4 mb-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12">
+        <div className="flex items-center gap-4 mb-7">
           <button
             onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center hover:bg-zinc-800 transition-all"
+            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all shrink-0"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl">{t("checkout.title")}</h1>
+          <div>
+            <h1 className="font-display text-4xl leading-none">{t("checkout.title")}</h1>
+            <div className="gold-rule mt-2" />
+          </div>
         </div>
-      </div>
 
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="mb-6">
-          <div className="space-y-3 mb-4">
-            <input
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder={t("checkout.fullName")}
-              aria-label={t("checkout.fullName")}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
-            />
-            <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder={t("checkout.phone")}
-              aria-label={t("checkout.phone")}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
-            />
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder={t("checkout.notes")}
-              aria-label={t("checkout.notes")}
-              rows={2}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
-            />
-            <div className="flex gap-3">
-              <input
-                value={promoCode}
-                onChange={(e) => {
-                  setPromoCode(e.target.value);
-                  setPromoErr(null);
-                  setPromoMsg(null);
-                  setPromoDiscount(0);
-                }}
-                placeholder={t("checkout.promo")}
-                aria-label={t("checkout.promo")}
-                className="flex-1 bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
+        <div className="lg:grid lg:grid-cols-5 lg:gap-7 lg:items-start">
+          {/* LEFT — form */}
+          <div className="lg:col-span-3 space-y-5">
+            <section className="glass rounded-2xl p-5">
+              <h2 className="flex items-center gap-2 font-medium mb-4">
+                <User className="w-4 h-4 text-gold" /> {t("checkout.contactInfo")}
+              </h2>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder={t("checkout.fullName")}
+                  aria-label={t("checkout.fullName")}
+                  className="glass premium-input rounded-xl p-3"
+                />
+                <input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={t("checkout.phone")}
+                  aria-label={t("checkout.phone")}
+                  className="glass premium-input rounded-xl p-3"
+                />
+              </div>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={t("checkout.notes")}
+                aria-label={t("checkout.notes")}
+                rows={2}
+                className="w-full glass premium-input rounded-xl p-3 mt-3"
               />
-              <button
-                type="button"
-                onClick={async () => {
-                  setPromoErr(null);
-                  setPromoMsg(null);
-                  const code = promoCode.trim();
-                  if (!code) {
-                    localStorage.removeItem("checkout-promo-code");
-                    setPromoDiscount(0);
-                    setPromoMsg(t("cart.promoCleared"));
-                    return;
-                  }
-                  if (!isLoggedIn) {
-                    setPromoErr(t("checkout.promoLoginRequired"));
-                    return;
-                  }
-                  try {
-                    const result = await validatePromoCode({ code, subtotal: subtotal.toFixed(2) });
-                    localStorage.setItem("checkout-promo-code", result.promo.code);
-                    setPromoCode(result.promo.code);
-                    setPromoDiscount(Number(result.discount_amount));
-                    setPromoMsg(
-                      `${result.promo.code} ${t("cart.promoApplied")} - ${Number(result.discount_amount).toFixed(2)} \u20BC`
-                    );
-                  } catch (err) {
-                    localStorage.removeItem("checkout-promo-code");
-                    setPromoDiscount(0);
-                    setPromoErr(err instanceof Error ? err.message : t("checkout.submitError"));
-                  }
-                }}
-                className="bg-white text-black px-5 py-3 rounded-2xl font-medium hover:bg-zinc-100 transition-all"
-              >
-                {t("cart.apply")}
-              </button>
-            </div>
-            {promoCode.trim() && !isLoggedIn && (
-              <p className="text-xs text-amber-400">{t("checkout.promoLoginHint")}</p>
-            )}
-            {promoErr && <p className="text-xs text-red-400">{promoErr}</p>}
-            {promoMsg && <p className="text-xs text-green-400">{promoMsg}</p>}
-          </div>
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="w-5 h-5 text-zinc-400" />
-            <h2 className="font-medium">{t("checkout.address")}</h2>
-          </div>
-          {requiresAddress ? (
-            <textarea
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder={t("checkout.addrInput")}
-              aria-label={t("checkout.addrInput")}
-              rows={3}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-3"
-            />
-          ) : (
-            <div className="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 mb-3 space-y-2">
-              <p className="font-medium mb-1">{t("checkout.savedAddress")}</p>
-              <p className="text-sm text-zinc-400">{address || t("checkout.defaultAddress")}</p>
-              <p className="text-xs text-zinc-500">{t("checkout.addressOptionalHint")}</p>
-            </div>
-          )}
-        </div>
+            </section>
 
-        <div className="mb-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Truck className="w-5 h-5 text-zinc-400" />
-            <h2 className="font-medium">{t("checkout.delivery")}</h2>
-          </div>
-          <div className="space-y-3">
-            {deliveryMethods.map((method) => (
-              <button
-                key={method.code}
-                type="button"
-                onClick={() => setSelectedDelivery(method.code)}
-                className={`w-full bg-zinc-900 rounded-2xl p-4 border text-left flex items-center justify-between transition-all ${
-                  selectedDelivery === method.code
-                    ? "border-white"
-                    : "border-zinc-800 hover:border-zinc-600"
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <span
-                    className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+            <section className="glass rounded-2xl p-5">
+              <h2 className="flex items-center gap-2 font-medium mb-4">
+                <MapPin className="w-4 h-4 text-gold" /> {t("checkout.address")}
+              </h2>
+              {requiresAddress ? (
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder={t("checkout.addrInput")}
+                  aria-label={t("checkout.addrInput")}
+                  rows={3}
+                  className="w-full glass premium-input rounded-xl p-3"
+                />
+              ) : (
+                <div className="space-y-1.5">
+                  <p className="font-medium">{t("checkout.savedAddress")}</p>
+                  <p className="text-sm text-zinc-400">{address || t("checkout.defaultAddress")}</p>
+                  <p className="text-xs text-zinc-500">{t("checkout.addressOptionalHint")}</p>
+                </div>
+              )}
+            </section>
+
+            <section className="glass rounded-2xl p-5">
+              <h2 className="flex items-center gap-2 font-medium mb-4">
+                <Truck className="w-4 h-4 text-gold" /> {t("checkout.delivery")}
+              </h2>
+              <div className="space-y-2.5">
+                {deliveryMethods.map((method) => (
+                  <button
+                    key={method.code}
+                    type="button"
+                    onClick={() => setSelectedDelivery(method.code)}
+                    className={`w-full rounded-xl p-3.5 border text-left flex items-start gap-3 transition-all ${
                       selectedDelivery === method.code
-                        ? "border-white bg-white text-black"
-                        : "border-zinc-500 bg-transparent"
+                        ? "border-gold bg-[var(--gold-soft)]"
+                        : "glass hover:border-gold/50"
                     }`}
+                  >
+                    <span
+                      className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
+                        selectedDelivery === method.code
+                          ? "border-gold bg-gold text-[#1a1206]"
+                          : "border-zinc-500"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      {selectedDelivery === method.code ? (
+                        <CheckCircle2 className="h-4 w-4" />
+                      ) : (
+                        <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                      )}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-medium leading-tight">{method.label}</p>
+                        <p className="font-medium text-gold shrink-0 text-sm">
+                          {method.feeLabel
+                            ? method.feeLabel
+                            : method.fee === 0
+                              ? t("checkout.delivery.free")
+                              : `${method.fee.toFixed(2)} ₼`}
+                        </p>
+                      </div>
+                      <p className="mt-0.5 text-xs text-zinc-400">{method.eta}</p>
+                      {method.requiresAddress && (
+                        <p className="mt-1 text-xs text-zinc-500">Ünvan tələb olunur</p>
+                      )}
+                    </div>
+                  </button>
+                ))}
+                <div className="rounded-xl p-3.5 glass flex items-start gap-3">
+                  <span
+                    className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-500"
                     aria-hidden="true"
                   >
-                    {selectedDelivery === method.code ? (
-                      <CheckCircle2 className="h-4 w-4" />
-                    ) : (
-                      <span className="h-2 w-2 rounded-full bg-zinc-500" />
-                    )}
+                    <span className="h-2 w-2 rounded-full bg-zinc-500" />
                   </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="font-medium leading-tight">{method.label}</p>
-                      <p className="font-medium shrink-0">
-                        {method.feeLabel
-                          ? method.feeLabel
-                          : method.fee === 0
-                            ? t("checkout.delivery.free")
-                            : `${method.fee.toFixed(2)} \u20BC`}
-                      </p>
-                    </div>
-                    <p className="mt-1 text-sm text-zinc-400">{method.eta}</p>
-                    {method.requiresAddress && (
-                      <p className="mt-2 text-xs text-zinc-500">Ünvan tələb olunur</p>
-                    )}
+                  <div className="min-w-0">
+                    <p className="font-medium leading-tight">{t("checkout.cod")}</p>
+                    <p className="mt-0.5 text-xs text-zinc-400">{t("checkout.codDesc")}</p>
                   </div>
                 </div>
-              </button>
-            ))}
-            <div className="rounded-3xl border border-zinc-800 bg-zinc-900 p-4">
-              <div className="flex items-start gap-3">
-                <span
-                  className="mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-500 bg-transparent"
-                  aria-hidden="true"
+              </div>
+            </section>
+          </div>
+
+          {/* RIGHT — order summary */}
+          <div className="lg:col-span-2 mt-5 lg:mt-0 lg:sticky lg:top-24">
+            <div className="glass rounded-2xl p-5">
+              <h2 className="font-display text-2xl mb-4">{t("cart.summary")}</h2>
+
+              <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+                {cartItems.map((item) => (
+                  <div
+                    key={`${item.perfume.id}-${item.variant.id ?? "d"}`}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="w-11 h-11 rounded-lg overflow-hidden glass shrink-0">
+                      <img
+                        src={item.variant.imageUrl || item.perfume.image}
+                        alt={item.perfume.name}
+                        onError={onImageError}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm truncate">{item.perfume.name}</p>
+                      <p className="text-xs text-zinc-500">x{item.quantity}</p>
+                    </div>
+                    <p className="text-sm text-gold shrink-0">
+                      {formatCurrency(item.variant.price * item.quantity)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2 mt-4">
+                <input
+                  value={promoCode}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value);
+                    setPromoErr(null);
+                    setPromoMsg(null);
+                    setPromoDiscount(0);
+                  }}
+                  placeholder={t("checkout.promo")}
+                  aria-label={t("checkout.promo")}
+                  className="flex-1 glass premium-input rounded-xl px-3 py-2.5 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={handleApplyPromo}
+                  className="btn-gold px-4 rounded-xl text-sm"
                 >
-                  <span className="h-2 w-2 rounded-full bg-zinc-500" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-medium mb-0.5">{t("checkout.cod")}</p>
-                  <p className="text-sm text-zinc-400">{t("checkout.codDesc")}</p>
+                  {t("cart.apply")}
+                </button>
+              </div>
+              {promoCode.trim() && !isLoggedIn && (
+                <p className="mt-2 text-xs text-amber-400">{t("checkout.promoLoginHint")}</p>
+              )}
+              {promoErr && <p className="mt-2 text-xs text-red-400">{promoErr}</p>}
+              {promoMsg && <p className="mt-2 text-xs text-green-400">{promoMsg}</p>}
+
+              <div className="space-y-2 mt-4 pt-4 border-t border-white/10 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">{t("cart.subtotal")}</span>
+                  <span>{formatCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">{t("cart.shipping")}</span>
+                  <span>
+                    {shipping > 0 ? formatCurrency(shipping) : t("checkout.delivery.free")}
+                  </span>
+                </div>
+                {promoDiscount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-zinc-400">{t("checkout.promo")}</span>
+                    <span className="text-emerald-400">-{formatCurrency(promoDiscount)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-baseline pt-2 border-t border-white/10">
+                  <span className="font-medium">{t("cart.total")}</span>
+                  <span className="text-gold text-2xl font-semibold">{formatCurrency(total)}</span>
                 </div>
               </div>
+
+              <button
+                onClick={handlePlaceOrder}
+                disabled={submitting}
+                className={`btn-gold w-full rounded-2xl py-3.5 mt-4 ${
+                  submitting ? "opacity-60 cursor-not-allowed" : ""
+                }`}
+              >
+                {submitting ? t("checkout.submitting") : t("checkout.place")}
+              </button>
+              {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
             </div>
           </div>
         </div>
-
-        <button
-          onClick={async () => {
-            setError(null);
-            if (!fullName || !phone || (requiresAddress && !address)) {
-              setError(
-                requiresAddress ? t("checkout.requiredError") : t("checkout.basicRequiredError")
-              );
-              return;
-            }
-            if (!selectedMethod) {
-              setError(t("checkout.deliveryRequiredError"));
-              return;
-            }
-            if (promoCode.trim() && !isLoggedIn) {
-              setError(t("checkout.promoLoginRequired"));
-              return;
-            }
-            try {
-              setSubmitting(true);
-              if (cartItems.length === 0) {
-                setError(t("cart.empty"));
-                return;
-              }
-              const result = await createOrder({
-                full_name: fullName,
-                phone,
-                address: requiresAddress ? address : address || t("checkout.defaultAddress"),
-                notes: promoCode.trim() ? `${notes}\nPromo: ${promoCode.trim()}`.trim() : notes,
-                promo_code: promoCode.trim() || undefined,
-                delivery_method: selectedMethod.code,
-                items: cartItems.map((item) => ({
-                  product_id: item.perfume.id,
-                  product_slug: item.perfume.slug,
-                  variant_id: item.variant.id ?? undefined,
-                  quantity: item.quantity,
-                })),
-              });
-              if (isLoggedIn && !profileHadAddress && address.trim()) {
-                await updateMe({
-                  full_name: fullName.trim(),
-                  phone: phone.trim(),
-                  address: address.trim(),
-                });
-              }
-              clearCart();
-              localStorage.removeItem("checkout-promo-code");
-              setPlacedOrder(result);
-              setStep("success");
-            } catch (e) {
-              setError(e instanceof Error ? e.message : t("checkout.submitError"));
-            } finally {
-              setSubmitting(false);
-            }
-          }}
-          className="w-full bg-white text-black rounded-2xl py-4 font-medium hover:bg-zinc-100 transition-all"
-        >
-          {submitting ? t("checkout.submitting") : t("checkout.place")}
-        </button>
-        {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
       </div>
     </div>
   );

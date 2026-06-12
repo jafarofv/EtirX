@@ -1,6 +1,6 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Heart, Search, Star, ShoppingBag, TrendingUp } from "lucide-react";
+import { Heart, Star, ShoppingBag, ArrowRight } from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart, toggleFavorite } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
@@ -13,7 +13,6 @@ export function Home() {
   const navigate = useNavigate();
   const { t } = useI18n();
   const [selectedCategory, setSelectedCategory] = useState("all");
-  const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -26,7 +25,6 @@ export function Home() {
   });
   const [pulseFavorite, setPulseFavorite] = useState<number | null>(null);
   const [pulseCart, setPulseCart] = useState<number | null>(null);
-  const noteHints = ["oud", "rose", "vanilla", "amber", "musk"];
   const fmt = (v: number) => formatCurrency(v);
 
   const refreshFavorites = () => {
@@ -82,16 +80,13 @@ export function Home() {
 
   const filteredPerfumes = products.filter(
     (p) =>
-      (selectedCategory === "all" ||
-        (selectedCategory === "new" && isNew(p)) ||
-        (selectedCategory === "women" && isWomen(p)) ||
-        (selectedCategory === "men" && isMen(p)) ||
-        (selectedCategory === "unisex" && isUnisex(p)) ||
-        (selectedCategory === "sale" && Boolean(p.originalPrice)) ||
-        (selectedCategory === "best" && isBest(p))) &&
-      (searchQuery === "" ||
-        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.brand.toLowerCase().includes(searchQuery.toLowerCase()))
+      selectedCategory === "all" ||
+      (selectedCategory === "new" && isNew(p)) ||
+      (selectedCategory === "women" && isWomen(p)) ||
+      (selectedCategory === "men" && isMen(p)) ||
+      (selectedCategory === "unisex" && isUnisex(p)) ||
+      (selectedCategory === "sale" && Boolean(p.originalPrice)) ||
+      (selectedCategory === "best" && isBest(p))
   );
 
   const getBadge = (perfume: CatalogProduct) => {
@@ -99,6 +94,37 @@ export function Home() {
     if (isNew(perfume)) return "Yeni";
     if (isBest(perfume)) return "Çox Satılan";
     return null;
+  };
+  const getBadgeClass = (perfume: CatalogProduct) => {
+    if (perfume.originalPrice) return "badge-sale";
+    if (isNew(perfume)) return "badge-new";
+    return "badge-best";
+  };
+
+  const addPerfumeToCart = (perfume: CatalogProduct) => {
+    addToCart(
+      perfume.id,
+      1,
+      perfume.slug,
+      perfume.defaultVariant
+        ? {
+            id: perfume.defaultVariant.id,
+            label: perfume.defaultVariant.label,
+            variantType: perfume.defaultVariant.variantType,
+            sizeMl: perfume.defaultVariant.sizeMl,
+            price: perfume.defaultVariant.price,
+            imageUrl: perfume.defaultVariant.imageUrl,
+          }
+        : undefined
+    );
+    setPulseCart(perfume.id);
+    setTimeout(() => setPulseCart(null), 180);
+  };
+
+  const onToggleFavorite = (perfume: CatalogProduct) => {
+    toggleFavorite(perfume.id, perfume.slug);
+    setPulseFavorite(perfume.id);
+    setTimeout(() => setPulseFavorite(null), 180);
   };
 
   return (
@@ -108,128 +134,92 @@ export function Home() {
         description="Qadın, kişi və uniseks premium ətirləri notlara görə axtarın: oud, rose, vanilla, amber və daha çox."
         path="/"
       />
-      <div className="px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-6">
-        <div className="flex items-start justify-start mb-8">
-          <div>
-            <h1 className="text-3xl tracking-tight mb-1">{t("brand.name")}</h1>
-            <p className="text-sm text-zinc-400">{t("home.tagline")}</p>
+
+      {/* ── Hero ─────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-white/5">
+        <div className="hero-lux px-4 sm:px-6 lg:px-8 pt-8 pb-7 sm:pt-10 sm:pb-8 lg:pt-12 lg:pb-10">
+          <div className="mx-auto max-w-7xl">
+            <div className="animate-fade-up max-w-xl">
+              <p className="text-gold text-[11px] sm:text-xs tracking-[0.34em] uppercase mb-2.5">
+                {t("home.tagline")}
+              </p>
+              <h1 className="font-display font-semibold text-5xl sm:text-6xl lg:text-7xl leading-[0.95] mb-3">
+                {t("brand.name")}
+              </h1>
+              <div className="gold-rule mb-3.5" />
+              <p className="text-zinc-300/90 text-sm sm:text-[15px] max-w-md leading-relaxed">
+                {t("footer.about")}
+              </p>
+            </div>
           </div>
         </div>
+      </section>
 
-        <div className="sticky top-[124px] md:static z-20 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-black/95 md:bg-transparent backdrop-blur-xl md:backdrop-blur-0 border-b border-zinc-900/60 md:border-0">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" />
-            <input
-              type="text"
-              placeholder={t("home.search")}
-              aria-label={t("home.search")}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-                }
-              }}
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl pl-12 pr-4 py-3.5 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 shadow-xl shadow-black/20"
-            />
-          </div>
-          <p className="text-xs text-zinc-500 mt-2">
-            Ətir, marka və notlara görə axtar (məs: oud, rose, vanilla)
-          </p>
-          <div className="flex flex-wrap gap-2 mt-2">
-            {noteHints.map((note) => (
-              <button
-                key={note}
-                onClick={() => navigate(`/search?q=${encodeURIComponent(note)}`)}
-                className="px-2.5 py-1 rounded-full text-xs border border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
-              >
-                #{note}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+      {/* ── Category tabs ────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8 mb-8">
+        <div className="flex gap-2.5 overflow-x-auto pb-2 hide-scrollbar md:flex-wrap md:justify-center">
           {tabs.map((category) => (
             <button
               key={category.key}
               onClick={() => setSelectedCategory(category.key)}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all ${
+              className={`px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all border ${
                 selectedCategory === category.key
-                  ? "bg-white text-black font-medium"
-                  : "bg-zinc-900 text-zinc-400 hover:bg-zinc-800 border border-zinc-800"
+                  ? "bg-gold border-gold text-[#1a1206] font-semibold"
+                  : "bg-white/5 text-zinc-300 hover:border-gold/50 border-white/10"
               }`}
             >
-              <span>{category.label}</span>
+              {category.label}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900 rounded-3xl p-6 border border-zinc-700 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-3xl"></div>
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <TrendingUp className="w-4 h-4 text-white" />
-              <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">
-                {t("home.offer.badge")}
-              </span>
-            </div>
-            <h3 className="text-xl mb-1">{t("home.offer.title")}</h3>
-            <p className="text-sm text-zinc-400 mb-4">{t("home.offer.desc")}</p>
-            <button
-              onClick={() => navigate("/perfumes")}
-              className="bg-white text-black px-6 py-2.5 rounded-full text-sm font-medium hover:bg-zinc-100 transition-all"
-            >
-              {t("home.offer.cta")}
-            </button>
+      {/* ── Featured ─────────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mb-12">
+        <div className="flex items-end justify-between mb-5">
+          <div>
+            <h2 className="font-display text-3xl sm:text-4xl">{t("home.featured")}</h2>
+            <div className="gold-rule mt-2" />
           </div>
-        </div>
-      </div>
-
-      <div className="px-4 sm:px-6 lg:px-8 mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-medium">{t("home.featured")}</h2>
           <button
             onClick={() => navigate("/perfumes")}
-            className="text-sm text-zinc-400 hover:text-white transition-colors"
+            className="text-sm text-zinc-400 hover:text-gold transition-colors flex items-center gap-1"
           >
             {t("home.viewAll")}
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+        <div className="flex gap-5 overflow-x-auto pb-4 hide-scrollbar md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
           {featuredPerfumes.map((perfume) => (
             <div
               key={perfume.id}
               onClick={() => navigate(`/product/${perfume.slug}`)}
-              className="min-w-[260px] sm:min-w-[280px] lg:min-w-[320px] bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
+              className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] md:min-w-0 rounded-3xl overflow-hidden cursor-pointer group"
             >
-              <div className="aspect-[4/3] bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
+              <div className="aspect-square relative overflow-hidden">
                 <img
                   src={perfume.image}
                   alt={perfume.name}
                   onError={onImageError}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="zoom-img w-full h-full object-cover"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    toggleFavorite(perfume.id, perfume.slug);
-                    setPulseFavorite(perfume.id);
-                    setTimeout(() => setPulseFavorite(null), 180);
+                    onToggleFavorite(perfume);
                   }}
                   aria-label={t("a11y.favorite")}
-                  className="absolute top-4 left-4 w-9 h-9 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
+                  className="absolute top-4 left-4 w-9 h-9 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
                 >
                   <Heart
                     className={`w-4 h-4 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
                   />
                 </button>
                 {getBadge(perfume) && (
-                  <div className="absolute top-4 right-4 bg-white text-black px-3 py-1.5 rounded-full text-xs font-medium">
+                  <div
+                    className={`badge-lux ${getBadgeClass(perfume)} absolute top-4 right-4 px-3 py-1.5 rounded-full text-[10px]`}
+                  >
                     {getBadge(perfume)}
                   </div>
                 )}
@@ -237,12 +227,12 @@ export function Home() {
               <div className="p-5">
                 {perfume.reviews > 0 && (
                   <div className="flex items-center gap-1 mb-2">
-                    <Star aria-hidden="true" className="w-4 h-4 fill-white text-white" />
+                    <Star aria-hidden="true" className="w-4 h-4 fill-gold text-gold" />
                     <span className="text-sm font-medium">{perfume.rating}</span>
                     <span className="text-xs text-zinc-500">({perfume.reviews})</span>
                   </div>
                 )}
-                <h3 className="font-medium mb-1">{perfume.name}</h3>
+                <h3 className="font-display text-2xl leading-tight mb-0.5">{perfume.name}</h3>
                 <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
                 {!perfume.inStock && (
                   <p className="text-xs text-zinc-400 mb-2">• {t("product.outOfStock")}</p>
@@ -258,8 +248,8 @@ export function Home() {
                   ))}
                 </div>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xl font-medium">{fmt(perfume.price)}</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-gold text-xl font-medium">{fmt(perfume.price)}</span>
                     {perfume.originalPrice && (
                       <span className="text-sm text-zinc-500 line-through">
                         {fmt(perfume.originalPrice)}
@@ -269,27 +259,11 @@ export function Home() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      addToCart(
-                        perfume.id,
-                        1,
-                        perfume.slug,
-                        perfume.defaultVariant
-                          ? {
-                              id: perfume.defaultVariant.id,
-                              label: perfume.defaultVariant.label,
-                              variantType: perfume.defaultVariant.variantType,
-                              sizeMl: perfume.defaultVariant.sizeMl,
-                              price: perfume.defaultVariant.price,
-                              imageUrl: perfume.defaultVariant.imageUrl,
-                            }
-                          : undefined
-                      );
-                      setPulseCart(perfume.id);
-                      setTimeout(() => setPulseCart(null), 180);
+                      addPerfumeToCart(perfume);
                     }}
                     aria-label={t("a11y.addToCart")}
                     disabled={!perfume.inStock}
-                    className={`bg-white text-black p-2.5 rounded-xl hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                    className={`btn-gold p-2.5 rounded-xl ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
                     <ShoppingBag className="w-4 h-4" />
                   </button>
@@ -300,8 +274,12 @@ export function Home() {
         </div>
       </div>
 
-      <div className="px-4 sm:px-6 lg:px-8 pb-8">
-        <h2 className="text-lg font-medium mb-4">{t("home.all")}</h2>
+      {/* ── All products ─────────────────────────────────── */}
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-12">
+        <div className="mb-5">
+          <h2 className="font-display text-3xl sm:text-4xl">{t("home.all")}</h2>
+          <div className="gold-rule mt-2" />
+        </div>
         {loading ? (
           <p className="text-zinc-400">{t("shop.loading")}</p>
         ) : loadError ? (
@@ -309,36 +287,36 @@ export function Home() {
         ) : filteredPerfumes.length === 0 ? (
           <p className="text-zinc-400">{t("shop.noProducts")}</p>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {filteredPerfumes.map((perfume) => (
               <div
                 key={perfume.id}
                 onClick={() => navigate(`/product/${perfume.slug}`)}
-                className="bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800 cursor-pointer hover:border-zinc-700 transition-all group"
+                className="premium-card glass rounded-3xl overflow-hidden cursor-pointer group"
               >
-                <div className="aspect-square bg-gradient-to-br from-zinc-800 to-zinc-900 relative overflow-hidden">
+                <div className="aspect-square relative overflow-hidden">
                   <img
                     src={perfume.image}
                     alt={perfume.name}
                     onError={onImageError}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className="zoom-img w-full h-full object-cover"
                   />
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleFavorite(perfume.id, perfume.slug);
-                      setPulseFavorite(perfume.id);
-                      setTimeout(() => setPulseFavorite(null), 180);
+                      onToggleFavorite(perfume);
                     }}
                     aria-label={t("a11y.favorite")}
-                    className="absolute top-3 left-3 w-8 h-8 rounded-full bg-black/40 border border-zinc-700 flex items-center justify-center"
+                    className="absolute top-3 left-3 w-8 h-8 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
                   >
                     <Heart
                       className={`w-3.5 h-3.5 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
                     />
                   </button>
                   {getBadge(perfume) && (
-                    <div className="absolute top-3 right-3 bg-white text-black px-2.5 py-1 rounded-full text-[10px] font-medium">
+                    <div
+                      className={`badge-lux ${getBadgeClass(perfume)} absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px]`}
+                    >
                       {getBadge(perfume)}
                     </div>
                   )}
@@ -346,11 +324,13 @@ export function Home() {
                 <div className="p-4">
                   {perfume.reviews > 0 && (
                     <div className="flex items-center gap-1 mb-1.5">
-                      <Star aria-hidden="true" className="w-3 h-3 fill-white text-white" />
+                      <Star aria-hidden="true" className="w-3 h-3 fill-gold text-gold" />
                       <span className="text-xs font-medium">{perfume.rating}</span>
                     </div>
                   )}
-                  <h3 className="text-sm font-medium mb-1 truncate">{perfume.name}</h3>
+                  <h3 className="font-display text-lg leading-tight mb-0.5 truncate">
+                    {perfume.name}
+                  </h3>
                   <p className="text-xs text-zinc-400 mb-1">{perfume.brand}</p>
                   {!perfume.inStock && (
                     <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
@@ -367,7 +347,9 @@ export function Home() {
                   </div>
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col items-start leading-tight">
-                      <span className="font-medium whitespace-nowrap">{fmt(perfume.price)}</span>
+                      <span className="text-gold font-medium whitespace-nowrap">
+                        {fmt(perfume.price)}
+                      </span>
                       {perfume.originalPrice && (
                         <span className="text-[11px] text-zinc-500 line-through whitespace-nowrap">
                           {fmt(perfume.originalPrice)}
@@ -377,27 +359,11 @@ export function Home() {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        addToCart(
-                          perfume.id,
-                          1,
-                          perfume.slug,
-                          perfume.defaultVariant
-                            ? {
-                                id: perfume.defaultVariant.id,
-                                label: perfume.defaultVariant.label,
-                                variantType: perfume.defaultVariant.variantType,
-                                sizeMl: perfume.defaultVariant.sizeMl,
-                                price: perfume.defaultVariant.price,
-                                imageUrl: perfume.defaultVariant.imageUrl,
-                              }
-                            : undefined
-                        );
-                        setPulseCart(perfume.id);
-                        setTimeout(() => setPulseCart(null), 180);
+                        addPerfumeToCart(perfume);
                       }}
                       aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
-                      className={`bg-white text-black p-2 rounded-lg hover:bg-zinc-100 transition-all ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                      className={`btn-gold p-2 rounded-lg ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </button>

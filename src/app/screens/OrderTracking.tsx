@@ -106,157 +106,77 @@ export function OrderTracking() {
   const currentStep = status ? ORDER_STATUSES.indexOf(status.status) : -1;
 
   return (
-    <div style={{ maxWidth: 600, margin: "40px auto", padding: "0 20px" }}>
-      <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8, color: "#2d1b4e" }}>
-        {t("tracking.heading")}
-      </h1>
-      <p style={{ color: "#666", marginBottom: 24 }}>{t("tracking.intro")}</p>
+    <div className="max-w-xl mx-auto px-4 sm:px-6 pt-10 pb-16 text-white">
+      <h1 className="font-display text-4xl mb-3">{t("tracking.heading")}</h1>
+      <div className="gold-rule mb-4" />
+      <p className="text-zinc-400 mb-7">{t("tracking.intro")}</p>
 
-      <form onSubmit={handleSearch} style={{ display: "flex", gap: 8, marginBottom: 32 }}>
+      <form onSubmit={handleSearch} className="flex gap-2 mb-8">
         <input
           type="text"
           placeholder={t("tracking.codePlaceholder")}
           aria-label={t("tracking.codeLabel")}
           value={orderCode}
           onChange={(e) => setOrderCode(e.target.value.toUpperCase())}
-          style={{
-            flex: 1,
-            padding: "12px 16px",
-            borderRadius: 8,
-            border: "1px solid #ddd",
-            fontSize: 16,
-            outline: "none",
-          }}
+          className="premium-input flex-1 glass rounded-xl px-4 py-3 text-sm text-white placeholder:text-zinc-500"
         />
         <button
           type="submit"
           disabled={loading || !orderCode.trim()}
-          style={{
-            padding: "12px 24px",
-            borderRadius: 8,
-            border: "none",
-            background: "linear-gradient(135deg, #2d1b4e, #6b1d5e)",
-            color: "#fff",
-            fontSize: 16,
-            fontWeight: 600,
-            cursor: "pointer",
-            whiteSpace: "nowrap",
-            opacity: loading ? 0.6 : 1,
-          }}
+          className={`btn-gold px-6 rounded-xl whitespace-nowrap ${
+            loading || !orderCode.trim() ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
           {loading ? "..." : t("tracking.track")}
         </button>
       </form>
 
       {error && (
-        <div
-          style={{
-            padding: 16,
-            borderRadius: 8,
-            background: "#fff0f0",
-            color: "#b71c1c",
-            marginBottom: 16,
-            border: "1px solid #ffcdd2",
-          }}
-        >
+        <div className="glass rounded-xl px-4 py-3 mb-4 text-sm text-red-300 border border-red-500/30">
           {error}
         </div>
       )}
 
       {status && (
-        <div
-          style={{
-            background: "#fff",
-            borderRadius: 12,
-            border: "1px solid #eee",
-            padding: 24,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          }}
-        >
-          <div style={{ marginBottom: 16 }}>
-            <span style={{ color: "#888", fontSize: 14 }}>{t("tracking.codeLabel")}</span>
-            <h2 style={{ margin: "4px 0 0", fontSize: 20, fontWeight: 700 }}>{status.code}</h2>
+        <div className="glass rounded-2xl p-6">
+          <div className="mb-4">
+            <span className="text-xs text-zinc-500 uppercase tracking-wider">
+              {t("tracking.codeLabel")}
+            </span>
+            <h2 className="font-display text-2xl mt-1">{status.code}</h2>
           </div>
 
           {/* Live badge */}
           {wsConnected && (
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                background: "#e8f5e9",
-                color: "#1b5e20",
-                padding: "4px 12px",
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 600,
-                marginBottom: 16,
-              }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#1b5e20",
-                  animation: "pulse 2s infinite",
-                }}
-              />
+            <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-medium mb-5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               {t("tracking.live")}
             </div>
           )}
 
           {/* Progress stepper */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              margin: "24px 0",
-              position: "relative",
-            }}
-          >
+          <div className="flex justify-between relative my-6">
             {ORDER_STATUSES.map((s, idx) => {
               const info = STATUS_STYLE[s];
               const isActive = idx <= currentStep;
               const isCurrent = idx === currentStep;
               return (
-                <div
-                  key={s}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    flex: 1,
-                    position: "relative",
-                    zIndex: 1,
-                  }}
-                >
+                <div key={s} className="flex flex-col items-center flex-1 relative z-10">
                   <div
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all"
                     style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "50%",
-                      background: isActive ? info.color : "#e0e0e0",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 18,
-                      color: isActive ? "#fff" : "#999",
-                      fontWeight: "bold",
-                      transition: "all 0.3s",
+                      background: isActive ? info.color : "rgba(255,255,255,0.08)",
+                      color: isActive ? "#fff" : "#71717a",
                       boxShadow: isCurrent ? `0 0 0 4px ${info.color}40` : "none",
                     }}
                   >
                     {isActive ? "✓" : idx + 1}
                   </div>
                   <span
+                    className="text-[11px] mt-1.5 text-center"
                     style={{
-                      fontSize: 11,
-                      marginTop: 4,
-                      color: isActive ? info.color : "#aaa",
+                      color: isActive ? info.color : "#71717a",
                       fontWeight: isCurrent ? 700 : 400,
-                      textAlign: "center",
                     }}
                   >
                     {t(`status.${s}`)}
@@ -265,38 +185,20 @@ export function OrderTracking() {
               );
             })}
             {/* Connecting line */}
-            <div
-              style={{
-                position: "absolute",
-                top: 18,
-                left: "10%",
-                right: "10%",
-                height: 3,
-                background: "#e0e0e0",
-                zIndex: 0,
-              }}
-            />
+            <div className="absolute top-[18px] left-[10%] right-[10%] h-[3px] bg-white/10 z-0" />
           </div>
 
           {/* Summary */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              padding: "12px 0",
-              borderTop: "1px solid #eee",
-              marginTop: 8,
-            }}
-          >
+          <div className="flex justify-between py-3 border-t border-white/10 mt-2">
             <div>
-              <div style={{ fontSize: 12, color: "#888" }}>{t("tracking.total")}</div>
-              <div style={{ fontSize: 18, fontWeight: 700, color: "#6b1d5e" }}>
+              <div className="text-xs text-zinc-500">{t("tracking.total")}</div>
+              <div className="text-gold text-lg font-semibold">
                 {formatCurrency(Number(status.total))}
               </div>
             </div>
-            <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: 12, color: "#888" }}>{t("tracking.date")}</div>
-              <div style={{ fontSize: 14 }}>
+            <div className="text-right">
+              <div className="text-xs text-zinc-500">{t("tracking.date")}</div>
+              <div className="text-sm text-zinc-300">
                 {new Date(status.created_at).toLocaleDateString(language, {
                   day: "numeric",
                   month: "long",
@@ -309,17 +211,7 @@ export function OrderTracking() {
           </div>
 
           {status.status === "cancelled" && (
-            <div
-              style={{
-                marginTop: 16,
-                padding: 12,
-                borderRadius: 8,
-                background: "#fff0f0",
-                color: "#b71c1c",
-                fontSize: 14,
-                textAlign: "center",
-              }}
-            >
+            <div className="mt-4 glass rounded-xl px-3 py-3 text-sm text-center text-red-300 border border-red-500/30">
               {t("tracking.cancelledNotice")}
             </div>
           )}
