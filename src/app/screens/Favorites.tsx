@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Heart, Star, ShoppingBag } from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart, getFavoriteIds } from "../lib/storage";
@@ -77,8 +77,16 @@ export function Favorites() {
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {favorites.map((perfume) => (
-            <div key={perfume.id} className="glass premium-card rounded-3xl overflow-hidden group">
-              <div onClick={() => navigate(`/product/${perfume.slug}`)} className="cursor-pointer">
+            <div
+              key={perfume.id}
+              className="glass premium-card rounded-3xl overflow-hidden group relative"
+            >
+              <Link
+                to={`/product/${perfume.slug}`}
+                aria-label={perfume.name}
+                className="absolute inset-0 z-10"
+              />
+              <div>
                 <div className="aspect-square relative overflow-hidden">
                   <img
                     src={perfume.image}
@@ -92,7 +100,7 @@ export function Favorites() {
                       e.stopPropagation();
                       removeFavorite(perfume.id);
                     }}
-                    className="absolute top-3 right-3 w-9 h-9 glass rounded-full flex items-center justify-center hover:border-gold transition-all"
+                    className="absolute top-3 right-3 z-20 w-9 h-9 glass rounded-full flex items-center justify-center hover:border-gold transition-all"
                   >
                     <Heart className="w-4 h-4 fill-red-500 text-red-500" />
                   </button>
@@ -144,7 +152,7 @@ export function Favorites() {
                       }}
                       aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
-                      className={`btn-gold p-2 rounded-lg ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                      className={`btn-gold relative z-20 p-2 rounded-lg ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </button>
