@@ -36,21 +36,41 @@ export function ProductDetails() {
   const [selectedVariantId, setSelectedVariantId] = useState<number | null>(null);
   const [activeImage, setActiveImage] = useState("");
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [status, setStatus] = useState<"loading" | "ok" | "notfound" | "error">("loading");
+  const [retry, setRetry] = useState(0);
   const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       if (!slug) {
-        setPerfume(null);
+        setStatus("notfound");
         return;
       }
-      const found = await loadCatalogProductBySlug(slug);
-      setPerfume(found);
-      setSelectedVariantId(found?.defaultVariant.id ?? found?.variants?.[0]?.id ?? null);
-      setActiveImage(found?.image || found?.defaultVariant.imageUrl || found?.images?.[0] || "");
-      if (found) setFavorite(isFavorite(found.id));
+      setStatus("loading");
+      try {
+        const found = await loadCatalogProductBySlug(slug);
+        if (!active) return;
+        if (!found) {
+          setPerfume(null);
+          setStatus("notfound");
+          return;
+        }
+        setPerfume(found);
+        setSelectedVariantId(found.defaultVariant.id ?? found.variants?.[0]?.id ?? null);
+        setActiveImage(found.image || found.defaultVariant.imageUrl || found.images?.[0] || "");
+        setFavorite(isFavorite(found.id));
+        setStatus("ok");
+      } catch (err) {
+        if (active) {
+          setStatus((err as { status?: number } | null)?.status === 404 ? "notfound" : "error");
+        }
+      }
     })();
-  }, [slug]);
+    return () => {
+      active = false;
+    };
+  }, [slug, retry]);
 
   // Keep the displayed image in sync with the selected variant.
   // Must run on every render (BEFORE the early return below) so the hook order stays stable.
@@ -62,7 +82,26 @@ export function ProductDetails() {
     if (nextImage) setActiveImage(nextImage);
   }, [perfume, selectedVariantId]);
 
-  if (!perfume) {
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-zinc-700 border-t-gold rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-zinc-300 text-sm mb-6 max-w-sm">{t("product.loadError")}</p>
+        <button onClick={() => setRetry((r) => r + 1)} className="btn-gold rounded-xl px-6 py-3">
+          {t("common.retry")}
+        </button>
+      </div>
+    );
+  }
+
+  if (status === "notfound" || !perfume) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <p>{t("product.notFound")}</p>
@@ -172,25 +211,26 @@ export function ProductDetails() {
           },
         }}
       />
-      <div className="fixed top-[28px] md:top-[24px] left-0 right-0 z-10 bg-black/50 backdrop-blur-xl lg:hidden">
-        <div className="w-full flex items-center justify-between px-4 sm:px-6 lg:px-8 py-4">
-          <button
-            aria-label={t("a11y.back")}
-            onClick={() => navigate(-1)}
-            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <button
-            aria-label={t("a11y.favorite")}
-            onClick={handleToggleFavorite}
-            className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
-          >
-            <Heart
-              className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
-            />
-          </button>
-        </div>
+      {/* Mobile/tablet back + favorite row (in-flow, not fixed, so it never
+          overlaps the sticky header/promo strip). Desktop uses the inline
+          "Geri" link + header favorite instead. */}
+      <div className="lg:hidden mx-auto max-w-6xl px-4 sm:px-6 pt-4 pb-1 flex items-center justify-between">
+        <button
+          aria-label={t("a11y.back")}
+          onClick={() => navigate(-1)}
+          className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
+        <button
+          aria-label={t("a11y.favorite")}
+          onClick={handleToggleFavorite}
+          className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
+        >
+          <Heart
+            className={`w-5 h-5 ${favorite ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite ? "scale-125" : ""} transition-transform`}
+          />
+        </button>
       </div>
 
       <div className="mx-auto max-w-6xl lg:grid lg:grid-cols-2 lg:gap-8 lg:px-6 lg:pt-24 lg:items-start">

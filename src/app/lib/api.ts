@@ -1,6 +1,13 @@
 import { getAuthToken } from "./auth";
 import { API_BASE, extractApiErrorMessage } from "./config";
 
+/** Build an Error with the HTTP status attached, so callers can tell 404 apart from 5xx/network. */
+function makeApiError(bodyText: string, status: number): Error {
+  const err = new Error(extractApiErrorMessage(bodyText, status));
+  (err as Error & { status?: number }).status = status;
+  return err;
+}
+
 async function request<T>(path: string, init?: RequestInit, retryWithoutToken = true): Promise<T> {
   const token = getAuthToken();
   const headers: Record<string, string> = {
@@ -20,14 +27,14 @@ async function request<T>(path: string, init?: RequestInit, retryWithoutToken = 
     });
     if (!retryRes.ok) {
       const bodyText = await retryRes.text();
-      throw new Error(extractApiErrorMessage(bodyText, retryRes.status));
+      throw makeApiError(bodyText, retryRes.status);
     }
     if (retryRes.status === 204) return undefined as T;
     return retryRes.json() as Promise<T>;
   }
   if (!res.ok) {
     const bodyText = await res.text();
-    throw new Error(extractApiErrorMessage(bodyText, res.status));
+    throw makeApiError(bodyText, res.status);
   }
   if (res.status === 204) return undefined as T;
   return res.json() as Promise<T>;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Heart, Star, ShoppingBag, ArrowRight } from "lucide-react";
 import { useI18n } from "../i18n";
 import { addToCart, toggleFavorite } from "../lib/storage";
@@ -193,9 +193,13 @@ export function Home() {
           {featuredPerfumes.map((perfume) => (
             <div
               key={perfume.id}
-              onClick={() => navigate(`/product/${perfume.slug}`)}
-              className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] md:min-w-0 rounded-3xl overflow-hidden cursor-pointer group"
+              className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] md:min-w-0 rounded-3xl overflow-hidden group relative"
             >
+              <Link
+                to={`/product/${perfume.slug}`}
+                aria-label={perfume.name}
+                className="absolute inset-0 z-10"
+              />
               <div className="aspect-square relative overflow-hidden">
                 <img
                   src={perfume.image}
@@ -210,7 +214,7 @@ export function Home() {
                     onToggleFavorite(perfume);
                   }}
                   aria-label={t("a11y.favorite")}
-                  className="absolute top-4 left-4 w-9 h-9 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
+                  className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
                 >
                   <Heart
                     className={`w-4 h-4 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
@@ -263,7 +267,7 @@ export function Home() {
                     }}
                     aria-label={t("a11y.addToCart")}
                     disabled={!perfume.inStock}
-                    className={`btn-gold p-2.5 rounded-xl ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                    className={`btn-gold relative z-20 p-2.5 rounded-xl ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                   >
                     <ShoppingBag className="w-4 h-4" />
                   </button>
@@ -291,9 +295,13 @@ export function Home() {
             {filteredPerfumes.map((perfume) => (
               <div
                 key={perfume.id}
-                onClick={() => navigate(`/product/${perfume.slug}`)}
-                className="premium-card glass rounded-3xl overflow-hidden cursor-pointer group"
+                className="premium-card glass rounded-3xl overflow-hidden group relative"
               >
+                <Link
+                  to={`/product/${perfume.slug}`}
+                  aria-label={perfume.name}
+                  className="absolute inset-0 z-10"
+                />
                 <div className="aspect-square relative overflow-hidden">
                   <img
                     src={perfume.image}
@@ -307,7 +315,7 @@ export function Home() {
                       onToggleFavorite(perfume);
                     }}
                     aria-label={t("a11y.favorite")}
-                    className="absolute top-3 left-3 w-8 h-8 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
+                    className="absolute top-3 left-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
                   >
                     <Heart
                       className={`w-3.5 h-3.5 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
@@ -363,7 +371,7 @@ export function Home() {
                       }}
                       aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
-                      className={`btn-gold p-2 rounded-lg ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                      className={`btn-gold relative z-20 p-2 rounded-lg ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       <ShoppingBag className="w-3.5 h-3.5" />
                     </button>

@@ -332,6 +332,12 @@ const dict: Dict = {
   "checkout.submitting": { az: "Göndərilir...", en: "Submitting...", ru: "Отправка..." },
 
   "product.notFound": { az: "Məhsul tapılmadı", en: "Product not found", ru: "Товар не найден" },
+  "product.loadError": {
+    az: "Məhsul yüklənmədi. Bağlantını yoxlayıb yenidən cəhd edin.",
+    en: "Could not load the product. Check your connection and try again.",
+    ru: "Не удалось загрузить товар. Проверьте соединение и повторите.",
+  },
+  "common.retry": { az: "Yenidən cəhd et", en: "Try again", ru: "Повторить" },
   "product.addToCart": { az: "Səbətə əlavə et", en: "Add to Cart", ru: "Добавить в корзину" },
   "product.reviews": { az: "rəy", en: "reviews", ru: "отзывов" },
   "product.size": { az: "Həcm", en: "Size", ru: "Объём" },
