@@ -262,6 +262,14 @@
   box-shadow: 0 0 0 3px var(--gold-soft);
 }
 
+/* Visible keyboard focus ring (gold) for interactive elements on the dark theme.
+   Shows only on :focus-visible, so it never appears on mouse clicks. Inputs keep
+   their own .premium-input focus treatment and are intentionally excluded. */
+:where(a, button, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--gold, #c8a96a);
+  outline-offset: 2px;
+}
+
 /* Gold CTA button */
 .btn-gold {
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));

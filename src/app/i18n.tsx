@@ -344,6 +344,7 @@ const dict: Dict = {
   "product.stock": { az: "Stok", en: "Stock", ru: "Наличие" },
   "product.inStock": { az: "Stokda var", en: "In Stock", ru: "В наличии" },
   "product.outOfStock": { az: "Stokda yoxdur", en: "Out of Stock", ru: "Нет в наличии" },
+  "product.unitsLeft": { az: "ədəd qalıb", en: "left", ru: "шт. осталось" },
   "product.saleType": { az: "Satış növü", en: "Variant", ru: "Вариант" },
   "product.premiumPack": {
     az: "Premium orijinal qablaşdırma",
