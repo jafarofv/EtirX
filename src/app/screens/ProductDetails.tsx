@@ -139,6 +139,7 @@ export function ProductDetails() {
         onClick={() => {
           setSelectedVariantId(variant.id);
           setActiveImage(variant.imageUrl || perfume.image);
+          setQuantity((q) => Math.min(q, Math.max(1, variant.stock)));
         }}
         className={`rounded-2xl border p-3.5 text-left transition-all ${
           isSelected
@@ -381,6 +382,11 @@ export function ProductDetails() {
             )}
           </div>
 
+          {selectedStock > 0 && selectedStock <= 10 && (
+            <p className="text-xs text-amber-400 mb-2">
+              {selectedStock} {t("product.unitsLeft")}
+            </p>
+          )}
           <div className="flex gap-3 mb-5">
             <div className="flex items-center glass rounded-2xl px-2">
               <button
@@ -391,8 +397,9 @@ export function ProductDetails() {
               </button>
               <span className="w-12 text-center font-medium">{quantity}</span>
               <button
-                onClick={() => setQuantity(quantity + 1)}
-                className="p-3 hover:bg-zinc-800 rounded-xl transition-all"
+                onClick={() => setQuantity((q) => Math.min(q + 1, Math.max(1, selectedStock)))}
+                disabled={quantity >= selectedStock}
+                className="p-3 hover:bg-zinc-800 rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Plus className="w-4 h-4" />
               </button>
