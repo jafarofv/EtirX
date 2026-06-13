@@ -273,22 +273,22 @@ export function Profile() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-zinc-800 text-sm">
-                  <div className="bg-zinc-900/60 rounded-xl p-3">
+                  <div className="glass rounded-xl p-3">
                     <p className="text-zinc-500 text-xs mb-1">Status</p>
                     <p className="font-medium">{orderStatusLabel(o.status)}</p>
                   </div>
-                  <div className="bg-zinc-900/60 rounded-xl p-3">
+                  <div className="glass rounded-xl p-3">
                     <p className="text-zinc-500 text-xs mb-1">{t("cart.shipping")}</p>
                     <p className="font-medium">{fmt(o.shipping_fee)}</p>
                   </div>
                   {!!o.promo_code && (
-                    <div className="bg-zinc-900/60 rounded-xl p-3">
+                    <div className="glass rounded-xl p-3">
                       <p className="text-zinc-500 text-xs mb-1">{t("checkout.promo")}</p>
                       <p className="font-medium">{o.promo_code}</p>
                     </div>
                   )}
                   {Number(o.discount_amount || "0") > 0 && (
-                    <div className="bg-zinc-900/60 rounded-xl p-3">
+                    <div className="glass rounded-xl p-3">
                       <p className="text-zinc-500 text-xs mb-1">Endirim</p>
                       <p className="font-medium text-emerald-400">-{fmt(o.discount_amount)}</p>
                     </div>

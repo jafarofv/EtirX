@@ -346,7 +346,10 @@ export function Layout() {
                 </button>
               </div>
               {navItems.map((item) => {
-                const isActive = location.pathname === item.path;
+                const isActive =
+                  item.path === "/"
+                    ? location.pathname === "/"
+                    : location.pathname.startsWith(item.path);
                 const badge =
                   item.path === "/cart"
                     ? cartCount
@@ -523,18 +526,22 @@ export function Layout() {
         </div>
 
         {/* Bottom Navigation */}
-        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-black/80 backdrop-blur-xl border-t border-white/5 px-4 sm:px-6 lg:px-8 py-3">
+        <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-black/80 backdrop-blur-xl border-t border-white/5 px-4 sm:px-6 lg:px-8 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
           <div className="w-full flex justify-around items-center">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const isActive = location.pathname === item.path;
+              const isActive =
+                item.path === "/"
+                  ? location.pathname === "/"
+                  : location.pathname.startsWith(item.path);
               const badge =
                 item.path === "/cart" ? cartCount : item.path === "/favorites" ? favoritesCount : 0;
               return (
                 <button
                   key={item.path}
                   onClick={() => navigate(item.path)}
-                  className="flex flex-col items-center gap-1 relative"
+                  aria-label={item.label}
+                  className="flex flex-col items-center gap-1 relative min-w-[3.25rem] min-h-[44px] justify-center"
                 >
                   <div
                     className={`p-2.5 rounded-2xl transition-all relative ${

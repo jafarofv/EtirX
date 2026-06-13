@@ -161,7 +161,10 @@ export async function getProducts(params?: { category?: string; q?: string }) {
 }
 
 export async function getCategories() {
-  return request<ApiCategory[]>("/categories/");
+  const data = await request<{ results: ApiCategory[]; count: number } | ApiCategory[]>(
+    "/categories/"
+  );
+  return Array.isArray(data) ? data : (data.results ?? []);
 }
 
 export type ApiCampaign = {
@@ -175,7 +178,10 @@ export type ApiCampaign = {
 };
 
 export async function getCampaigns() {
-  return request<ApiCampaign[]>("/promo-codes/");
+  const data = await request<{ results: ApiCampaign[]; count: number } | ApiCampaign[]>(
+    "/promo-codes/"
+  );
+  return Array.isArray(data) ? data : (data.results ?? []);
 }
 
 export type ApiDeliveryMethod = {
@@ -245,7 +251,10 @@ export type ApiTestimonial = {
 };
 
 export async function getTestimonials() {
-  return request<ApiTestimonial[]>("/testimonials/");
+  const data = await request<{ results: ApiTestimonial[]; count: number } | ApiTestimonial[]>(
+    "/testimonials/"
+  );
+  return Array.isArray(data) ? data : (data.results ?? []);
 }
 
 export type ApiSiteSettings = {
