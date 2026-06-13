@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Heart, Star, ShoppingBag, ArrowRight } from "lucide-react";
+import { toast } from "sonner";
 import { useI18n } from "../i18n";
 import { addToCart, toggleFavorite } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
@@ -119,12 +120,14 @@ export function Home() {
     );
     setPulseCart(perfume.id);
     setTimeout(() => setPulseCart(null), 180);
+    toast.success(t("toast.addedToCart"));
   };
 
   const onToggleFavorite = (perfume: CatalogProduct) => {
-    toggleFavorite(perfume.id, perfume.slug);
+    const added = toggleFavorite(perfume.id, perfume.slug);
     setPulseFavorite(perfume.id);
     setTimeout(() => setPulseFavorite(null), 180);
+    toast(added ? t("toast.addedToFavorites") : t("toast.removedFromFavorites"));
   };
 
   return (

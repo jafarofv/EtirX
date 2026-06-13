@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { Heart, Star, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 import { useI18n } from "../i18n";
 import { addToCart, getFavoriteIds } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
@@ -34,6 +35,7 @@ export function Favorites() {
 
   const removeFavorite = (id: number) => {
     setFavorites((favs) => favs.filter((p) => p.id !== id));
+    toast(t("toast.removedFromFavorites"));
   };
 
   if (!hydrated) {
@@ -149,6 +151,7 @@ export function Favorites() {
                               }
                             : undefined
                         );
+                        toast.success(t("toast.addedToCart"));
                       }}
                       aria-label={t("a11y.addToCart")}
                       disabled={!perfume.inStock}
