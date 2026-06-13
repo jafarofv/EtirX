@@ -21,6 +21,7 @@ import { getCartCount, getFavoritesCount } from "../lib/storage";
 import { getTestimonials, type ApiTestimonial } from "../lib/api";
 import { useSiteSettings } from "../site-settings";
 import { Seo } from "./Seo";
+import { Toaster } from "./ui/sonner";
 
 // Shown if the API is unreachable or returns no rows, so the storefront still
 // renders social proof. The same three reviews are seeded into the DB, so once
@@ -641,6 +642,7 @@ export function Layout() {
           </>
         )}
       </div>
+      <Toaster />
     </div>
   );
 }

@@ -99,6 +99,21 @@ const dict: Dict = {
   },
   "home.offer.cta": { az: "İndi al", en: "Shop Now", ru: "Купить сейчас" },
   "common.sale": { az: "Endirim", en: "Sale", ru: "Скидка" },
+  "toast.addedToCart": {
+    az: "Səbətə əlavə edildi",
+    en: "Added to cart",
+    ru: "Добавлено в корзину",
+  },
+  "toast.addedToFavorites": {
+    az: "Seçilənlərə əlavə edildi",
+    en: "Added to favorites",
+    ru: "Добавлено в избранное",
+  },
+  "toast.removedFromFavorites": {
+    az: "Seçilənlərdən silindi",
+    en: "Removed from favorites",
+    ru: "Удалено из избранного",
+  },
 
   "shop.title": { az: "Ətirlər", en: "Fragrances", ru: "Ароматы" },
   "shop.search": { az: "Ətir axtar...", en: "Search fragrance...", ru: "Поиск аромата..." },

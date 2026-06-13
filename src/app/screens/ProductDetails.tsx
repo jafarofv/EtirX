@@ -22,6 +22,7 @@ import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
+import { toast } from "sonner";
 
 export function ProductDetails() {
   const navigate = useNavigate();
@@ -110,9 +111,11 @@ export function ProductDetails() {
   }
 
   const handleToggleFavorite = () => {
-    setFavorite(toggleFavorite(perfume.id, perfume.slug));
+    const added = toggleFavorite(perfume.id, perfume.slug);
+    setFavorite(added);
     setPulseFavorite(true);
     setTimeout(() => setPulseFavorite(false), 180);
+    toast(added ? t("toast.addedToFavorites") : t("toast.removedFromFavorites"));
   };
 
   const gender =
@@ -417,6 +420,7 @@ export function ProductDetails() {
                 });
                 setPulseCart(true);
                 setTimeout(() => setPulseCart(false), 180);
+                toast.success(t("toast.addedToCart"));
               }}
               disabled={!selectedVariant || selectedVariant.stock <= 0}
               className={`btn-gold flex-1 rounded-2xl py-3.5 flex items-center justify-center gap-2 ${pulseCart ? "scale-105" : ""} ${!selectedVariant || selectedVariant.stock <= 0 ? "opacity-40 cursor-not-allowed" : ""}`}
