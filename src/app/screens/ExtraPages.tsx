@@ -323,7 +323,7 @@ export function CategoriesPage() {
             to={`/kateqoriya/${c.slug}`}
             className="glass rounded-2xl p-5 hover:border-gold/50 transition-all"
           >
-            <h3 className="text-lg font-medium mb-1">{c.name}</h3>
+            <h3 className="font-display text-xl mb-1">{c.name}</h3>
             <p className="text-sm text-zinc-400">{c.desc}</p>
           </Link>
         ))}
@@ -534,7 +534,7 @@ export function CampaignsPage() {
           {campaigns.map((c) => (
             <div key={c.code} className="glass rounded-2xl p-4">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-lg font-medium">{c.code}</p>
+                <p className="text-lg font-semibold text-gold">{c.code}</p>
                 <span className="text-sm font-medium text-emerald-400">
                   {c.discount_type === "percent"
                     ? `-${Number(c.discount_value)}%`
@@ -613,7 +613,7 @@ export function AboutPage() {
         </p>
 
         <section className="pt-2">
-          <h2 className="text-xl text-white mb-2">{t("about.missionTitle")}</h2>
+          <h2 className="font-display text-2xl mb-2">{t("about.missionTitle")}</h2>
           <p>
             Müştərilərimizə keyfiyyətli ətirləri əlçatan şəkildə təqdim etmək, etibarlı xidmət
             göstərmək və hər alış-verişi xoş təcrübəyə çevirmək.
@@ -621,7 +621,7 @@ export function AboutPage() {
         </section>
 
         <section>
-          <h2 className="text-xl text-white mb-2">{t("about.visionTitle")}</h2>
+          <h2 className="font-display text-2xl mb-2">{t("about.visionTitle")}</h2>
           <p>
             Azərbaycanda ətir sevərlərin ilk seçim etdiyi, etibar və keyfiyyətlə tanınan aparıcı
             onlayn ətir platformasına çevrilmək.
@@ -629,7 +629,7 @@ export function AboutPage() {
         </section>
 
         <section>
-          <h2 className="text-xl text-white mb-3">{t("about.valuesTitle")}</h2>
+          <h2 className="font-display text-2xl mb-3">{t("about.valuesTitle")}</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {values.map((value) => (
               <div key={value} className="glass rounded-xl px-4 py-3 text-sm text-white">
@@ -639,7 +639,7 @@ export function AboutPage() {
           </div>
         </section>
 
-        <p className="text-white text-lg font-medium pt-2">ƏtirX, Sənin İmzan Olan Qoxu.</p>
+        <p className="font-display text-2xl text-gold pt-2">ƏtirX, Sənin İmzan Olan Qoxu.</p>
       </div>
     </PageWrap>
   );
@@ -670,13 +670,10 @@ export function ShippingReturnsPage() {
     <PageWrap title={t("shipret.title")} subtitle={t("shipret.subtitle")}>
       <div className="space-y-4 text-zinc-300">
         <div className="glass rounded-2xl p-4">
-          <h3 className="text-white text-lg mb-3">🚚 Çatdırılma üsulları</h3>
+          <h3 className="font-display text-xl mb-3">🚚 Çatdırılma üsulları</h3>
           <div className="space-y-3">
             {deliveryMethods.map((method) => (
-              <div
-                key={method.code}
-                className="rounded-2xl border border-zinc-800 bg-zinc-950/80 p-4"
-              >
+              <div key={method.code} className="glass rounded-2xl p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-white font-medium">{method.label}</p>
@@ -709,12 +706,12 @@ export function ShippingReturnsPage() {
         </div>
 
         <div className="glass rounded-2xl p-4">
-          <h4 className="text-white mb-2">📍 Depo Ünvanı:</h4>
+          <h4 className="font-display text-lg mb-2">📍 Depo Ünvanı:</h4>
           <p>{site.store_address}</p>
         </div>
 
         <div className="glass rounded-2xl p-4">
-          <h4 className="text-white mb-2">💳 Ödəniş</h4>
+          <h4 className="font-display text-lg mb-2">💳 Ödəniş</h4>
           <p>Ödəniş məhsul çatdırıldıqda edilir.</p>
           <p>Nağd və ya bank kartı vasitəsilə ödəniş mümkündür.</p>
         </div>
@@ -784,7 +781,7 @@ export function FAQPage() {
       <div className="space-y-6">
         {sections.map((section) => (
           <section key={section.title}>
-            <h2 className="text-xl text-white mb-3">{section.title}</h2>
+            <h2 className="font-display text-2xl mb-3">{section.title}</h2>
             <div className="space-y-3">
               {section.items.map(([question, answer]) => (
                 <div key={question} className="glass rounded-2xl p-4">
@@ -836,11 +833,11 @@ export function ContactPage() {
       <div className="grid gap-4 lg:grid-cols-[1.15fr_1fr]">
         <div className="glass rounded-2xl p-5">
           <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
-              <MapPin className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-xl glass flex items-center justify-center shrink-0">
+              <MapPin className="w-5 h-5 text-gold" />
             </div>
             <div>
-              <h2 className="text-lg font-medium mb-1">{t("contact.storeWarehouse")}</h2>
+              <h2 className="font-display text-xl mb-1">{t("contact.storeWarehouse")}</h2>
               <p className="text-zinc-300">{site.store_address}</p>
               <p className="text-sm text-zinc-500 mt-2">{t("contact.addressHint")}</p>
             </div>
@@ -859,7 +856,7 @@ export function ContactPage() {
                 className="glass rounded-2xl p-4 hover:border-gold/50 transition-all flex items-center justify-between gap-4"
               >
                 <span className="flex items-center gap-3 min-w-0">
-                  <span className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
+                  <span className="w-10 h-10 rounded-xl glass flex items-center justify-center shrink-0 text-gold">
                     {Icon ? (
                       <Icon className="w-5 h-5" />
                     ) : (
@@ -908,7 +905,7 @@ export function PrivacyPage() {
       <div className="max-w-4xl space-y-3">
         {sections.map(([titleKey, bodyKey], index) => (
           <section key={titleKey} className="glass rounded-2xl p-4">
-            <h2 className="text-lg text-white mb-2">
+            <h2 className="font-display text-xl mb-2">
               {index + 1}. {t(titleKey)}
             </h2>
             <p className="text-zinc-400 leading-7">{t(bodyKey)}</p>
@@ -948,7 +945,7 @@ export function TermsPage() {
       <div className="max-w-4xl space-y-3">
         {sections.map(([titleKey, bodyKey], index) => (
           <section key={titleKey} className="glass rounded-2xl p-4">
-            <h2 className="text-lg text-white mb-2">
+            <h2 className="font-display text-xl mb-2">
               {index + 1}. {t(titleKey)}
             </h2>
             <p className="text-zinc-400 leading-7">{t(bodyKey)}</p>
@@ -965,7 +962,7 @@ export function NotFoundPage() {
   return (
     <div className="min-h-screen bg-black text-white flex items-center justify-center px-4">
       <div className="text-center">
-        <h1 className="text-5xl mb-3">404</h1>
+        <h1 className="font-display text-6xl mb-3">404</h1>
         <p className="text-zinc-400 mb-6">{t("notFound.text")}</p>
         <Link to="/" className="btn-gold px-5 py-2.5 rounded-xl">
           {t("notFound.home")}
