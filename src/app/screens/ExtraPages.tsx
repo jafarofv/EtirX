@@ -1,6 +1,14 @@
 ﻿import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
-import { ExternalLink, Instagram, MapPin, MessageCircle } from "lucide-react";
+import {
+  ExternalLink,
+  Heart,
+  Instagram,
+  MapPin,
+  MessageCircle,
+  ShoppingBag,
+  Star,
+} from "lucide-react";
 import {
   FALLBACK_DELIVERY_METHODS,
   getCampaigns,
@@ -20,10 +28,16 @@ import { onImageError } from "../lib/imageFallback";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
 import { ProductGridSkeleton } from "../components/ProductGridSkeleton";
+import { addToCart, getFavoriteIds, toggleFavorite } from "../lib/storage";
+import { noteChipClass, noteToAz } from "../lib/noteMeta";
+import { toast } from "sonner";
 
 function ProductGrid({ items }: { items: ApiProduct[] }) {
   const { t } = useI18n();
   const fmt = (v: string | number) => formatCurrency(Number(v));
+  const [favoriteIds, setFavoriteIds] = useState<number[]>(() => getFavoriteIds());
+  const [pulseFav, setPulseFav] = useState<number | null>(null);
+  const [pulseCart, setPulseCart] = useState<number | null>(null);
   const latestId = Math.max(...items.map((i) => i.id), 0);
   const hasSlug = (p: ApiProduct, slug: string) =>
     (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
@@ -33,8 +47,43 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
     if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return "Çox Satılan";
     return null;
   };
+  const badgeClassFor = (p: ApiProduct) => {
+    if (p.old_price) return "badge-sale";
+    if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2) return "badge-new";
+    return "badge-best";
+  };
   const hasStock = (p: ApiProduct) =>
     (p.variants ?? []).some((variant) => variant.is_active && variant.stock > 0) || p.stock > 0;
+
+  const onToggleFav = (p: ApiProduct) => {
+    const nowFav = toggleFavorite(p.id, p.slug);
+    setFavoriteIds((ids) => (nowFav ? [...ids, p.id] : ids.filter((x) => x !== p.id)));
+    setPulseFav(p.id);
+    setTimeout(() => setPulseFav(null), 180);
+    toast(nowFav ? t("toast.addedToFavorites") : t("toast.removedFromFavorites"));
+  };
+
+  const onAddToCart = (p: ApiProduct) => {
+    const v = p.default_variant;
+    addToCart(
+      p.id,
+      1,
+      p.slug,
+      v
+        ? {
+            id: v.id,
+            label: v.label,
+            variantType: v.variant_type,
+            sizeMl: v.size_ml,
+            price: Number(v.price),
+            imageUrl: v.image_url,
+          }
+        : undefined
+    );
+    setPulseCart(p.id);
+    setTimeout(() => setPulseCart(null), 180);
+    toast.success(t("toast.addedToCart"));
+  };
 
   if (items.length === 0) {
     return (
@@ -48,38 +97,91 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-      {items.map((p) => (
-        <Link
-          key={p.id}
-          to={`/product/${p.slug}`}
-          className="glass premium-card rounded-2xl overflow-hidden"
-        >
-          <div className="aspect-square overflow-hidden relative">
-            <img
-              src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")}
-              alt={p.name}
-              onError={onImageError}
-              className="zoom-img w-full h-full object-cover"
-            />
-            {badgeFor(p) && (
-              <div className="badge-lux badge-best absolute top-2 right-2 px-2.5 py-1 rounded-full text-[10px]">
-                {badgeFor(p)}
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+      {items.map((p) => {
+        const inStock = hasStock(p);
+        const notes = (p.top_notes || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .slice(0, 2);
+        return (
+          <div key={p.id} className="premium-card glass rounded-3xl overflow-hidden group relative">
+            <Link to={`/product/${p.slug}`} aria-label={p.name} className="absolute inset-0 z-10" />
+            <div className="aspect-square relative overflow-hidden">
+              <img
+                src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")}
+                alt={p.name}
+                onError={onImageError}
+                className="zoom-img w-full h-full object-cover"
+              />
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleFav(p);
+                }}
+                aria-label={t("a11y.favorite")}
+                className="absolute top-3 left-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
+              >
+                <Heart
+                  className={`w-3.5 h-3.5 ${favoriteIds.includes(p.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFav === p.id ? "scale-125" : ""} transition-transform`}
+                />
+              </button>
+              {badgeFor(p) && (
+                <div
+                  className={`badge-lux ${badgeClassFor(p)} absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px]`}
+                >
+                  {badgeFor(p)}
+                </div>
+              )}
+            </div>
+            <div className="p-4">
+              {p.review_count > 0 && (
+                <div className="flex items-center gap-1 mb-1.5">
+                  <Star aria-hidden="true" className="w-3 h-3 fill-gold text-gold" />
+                  <span className="text-xs font-medium">{p.rating}</span>
+                </div>
+              )}
+              <h3 className="font-display text-lg leading-tight mb-0.5 truncate">{p.name}</h3>
+              <p className="text-xs text-zinc-400 mb-1">{p.brand}</p>
+              {!inStock && (
+                <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
+              )}
+              <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">
+                {notes.map((note) => (
+                  <span
+                    key={`${p.id}-note-${note}`}
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] leading-none ${noteChipClass(note)}`}
+                  >
+                    {noteToAz(note)}
+                  </span>
+                ))}
               </div>
-            )}
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col items-start leading-tight">
+                  <span className="text-gold font-medium whitespace-nowrap">{fmt(p.price)}</span>
+                  {p.old_price && (
+                    <span className="text-[11px] text-zinc-500 line-through whitespace-nowrap">
+                      {fmt(p.old_price)}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddToCart(p);
+                  }}
+                  aria-label={t("a11y.addToCart")}
+                  disabled={!inStock}
+                  className={`btn-gold relative z-20 p-2 rounded-lg ${pulseCart === p.id ? "scale-110" : ""} ${!inStock ? "opacity-40 cursor-not-allowed" : ""}`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
           </div>
-          <div className="p-3">
-            <p className="text-sm text-zinc-400">{p.brand}</p>
-            <h3 className="font-display text-lg truncate">{p.name}</h3>
-            <p className="text-xs text-zinc-500 mt-0.5">
-              {p.gender === "qadin" ? "Qadın" : p.gender === "kisi" ? "Kişi" : "Uniseks"} •{" "}
-              {p.volume_ml ?? 100}ml
-              {!hasStock(p) && <span className="text-red-400"> • {t("product.outOfStock")}</span>}
-            </p>
-            <p className="mt-1 text-gold font-medium">{fmt(p.price)}</p>
-          </div>
-        </Link>
-      ))}
+        );
+      })}
     </div>
   );
 }
