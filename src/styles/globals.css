@@ -270,6 +270,14 @@
   outline-offset: 2px;
 }
 
+/* Native <select> dropdown options — the browser default popup is light and
+   clashes with the dark theme. Force a dark popup (Chromium/Firefox honor this). */
+.dark select option,
+.dark select optgroup {
+  background-color: #14141a;
+  color: #f3f3f4;
+}
+
 /* Gold CTA button */
 .btn-gold {
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
