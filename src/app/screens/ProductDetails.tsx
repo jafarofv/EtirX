@@ -126,6 +126,11 @@ export function ProductDetails() {
   const selectedVariant =
     variants.find((variant) => variant.id === selectedVariantId) ?? variants[0];
   const selectedStock = selectedVariant?.stock ?? 0;
+  // Headline price follows the selected variant. The product-level old_price
+  // (discount) only applies to the default variant, so the struck price is
+  // hidden when a differently-priced size is selected (it has no discount).
+  const displayPrice = selectedVariant?.price ?? perfume.price;
+  const isDefaultVariant = selectedVariant?.id === perfume.defaultVariant.id;
   const gallery = perfume.images.length > 0 ? perfume.images : [perfume.image];
   const activeIndex = Math.max(
     0,
@@ -320,8 +325,8 @@ export function ProductDetails() {
               </div>
             )}
             <div className="mt-3 flex items-baseline gap-2.5">
-              <p className="text-gold text-2xl font-medium">{fmt(perfume.price)}</p>
-              {perfume.originalPrice && (
+              <p className="text-gold text-2xl font-medium">{fmt(displayPrice)}</p>
+              {isDefaultVariant && perfume.originalPrice && (
                 <p className="text-sm text-zinc-500 line-through">{fmt(perfume.originalPrice)}</p>
               )}
             </div>
