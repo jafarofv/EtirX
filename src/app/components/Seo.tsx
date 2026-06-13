@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { useI18n } from "../i18n";
 
 type SeoProps = {
   title: string;
@@ -40,10 +41,14 @@ export function Seo({
   description,
   path = "/",
   image = "/favicon.png",
-  lang = "az",
+  lang,
   noindex = false,
   jsonLd,
 }: SeoProps) {
+  const { language } = useI18n();
+  // Default to the active UI language so og:locale, the document language and
+  // alternates track az/en/ru switches. An explicit `lang` prop still wins.
+  const activeLang = lang ?? language;
   useEffect(() => {
     const origin = window.location.origin;
     const canonicalPath = path.startsWith("/") ? path : `/${path}`;
@@ -51,7 +56,7 @@ export function Seo({
     const imageUrl = image.startsWith("http") ? image : `${origin}${image}`;
 
     document.title = title;
-    document.documentElement.lang = lang;
+    document.documentElement.lang = activeLang;
 
     upsertMeta("description", description);
     upsertMeta("robots", noindex ? "noindex, nofollow" : "index, follow");
@@ -63,7 +68,7 @@ export function Seo({
     upsertMeta("og:image", imageUrl, "property");
     upsertMeta(
       "og:locale",
-      lang === "az" ? "az_AZ" : lang === "ru" ? "ru_RU" : "en_US",
+      activeLang === "az" ? "az_AZ" : activeLang === "ru" ? "ru_RU" : "en_US",
       "property"
     );
 
@@ -90,7 +95,7 @@ export function Seo({
         document.head.appendChild(script);
       });
     }
-  }, [title, description, path, image, lang, noindex, jsonLd]);
+  }, [title, description, path, image, activeLang, noindex, jsonLd]);
 
   return null;
 }
