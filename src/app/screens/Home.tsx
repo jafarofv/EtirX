@@ -181,7 +181,7 @@ export function Home() {
               onClick={() => setSelectedCategory(category.key)}
               className={`px-5 py-2.5 rounded-full text-sm whitespace-nowrap transition-all border ${
                 selectedCategory === category.key
-                  ? "bg-gold border-gold text-[#1a1206] font-semibold"
+                  ? "bg-gold border-gold text-[var(--gold-ink)] font-semibold"
                   : "bg-white/5 text-zinc-300 hover:border-gold/50 border-white/10"
               }`}
             >

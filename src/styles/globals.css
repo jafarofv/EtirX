@@ -143,7 +143,7 @@
 .promo-badge {
   border-color: var(--gold-line);
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
-  color: #1a1206;
+  color: var(--gold-ink);
 }
 
 .promo-badge {
@@ -174,6 +174,18 @@
   --gold-bright: #e6c780;
   --gold-soft: rgba(200, 169, 106, 0.16);
   --gold-line: rgba(200, 169, 106, 0.32);
+  /* Dark ink used for text/icons on a gold fill (buttons, badges, active tabs). */
+  --gold-ink: #1a1206;
+  /* Semantic status accents — one success green and one danger red, so the
+     scattered green-500/emerald-400/red-300/red-400 usages converge. */
+  --success: #34d399;
+  --danger: #f87171;
+}
+
+/* Darker semantic accents in light mode so status text stays legible on white. */
+.light-mode {
+  --success: #047857;
+  --danger: #b91c1c;
 }
 
 /* Elegant display serif for headings (graceful fallback to serif) */
@@ -242,7 +254,7 @@
 }
 .badge-new {
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
-  color: #1a1206;
+  color: var(--gold-ink);
 }
 .badge-best {
   background: rgba(255, 255, 255, 0.92);
@@ -288,7 +300,7 @@
 /* Gold CTA button */
 .btn-gold {
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));
-  color: #1a1206;
+  color: var(--gold-ink);
   font-weight: 600;
   transition:
     filter 0.3s ease,

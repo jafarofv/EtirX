@@ -28,6 +28,7 @@ import { syncStoredCollections, hydrateCollectionsFromServer } from "../lib/stor
 import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
+import { Spinner } from "../components/Spinner";
 import { Seo } from "../components/Seo";
 
 /** Password field with a show/hide toggle and a leading lock icon. */
@@ -387,13 +388,13 @@ export function Profile() {
           <div className="grid grid-cols-2 gap-1 p-1 glass rounded-2xl mb-5">
             <button
               onClick={() => setMode("login")}
-              className={`py-2.5 rounded-xl text-sm transition-all ${mode === "login" ? "bg-gold text-[#1a1206] font-semibold" : "text-zinc-300 hover:text-white"}`}
+              className={`py-2.5 rounded-xl text-sm transition-all ${mode === "login" ? "bg-gold text-[var(--gold-ink)] font-semibold" : "text-zinc-300 hover:text-white"}`}
             >
               {t("profile.login")}
             </button>
             <button
               onClick={() => setMode("register")}
-              className={`py-2.5 rounded-xl text-sm transition-all ${mode === "register" ? "bg-gold text-[#1a1206] font-semibold" : "text-zinc-300 hover:text-white"}`}
+              className={`py-2.5 rounded-xl text-sm transition-all ${mode === "register" ? "bg-gold text-[var(--gold-ink)] font-semibold" : "text-zinc-300 hover:text-white"}`}
             >
               {t("profile.register")}
             </button>
@@ -557,7 +558,7 @@ export function EditProfilePage() {
   if (initialLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-zinc-700 border-t-white rounded-full animate-spin" />
+        <Spinner />
       </div>
     );
   }

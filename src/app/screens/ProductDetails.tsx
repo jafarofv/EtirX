@@ -22,6 +22,7 @@ import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
+import { Spinner } from "../components/Spinner";
 import { toast } from "sonner";
 
 export function ProductDetails() {
@@ -86,7 +87,7 @@ export function ProductDetails() {
   if (status === "loading") {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-zinc-700 border-t-gold rounded-full animate-spin" />
+        <Spinner />
       </div>
     );
   }
@@ -173,7 +174,7 @@ export function ProductDetails() {
           <div className="text-right shrink-0">
             <p className="font-medium text-gold">{fmt(variant.price)}</p>
             {variant.stock <= 0 && (
-              <p className="text-xs mt-1 text-red-400">{t("product.outOfStock")}</p>
+              <p className="text-xs mt-1 text-[var(--danger)]">{t("product.outOfStock")}</p>
             )}
           </div>
         </div>
@@ -342,14 +343,14 @@ export function ProductDetails() {
             </div>
             <div className="flex items-start gap-2 px-2.5 sm:px-4">
               <CheckCircle2
-                className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+                className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
               />
               <div className="min-w-0">
                 <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
                   {t("product.stock")}
                 </p>
                 <p
-                  className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
+                  className={`text-xs sm:text-sm font-medium ${selectedStock > 0 ? "text-[var(--success)]" : "text-[var(--danger)]"}`}
                 >
                   {selectedStock > 0 ? t("product.inStock") : t("product.outOfStock")}
                 </p>

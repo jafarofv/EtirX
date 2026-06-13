@@ -8,6 +8,7 @@ import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { syncStoredCollections } from "../lib/storage";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
+import { Spinner } from "../components/Spinner";
 import { Seo } from "../components/Seo";
 
 export function Favorites() {
@@ -41,7 +42,7 @@ export function Favorites() {
   if (!hydrated) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-zinc-700 border-t-white rounded-full animate-spin" />
+        <Spinner />
       </div>
     );
   }
