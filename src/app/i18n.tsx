@@ -838,6 +838,11 @@ const dict: Dict = {
     ru: "Ошибка сети. Проверьте подключение к интернету.",
   },
   "tracking.live": { az: "Canlı", en: "Live", ru: "В сети" },
+  "tracking.reconnecting": {
+    az: "Yenidən qoşulur...",
+    en: "Reconnecting...",
+    ru: "Переподключение...",
+  },
   "tracking.total": { az: "Ümumi məbləğ", en: "Total", ru: "Итого" },
   "tracking.date": { az: "Tarix", en: "Date", ru: "Дата" },
   "tracking.cancelledNotice": {

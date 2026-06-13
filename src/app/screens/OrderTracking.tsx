@@ -29,7 +29,10 @@ export function OrderTracking() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [wsConnected, setWsConnected] = useState(false);
-  const wsRef = useRef<WebSocket | null>(null);
+  const [reconnecting, setReconnecting] = useState(false);
+  const [activeCode, setActiveCode] = useState(codeFromUrl);
+  const [reconnectTick, setReconnectTick] = useState(0);
+  const reconnectAttempts = useRef(0);
 
   const fetchStatus = useCallback(
     async (code: string) => {
@@ -58,42 +61,67 @@ export function OrderTracking() {
     [t]
   );
 
-  const connectWebSocket = useCallback((code: string) => {
-    if (wsRef.current) {
-      wsRef.current.close();
+  // Initial HTTP fetch when a code arrives via URL; the WS effect below picks
+  // up live updates once `activeCode` is set.
+  useEffect(() => {
+    if (codeFromUrl) {
+      fetchStatus(codeFromUrl);
+      setActiveCode(codeFromUrl);
     }
-    const ws = new WebSocket(`${WS_BASE}/ws/orders/${code}/`);
-    wsRef.current = ws;
+  }, [codeFromUrl, fetchStatus]);
 
-    ws.onopen = () => setWsConnected(true);
-    ws.onclose = () => setWsConnected(false);
-    ws.onerror = () => setWsConnected(false);
+  // Live order updates over WebSocket with bounded auto-reconnect. The socket
+  // lifecycle is keyed on the tracked code (and a reconnect tick), so cleanup
+  // always closes the previous socket and an unexpected drop retries a few
+  // times before giving up.
+  useEffect(() => {
+    if (!activeCode) return;
+    const ws = new WebSocket(`${WS_BASE}/ws/orders/${activeCode}/`);
+    let closedByUs = false;
+    let retryTimer: number | undefined;
 
+    ws.onopen = () => {
+      setWsConnected(true);
+      setReconnecting(false);
+      reconnectAttempts.current = 0;
+    };
     ws.onmessage = (event) => {
       try {
         const update = JSON.parse(event.data);
         setStatus((prev) => (prev ? { ...prev, ...update } : update));
       } catch {
-        // ignore parse errors
+        // ignore malformed frames
       }
     };
-  }, []);
-
-  useEffect(() => {
-    if (codeFromUrl) {
-      fetchStatus(codeFromUrl);
-      connectWebSocket(codeFromUrl);
-    }
-    return () => {
-      wsRef.current?.close();
+    ws.onerror = () => {
+      // onclose fires next and drives the reconnect logic
     };
-  }, [codeFromUrl, fetchStatus, connectWebSocket]);
+    ws.onclose = () => {
+      setWsConnected(false);
+      if (closedByUs) return;
+      if (reconnectAttempts.current >= 5) {
+        setReconnecting(false);
+        return;
+      }
+      reconnectAttempts.current += 1;
+      setReconnecting(true);
+      retryTimer = window.setTimeout(() => setReconnectTick((n) => n + 1), 2500);
+    };
+
+    return () => {
+      closedByUs = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      ws.close();
+    };
+  }, [activeCode, reconnectTick]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (orderCode.trim()) {
-      fetchStatus(orderCode.trim());
-      connectWebSocket(orderCode.trim());
+    const code = orderCode.trim();
+    if (code) {
+      reconnectAttempts.current = 0;
+      fetchStatus(code);
+      setActiveCode(code);
     }
   };
 
@@ -146,13 +174,23 @@ export function OrderTracking() {
             <h2 className="font-display text-2xl mt-1">{status.code}</h2>
           </div>
 
-          {/* Live badge */}
-          {wsConnected && (
+          {/* Screen-reader live region: announces status changes (incl. WS pushes). */}
+          <p className="sr-only" role="status" aria-live="polite">
+            {t(`status.${status.status}`)}
+          </p>
+
+          {/* Connection badge: live, or reconnecting after a dropped socket */}
+          {wsConnected ? (
             <div className="inline-flex items-center gap-1.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-medium mb-5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               {t("tracking.live")}
             </div>
-          )}
+          ) : reconnecting ? (
+            <div className="inline-flex items-center gap-1.5 bg-amber-500/10 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full text-xs font-medium mb-5">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              {t("tracking.reconnecting")}
+            </div>
+          ) : null}
 
           {/* Progress stepper (happy path only; cancelled shows the notice below) */}
           {status.status !== "cancelled" && (
@@ -176,7 +214,7 @@ export function OrderTracking() {
                       {isActive ? "✓" : idx + 1}
                     </div>
                     <span
-                      className={`text-[11px] mt-1.5 text-center ${
+                      className={`text-[10px] sm:text-[11px] leading-tight px-0.5 mt-1.5 text-center ${
                         isCurrent
                           ? "text-gold font-semibold"
                           : isActive
