@@ -155,7 +155,7 @@ export function Cart() {
         <div className="w-20 h-20 glass rounded-full flex items-center justify-center mb-6">
           <ShoppingBag className="w-10 h-10 text-gold" />
         </div>
-        <h2 className="font-display text-3xl mb-2">{t("cart.empty")}</h2>
+        <h1 className="font-display text-3xl mb-2">{t("cart.empty")}</h1>
         <p className="text-sm text-zinc-400 mb-8 text-center">{t("cart.emptySub")}</p>
         <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
           {t("cart.start")}

@@ -367,9 +367,9 @@ export function ProductDetails() {
           <div className="mb-6 space-y-4">
             {premiumVariants.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
                   {t("product.originalPackaging")}
-                </h3>
+                </h2>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {premiumVariants.map(renderVariantCard)}
                 </div>
@@ -377,9 +377,9 @@ export function ProductDetails() {
             )}
             {gramVariants.length > 0 && (
               <div>
-                <h3 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
+                <h2 className="text-xs font-semibold uppercase tracking-[0.15em] text-gold/80 mb-3">
                   {t("product.gramSale")}
-                </h3>
+                </h2>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   {gramVariants.map(renderVariantCard)}
                 </div>
@@ -464,7 +464,7 @@ export function ProductDetails() {
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-6 pt-2 lg:pt-12 pb-12 space-y-8">
         <div>
-          <h3 className="font-display text-2xl mb-3">{t("product.notes")}</h3>
+          <h2 className="font-display text-2xl mb-3">{t("product.notes")}</h2>
           <div className="gold-rule mb-5" />
           <div className="grid gap-3 sm:grid-cols-3">
             {[
@@ -496,7 +496,7 @@ export function ProductDetails() {
         </div>
 
         <div>
-          <h3 className="font-display text-2xl mb-3">{t("product.description")}</h3>
+          <h2 className="font-display text-2xl mb-3">{t("product.description")}</h2>
           <div className="gold-rule mb-5" />
           <p className="max-w-3xl text-sm text-zinc-400 leading-relaxed">{perfume.description}</p>
         </div>
