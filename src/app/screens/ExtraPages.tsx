@@ -4,13 +4,10 @@ import {
   ArrowUpRight,
   Copy,
   ExternalLink,
-  Heart,
   Instagram,
   MapPin,
   MessageCircle,
-  ShoppingBag,
   SlidersHorizontal,
-  Star,
 } from "lucide-react";
 import {
   FALLBACK_DELIVERY_METHODS,
@@ -27,17 +24,15 @@ import {
 } from "../lib/api";
 import { useSiteSettings } from "../site-settings";
 import { formatCurrency } from "../lib/formatCurrency";
-import { onImageError } from "../lib/imageFallback";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
 import { ProductGridSkeleton } from "../components/ProductGridSkeleton";
+import { ProductCard, type ProductCardData } from "../components/ProductCard";
 import { addToCart, getFavoriteIds, toggleFavorite } from "../lib/storage";
-import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { toast } from "sonner";
 
 function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessage?: string }) {
   const { t } = useI18n();
-  const fmt = (v: string | number) => formatCurrency(Number(v));
   const [favoriteIds, setFavoriteIds] = useState<number[]>(() => getFavoriteIds());
   const [pulseFav, setPulseFav] = useState<number | null>(null);
   const [pulseCart, setPulseCart] = useState<number | null>(null);
@@ -88,6 +83,25 @@ function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessag
     toast.success(t("toast.addedToCart"));
   };
 
+  const toCardData = (p: ApiProduct): ProductCardData => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    secondary: p.brand,
+    image: p.image_url || (p.images && p.images.length > 0 ? p.images[0] : ""),
+    price: Number(p.price),
+    oldPrice: p.old_price ? Number(p.old_price) : null,
+    rating: Number(p.rating),
+    reviews: p.review_count,
+    inStock: hasStock(p),
+    notes: (p.top_notes || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean),
+    badge: badgeFor(p),
+    badgeClass: badgeClassFor(p),
+  });
+
   if (items.length === 0) {
     return (
       <div className="glass rounded-2xl px-6 py-12 text-center">
@@ -101,90 +115,17 @@ function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessag
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-      {items.map((p) => {
-        const inStock = hasStock(p);
-        const notes = (p.top_notes || "")
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean)
-          .slice(0, 2);
-        return (
-          <div key={p.id} className="premium-card glass rounded-3xl overflow-hidden group relative">
-            <Link to={`/product/${p.slug}`} aria-label={p.name} className="absolute inset-0 z-10" />
-            <div className="aspect-square relative overflow-hidden">
-              <img
-                src={p.image_url || (p.images && p.images.length > 0 ? p.images[0] : "")}
-                alt={p.name}
-                onError={onImageError}
-                className="zoom-img w-full h-full object-cover"
-              />
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onToggleFav(p);
-                }}
-                aria-label={t("a11y.favorite")}
-                className="absolute top-3 left-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
-              >
-                <Heart
-                  className={`w-3.5 h-3.5 ${favoriteIds.includes(p.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFav === p.id ? "scale-125" : ""} transition-transform`}
-                />
-              </button>
-              {badgeFor(p) && (
-                <div
-                  className={`badge-lux ${badgeClassFor(p)} absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px]`}
-                >
-                  {badgeFor(p)}
-                </div>
-              )}
-            </div>
-            <div className="p-4">
-              {p.review_count > 0 && (
-                <div className="flex items-center gap-1 mb-1.5">
-                  <Star aria-hidden="true" className="w-3 h-3 fill-gold text-gold" />
-                  <span className="text-xs font-medium">{p.rating}</span>
-                </div>
-              )}
-              <h3 className="font-display text-lg leading-tight mb-0.5 truncate">{p.name}</h3>
-              <p className="text-xs text-zinc-400 mb-1">{p.brand}</p>
-              {!inStock && (
-                <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
-              )}
-              <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">
-                {notes.map((note) => (
-                  <span
-                    key={`${p.id}-note-${note}`}
-                    className={`px-1.5 py-0.5 rounded-full text-[10px] leading-none ${noteChipClass(note)}`}
-                  >
-                    {noteToAz(note)}
-                  </span>
-                ))}
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col items-start leading-tight">
-                  <span className="text-gold font-medium whitespace-nowrap">{fmt(p.price)}</span>
-                  {p.old_price && (
-                    <span className="text-[11px] text-zinc-500 line-through whitespace-nowrap">
-                      {fmt(p.old_price)}
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddToCart(p);
-                  }}
-                  aria-label={t("a11y.addToCart")}
-                  disabled={!inStock}
-                  className={`btn-gold relative z-20 p-2 rounded-lg ${pulseCart === p.id ? "scale-110" : ""} ${!inStock ? "opacity-40 cursor-not-allowed" : ""}`}
-                >
-                  <ShoppingBag className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })}
+      {items.map((p) => (
+        <ProductCard
+          key={p.id}
+          data={toCardData(p)}
+          isFavorite={favoriteIds.includes(p.id)}
+          pulseFav={pulseFav === p.id}
+          pulseCart={pulseCart === p.id}
+          onToggleFav={() => onToggleFav(p)}
+          onAddToCart={() => onAddToCart(p)}
+        />
+      ))}
     </div>
   );
 }

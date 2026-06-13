@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router";
-import { Heart, Star, ShoppingBag, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router";
+import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useI18n } from "../i18n";
 import { addToCart, toggleFavorite } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
 import { ProductGridSkeleton } from "../components/ProductGridSkeleton";
-import { noteChipClass, noteToAz } from "../lib/noteMeta";
-import { formatCurrency } from "../lib/formatCurrency";
-import { onImageError } from "../lib/imageFallback";
+import { ProductCard, type ProductCardData } from "../components/ProductCard";
 
 export function Home() {
   const navigate = useNavigate();
@@ -27,7 +25,6 @@ export function Home() {
   });
   const [pulseFavorite, setPulseFavorite] = useState<number | null>(null);
   const [pulseCart, setPulseCart] = useState<number | null>(null);
-  const fmt = (v: number) => formatCurrency(v);
 
   const refreshFavorites = () => {
     try {
@@ -131,6 +128,22 @@ export function Home() {
     toast(added ? t("toast.addedToFavorites") : t("toast.removedFromFavorites"));
   };
 
+  const toCardData = (perfume: CatalogProduct): ProductCardData => ({
+    id: perfume.id,
+    slug: perfume.slug,
+    name: perfume.name,
+    secondary: perfume.brand,
+    image: perfume.image,
+    price: perfume.price,
+    oldPrice: perfume.originalPrice ?? null,
+    rating: perfume.rating,
+    reviews: perfume.reviews,
+    inStock: perfume.inStock,
+    notes: perfume.notes.top,
+    badge: getBadge(perfume),
+    badgeClass: getBadgeClass(perfume),
+  });
+
   return (
     <div className="min-h-screen bg-black text-white">
       <Seo
@@ -195,89 +208,16 @@ export function Home() {
         </div>
         <div className="flex gap-5 overflow-x-auto pb-4 hide-scrollbar md:grid md:grid-cols-3 md:gap-6 md:overflow-visible">
           {featuredPerfumes.map((perfume) => (
-            <div
+            <ProductCard
               key={perfume.id}
-              className="premium-card glass min-w-[260px] sm:min-w-[300px] lg:min-w-[340px] md:min-w-0 rounded-3xl overflow-hidden group relative"
-            >
-              <Link
-                to={`/product/${perfume.slug}`}
-                aria-label={perfume.name}
-                className="absolute inset-0 z-10"
-              />
-              <div className="aspect-square relative overflow-hidden">
-                <img
-                  src={perfume.image}
-                  alt={perfume.name}
-                  onError={onImageError}
-                  className="zoom-img w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onToggleFavorite(perfume);
-                  }}
-                  aria-label={t("a11y.favorite")}
-                  className="absolute top-4 left-4 z-20 w-9 h-9 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
-                >
-                  <Heart
-                    className={`w-4 h-4 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
-                  />
-                </button>
-                {getBadge(perfume) && (
-                  <div
-                    className={`badge-lux ${getBadgeClass(perfume)} absolute top-4 right-4 px-3 py-1.5 rounded-full text-[10px]`}
-                  >
-                    {getBadge(perfume)}
-                  </div>
-                )}
-              </div>
-              <div className="p-5">
-                {perfume.reviews > 0 && (
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star aria-hidden="true" className="w-4 h-4 fill-gold text-gold" />
-                    <span className="text-sm font-medium">{perfume.rating}</span>
-                    <span className="text-xs text-zinc-500">({perfume.reviews})</span>
-                  </div>
-                )}
-                <h3 className="font-display text-2xl leading-tight mb-0.5">{perfume.name}</h3>
-                <p className="text-sm text-zinc-400 mb-1">{perfume.brand}</p>
-                {!perfume.inStock && (
-                  <p className="text-xs text-zinc-400 mb-2">• {t("product.outOfStock")}</p>
-                )}
-                <div className="flex flex-wrap gap-1.5 mb-3">
-                  {perfume.notes.top.slice(0, 3).map((note) => (
-                    <span
-                      key={`${perfume.id}-featured-note-${note}`}
-                      className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs ${noteChipClass(note)}`}
-                    >
-                      {noteToAz(note)}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-gold text-xl font-medium">{fmt(perfume.price)}</span>
-                    {perfume.originalPrice && (
-                      <span className="text-sm text-zinc-500 line-through">
-                        {fmt(perfume.originalPrice)}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addPerfumeToCart(perfume);
-                    }}
-                    aria-label={t("a11y.addToCart")}
-                    disabled={!perfume.inStock}
-                    className={`btn-gold relative z-20 p-2.5 rounded-xl ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
-                  >
-                    <ShoppingBag className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
+              variant="featured"
+              data={toCardData(perfume)}
+              isFavorite={favoriteIds.includes(perfume.id)}
+              pulseFav={pulseFavorite === perfume.id}
+              pulseCart={pulseCart === perfume.id}
+              onToggleFav={() => onToggleFavorite(perfume)}
+              onAddToCart={() => addPerfumeToCart(perfume)}
+            />
           ))}
         </div>
       </div>
@@ -297,91 +237,15 @@ export function Home() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {filteredPerfumes.map((perfume) => (
-              <div
+              <ProductCard
                 key={perfume.id}
-                className="premium-card glass rounded-3xl overflow-hidden group relative"
-              >
-                <Link
-                  to={`/product/${perfume.slug}`}
-                  aria-label={perfume.name}
-                  className="absolute inset-0 z-10"
-                />
-                <div className="aspect-square relative overflow-hidden">
-                  <img
-                    src={perfume.image}
-                    alt={perfume.name}
-                    onError={onImageError}
-                    className="zoom-img w-full h-full object-cover"
-                  />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onToggleFavorite(perfume);
-                    }}
-                    aria-label={t("a11y.favorite")}
-                    className="absolute top-3 left-3 z-20 w-8 h-8 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
-                  >
-                    <Heart
-                      className={`w-3.5 h-3.5 ${favoriteIds.includes(perfume.id) ? "fill-red-500 text-red-500" : "text-white"} ${pulseFavorite === perfume.id ? "scale-125" : ""} transition-transform`}
-                    />
-                  </button>
-                  {getBadge(perfume) && (
-                    <div
-                      className={`badge-lux ${getBadgeClass(perfume)} absolute top-3 right-3 px-2.5 py-1 rounded-full text-[10px]`}
-                    >
-                      {getBadge(perfume)}
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  {perfume.reviews > 0 && (
-                    <div className="flex items-center gap-1 mb-1.5">
-                      <Star aria-hidden="true" className="w-3 h-3 fill-gold text-gold" />
-                      <span className="text-xs font-medium">{perfume.rating}</span>
-                    </div>
-                  )}
-                  <h3 className="font-display text-lg leading-tight mb-0.5 truncate">
-                    {perfume.name}
-                  </h3>
-                  <p className="text-xs text-zinc-400 mb-1">{perfume.brand}</p>
-                  {!perfume.inStock && (
-                    <p className="text-[10px] text-zinc-400 mb-1">• {t("product.outOfStock")}</p>
-                  )}
-                  <div className="flex flex-wrap gap-1 mb-2.5 min-h-[18px]">
-                    {perfume.notes.top.slice(0, 2).map((note) => (
-                      <span
-                        key={`${perfume.id}-all-note-${note}`}
-                        className={`px-1.5 py-0.5 rounded-full text-[10px] leading-none ${noteChipClass(note)}`}
-                      >
-                        {noteToAz(note)}
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex flex-col items-start leading-tight">
-                      <span className="text-gold font-medium whitespace-nowrap">
-                        {fmt(perfume.price)}
-                      </span>
-                      {perfume.originalPrice && (
-                        <span className="text-[11px] text-zinc-500 line-through whitespace-nowrap">
-                          {fmt(perfume.originalPrice)}
-                        </span>
-                      )}
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addPerfumeToCart(perfume);
-                      }}
-                      aria-label={t("a11y.addToCart")}
-                      disabled={!perfume.inStock}
-                      className={`btn-gold relative z-20 p-2 rounded-lg ${pulseCart === perfume.id ? "scale-110" : ""} ${!perfume.inStock ? "opacity-40 cursor-not-allowed" : ""}`}
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+                data={toCardData(perfume)}
+                isFavorite={favoriteIds.includes(perfume.id)}
+                pulseFav={pulseFavorite === perfume.id}
+                pulseCart={pulseCart === perfume.id}
+                onToggleFav={() => onToggleFavorite(perfume)}
+                onAddToCart={() => addPerfumeToCart(perfume)}
+              />
             ))}
           </div>
         )}
