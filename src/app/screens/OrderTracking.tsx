@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams } from "react-router";
 import { formatCurrency } from "../lib/formatCurrency";
 import { useI18n } from "../i18n";
+import { Seo } from "../components/Seo";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 const WS_BASE =
@@ -15,15 +16,8 @@ interface OrderStatus {
   created_at: string;
 }
 
-// Visual styling only — labels are routed through i18n (status.* keys).
-const STATUS_STYLE: Record<string, { color: string; icon: string }> = {
-  new: { color: "#e65100", icon: "📝" },
-  confirmed: { color: "#1976d2", icon: "✅" },
-  shipped: { color: "#0d47a1", icon: "🚚" },
-  delivered: { color: "#1b5e20", icon: "🎉" },
-  cancelled: { color: "#b71c1c", icon: "❌" },
-};
-
+// The happy-path stages shown in the progress stepper, in order. Labels are
+// routed through i18n (status.* keys); "cancelled" is handled separately.
 const ORDER_STATUSES = ["new", "confirmed", "shipped", "delivered"];
 
 export function OrderTracking() {
@@ -107,6 +101,12 @@ export function OrderTracking() {
 
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 pt-10 pb-16 text-white">
+      <Seo
+        title="Sifariş izləmə | ƏtirX"
+        description="Sifariş kodunuzla çatdırılma statusunu real vaxtda izləyin."
+        path="/sifaris-izleme"
+        noindex
+      />
       <h1 className="font-display text-4xl mb-3">{t("tracking.heading")}</h1>
       <div className="gold-rule mb-4" />
       <p className="text-zinc-400 mb-7">{t("tracking.intro")}</p>
@@ -154,39 +154,51 @@ export function OrderTracking() {
             </div>
           )}
 
-          {/* Progress stepper */}
-          <div className="flex justify-between relative my-6">
-            {ORDER_STATUSES.map((s, idx) => {
-              const info = STATUS_STYLE[s];
-              const isActive = idx <= currentStep;
-              const isCurrent = idx === currentStep;
-              return (
-                <div key={s} className="flex flex-col items-center flex-1 relative z-10">
-                  <div
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all"
-                    style={{
-                      background: isActive ? info.color : "rgba(255,255,255,0.08)",
-                      color: isActive ? "#fff" : "#71717a",
-                      boxShadow: isCurrent ? `0 0 0 4px ${info.color}40` : "none",
-                    }}
-                  >
-                    {isActive ? "✓" : idx + 1}
+          {/* Progress stepper (happy path only; cancelled shows the notice below) */}
+          {status.status !== "cancelled" && (
+            <div className="flex justify-between relative my-6">
+              {ORDER_STATUSES.map((s, idx) => {
+                const isActive = idx <= currentStep;
+                const isCurrent = idx === currentStep;
+                return (
+                  <div key={s} className="flex flex-col items-center flex-1 relative z-10">
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold transition-all"
+                      style={{
+                        background: isActive
+                          ? "linear-gradient(135deg, var(--gold-bright), var(--gold))"
+                          : "rgba(255,255,255,0.06)",
+                        color: isActive ? "#1a1206" : "#71717a",
+                        border: isActive ? "none" : "1px solid rgba(255,255,255,0.12)",
+                        boxShadow: isCurrent ? "0 0 0 4px var(--gold-soft)" : "none",
+                      }}
+                    >
+                      {isActive ? "✓" : idx + 1}
+                    </div>
+                    <span
+                      className={`text-[11px] mt-1.5 text-center ${
+                        isCurrent
+                          ? "text-gold font-semibold"
+                          : isActive
+                            ? "text-zinc-300"
+                            : "text-zinc-500"
+                      }`}
+                    >
+                      {t(`status.${s}`)}
+                    </span>
                   </div>
-                  <span
-                    className="text-[11px] mt-1.5 text-center"
-                    style={{
-                      color: isActive ? info.color : "#71717a",
-                      fontWeight: isCurrent ? 700 : 400,
-                    }}
-                  >
-                    {t(`status.${s}`)}
-                  </span>
-                </div>
-              );
-            })}
-            {/* Connecting line */}
-            <div className="absolute top-[18px] left-[10%] right-[10%] h-[3px] bg-white/10 z-0" />
-          </div>
+                );
+              })}
+              {/* Connecting line — track + gold progress fill */}
+              <div className="absolute top-[18px] left-[10%] right-[10%] h-[3px] bg-white/10 z-0" />
+              <div
+                className="absolute top-[18px] left-[10%] h-[3px] bg-gold z-0 transition-all duration-500"
+                style={{
+                  width: `${currentStep <= 0 ? 0 : (currentStep / (ORDER_STATUSES.length - 1)) * 80}%`,
+                }}
+              />
+            </div>
+          )}
 
           {/* Summary */}
           <div className="flex justify-between py-3 border-t border-white/10 mt-2">
