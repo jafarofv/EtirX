@@ -235,7 +235,7 @@ export function Home() {
         ) : filteredPerfumes.length === 0 ? (
           <p className="text-zinc-400">{t("shop.noProducts")}</p>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {filteredPerfumes.map((perfume) => (
               <ProductCard
                 key={perfume.id}
