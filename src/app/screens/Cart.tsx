@@ -192,7 +192,7 @@ export function Cart() {
                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-xl overflow-hidden flex-shrink-0">
                   <img
                     src={item.variant.imageUrl || item.perfume.image}
-                    alt={item.perfume.name}
+                    alt=""
                     onError={onImageError}
                     className="w-full h-full object-cover"
                   />

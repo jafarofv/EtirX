@@ -227,7 +227,8 @@ export function ProductDetails() {
           <ArrowLeft className="w-5 h-5" />
         </button>
         <button
-          aria-label={t("a11y.favorite")}
+          aria-label={favorite ? t("a11y.unfavorite") : t("a11y.favorite")}
+          aria-pressed={favorite}
           onClick={handleToggleFavorite}
           className="w-10 h-10 rounded-full glass flex items-center justify-center hover:border-gold transition-all"
         >
@@ -295,7 +296,8 @@ export function ProductDetails() {
                 {perfume.brand}
               </p>
               <button
-                aria-label={t("a11y.favorite")}
+                aria-label={favorite ? t("a11y.unfavorite") : t("a11y.favorite")}
+                aria-pressed={favorite}
                 onClick={handleToggleFavorite}
                 className="hidden lg:flex w-10 h-10 rounded-full glass items-center justify-center hover:border-gold transition-all shrink-0"
               >

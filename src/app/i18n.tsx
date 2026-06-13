@@ -28,6 +28,21 @@ const dict: Dict = {
   "a11y.menu": { az: "Menyu", en: "Menu", ru: "Меню" },
   "a11y.language": { az: "Dil seçimi", en: "Language", ru: "Язык" },
   "a11y.favorite": { az: "Seçilənlərə əlavə et", en: "Add to favorites", ru: "В избранное" },
+  "a11y.unfavorite": {
+    az: "Seçilənlərdən sil",
+    en: "Remove from favorites",
+    ru: "Удалить из избранного",
+  },
+  "a11y.cartCount": {
+    az: "Səbətdəki məhsul sayı",
+    en: "Items in cart",
+    ru: "Товаров в корзине",
+  },
+  "a11y.favCount": {
+    az: "Seçilənlərin sayı",
+    en: "Favorites count",
+    ru: "Количество избранного",
+  },
   "a11y.addToCart": { az: "Səbətə at", en: "Add to cart", ru: "В корзину" },
   "a11y.increaseQty": { az: "Sayı artır", en: "Increase quantity", ru: "Увеличить количество" },
   "a11y.decreaseQty": { az: "Sayı azalt", en: "Decrease quantity", ru: "Уменьшить количество" },

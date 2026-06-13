@@ -383,7 +383,7 @@ export function Checkout() {
                       <div className="w-12 h-12 rounded-xl overflow-hidden glass shrink-0">
                         <img
                           src={item.product_image}
-                          alt={item.product_name}
+                          alt=""
                           onError={onImageError}
                           className="w-full h-full object-cover"
                         />
@@ -602,7 +602,7 @@ export function Checkout() {
                     <div className="w-11 h-11 rounded-lg overflow-hidden glass shrink-0">
                       <img
                         src={item.variant.imageUrl || item.perfume.image}
-                        alt={item.perfume.name}
+                        alt=""
                         onError={onImageError}
                         className="w-full h-full object-cover"
                       />

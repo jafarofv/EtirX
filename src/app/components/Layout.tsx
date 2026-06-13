@@ -315,7 +315,7 @@ export function Layout() {
                 className="inline-flex items-center"
                 aria-label="EtirX home"
               >
-                <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
+                <img src={logoSrc} alt="" className="h-12 w-12 object-cover" />
               </button>
               <div className="flex items-center gap-2">
                 <div ref={pagesMobileRef} className="relative">
@@ -341,7 +341,7 @@ export function Layout() {
               className="inline-flex items-center shrink-0"
               aria-label="EtirX home"
             >
-              <img src={logoSrc} alt="EtirX" className="h-14 w-14 object-cover" />
+              <img src={logoSrc} alt="" className="h-14 w-14 object-cover" />
             </button>
             <div className="flex-1 flex justify-center">
               <div className="w-full max-w-sm">{renderSearch(searchDesktopRef, "desktop")}</div>
@@ -382,7 +382,11 @@ export function Layout() {
                     <span className="relative inline-flex">
                       <item.icon className="w-4 h-4" />
                       {badge > 0 && (
-                        <span className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4">
+                        <span
+                          aria-live="polite"
+                          aria-label={`${badge} ${item.path === "/cart" ? t("a11y.cartCount") : t("a11y.favCount")}`}
+                          className="absolute -top-2 -right-2 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4"
+                        >
                           {badge}
                         </span>
                       )}
@@ -460,7 +464,7 @@ export function Layout() {
             <div className="grid gap-8 md:grid-cols-[1.1fr_1.4fr_1fr]">
               <div>
                 <Link to="/" className="inline-flex items-center gap-3 mb-4">
-                  <img src={logoSrc} alt="EtirX" className="h-12 w-12 object-cover" />
+                  <img src={logoSrc} alt="" className="h-12 w-12 object-cover" />
                   <span className="font-display text-2xl">{t("brand.name")}</span>
                 </Link>
                 <p className="text-sm text-zinc-400 leading-6 max-w-sm">{t("footer.about")}</p>
@@ -563,7 +567,11 @@ export function Layout() {
                   >
                     <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
                     {badge > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4">
+                      <span
+                        aria-live="polite"
+                        aria-label={`${badge} ${item.path === "/cart" ? t("a11y.cartCount") : t("a11y.favCount")}`}
+                        className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-red-500 text-white text-[10px] leading-4"
+                      >
                         {badge}
                       </span>
                     )}
