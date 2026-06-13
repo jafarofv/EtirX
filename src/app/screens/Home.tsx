@@ -6,6 +6,7 @@ import { useI18n } from "../i18n";
 import { addToCart, toggleFavorite } from "../lib/storage";
 import { loadCatalogProducts, type CatalogProduct } from "../lib/catalog";
 import { Seo } from "../components/Seo";
+import { ProductGridSkeleton } from "../components/ProductGridSkeleton";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
@@ -288,7 +289,7 @@ export function Home() {
           <div className="gold-rule mt-2" />
         </div>
         {loading ? (
-          <p className="text-zinc-400">{t("shop.loading")}</p>
+          <ProductGridSkeleton />
         ) : loadError ? (
           <p className="text-amber-400">{t("shop.fallback")}</p>
         ) : filteredPerfumes.length === 0 ? (
