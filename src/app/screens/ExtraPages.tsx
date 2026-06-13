@@ -693,7 +693,10 @@ export function CampaignsPage() {
                   className="group inline-flex items-center gap-2 rounded-xl border border-gold/40 bg-gold/10 px-3 py-1.5 text-gold transition-all hover:border-gold hover:bg-gold/20"
                 >
                   <span className="font-semibold tracking-wide">{c.code}</span>
-                  <Copy aria-hidden="true" className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100" />
+                  <Copy
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100"
+                  />
                 </button>
                 <span className="text-sm font-semibold text-emerald-400">
                   {c.discount_type === "percent"
