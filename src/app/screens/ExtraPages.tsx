@@ -1,12 +1,15 @@
 ﻿import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import {
+  ArrowUpRight,
+  Copy,
   ExternalLink,
   Heart,
   Instagram,
   MapPin,
   MessageCircle,
   ShoppingBag,
+  SlidersHorizontal,
   Star,
 } from "lucide-react";
 import {
@@ -32,7 +35,7 @@ import { addToCart, getFavoriteIds, toggleFavorite } from "../lib/storage";
 import { noteChipClass, noteToAz } from "../lib/noteMeta";
 import { toast } from "sonner";
 
-function ProductGrid({ items }: { items: ApiProduct[] }) {
+function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessage?: string }) {
   const { t } = useI18n();
   const fmt = (v: string | number) => formatCurrency(Number(v));
   const [favoriteIds, setFavoriteIds] = useState<number[]>(() => getFavoriteIds());
@@ -88,7 +91,7 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
   if (items.length === 0) {
     return (
       <div className="glass rounded-2xl px-6 py-12 text-center">
-        <p className="text-zinc-300 mb-5">{t("shop.noProducts")}</p>
+        <p className="text-zinc-300 mb-5">{emptyMessage ?? t("shop.noProducts")}</p>
         <Link to="/perfumes" className="btn-gold inline-flex rounded-xl px-5 py-2.5 text-sm">
           {t("favorites.explore")}
         </Link>
@@ -427,9 +430,17 @@ export function CategoriesPage() {
           <Link
             key={c.slug}
             to={`/kateqoriya/${c.slug}`}
-            className="glass rounded-2xl p-5 hover:border-gold/50 transition-all"
+            className="premium-card glass rounded-3xl p-5 group relative"
           >
-            <h3 className="font-display text-xl mb-1">{c.name}</h3>
+            <div className="flex items-start justify-between gap-3 mb-1">
+              <h3 className="font-display text-xl transition-colors group-hover:text-gold">
+                {c.name}
+              </h3>
+              <ArrowUpRight
+                aria-hidden="true"
+                className="w-5 h-5 shrink-0 text-zinc-500 transition-all group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-gold"
+              />
+            </div>
             <p className="text-sm text-zinc-400">{c.desc}</p>
           </Link>
         ))}
@@ -577,35 +588,61 @@ export function SearchPage() {
         description="Ətir adları, marka və notlara görə nəticələr."
         path={`/search?q=${encodeURIComponent(params.get("q") ?? "")}`}
       />
-      <p className="text-xs text-zinc-500 mb-2">Notlara görə də axtara bilərsiniz</p>
-      <div className="flex flex-wrap gap-2 mb-4">
-        {noteHints.map((note) => (
-          <Link
-            key={`search-note-${note}`}
-            to={`/search?q=${encodeURIComponent(note)}`}
-            className="px-2.5 py-1 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold"
+      {/* Refine toolbar — category filter + note shortcuts in one cohesive bar */}
+      <div className="flex flex-col gap-3 mb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal aria-hidden="true" className="w-4 h-4 text-gold shrink-0" />
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            aria-label={t("search.filterCategory")}
+            className="glass premium-input rounded-xl px-3 py-2.5 text-sm min-w-[200px]"
           >
-            #{note}
-          </Link>
-        ))}
-      </div>
-      <div className="mb-4">
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="glass premium-input rounded-xl px-3 py-2 text-sm"
-        >
-          <option value="all">{t("search.allCategories")}</option>
-          {categories.map((category) => (
-            <option key={category.slug} value={category.slug}>
-              {category.name}
-            </option>
+            <option value="all">{t("search.allCategories")}</option>
+            {categories.map((category) => (
+              <option key={category.slug} value={category.slug}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-zinc-500">{t("search.notesHint")}:</span>
+          {noteHints.map((note) => (
+            <Link
+              key={`search-note-${note}`}
+              to={`/search?q=${encodeURIComponent(note)}`}
+              className="px-2.5 py-1 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold transition-all"
+            >
+              #{note}
+            </Link>
           ))}
-        </select>
+        </div>
       </div>
-      {loading ? <ProductGridSkeleton /> : <ProductGrid items={visibleItems} />}
+      {loading ? (
+        <ProductGridSkeleton />
+      ) : (
+        <ProductGrid items={visibleItems} emptyMessage={t("search.empty")} />
+      )}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
+  );
+}
+
+function CampaignSkeleton() {
+  return (
+    <div className="max-w-2xl space-y-3">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="glass rounded-2xl p-5 animate-pulse">
+          <div className="flex items-center justify-between gap-3">
+            <div className="h-9 w-36 rounded-xl bg-white/10" />
+            <div className="h-5 w-14 rounded bg-white/10" />
+          </div>
+          <div className="mt-3 h-4 w-44 rounded bg-white/10" />
+          <div className="mt-2 h-3 w-60 rounded bg-white/10" />
+        </div>
+      ))}
+    </div>
   );
 }
 
@@ -621,29 +658,54 @@ export function CampaignsPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  const copyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success(t("campaigns.copied"));
+    } catch {
+      // Clipboard API unavailable (e.g. insecure context) — fail silently.
+    }
+  };
+
   return (
     <PageWrap title={t("campaigns.title")} subtitle={t("campaigns.subtitle")}>
+      <Seo
+        title="Kampaniyalar | ƏtirX"
+        description="ƏtirX-də aktiv endirim kodları və promosyonlar."
+        path="/kampaniyalar"
+      />
       {loading ? (
-        <p className="text-zinc-400">{t("shop.loading")}</p>
+        <CampaignSkeleton />
       ) : campaigns.length === 0 ? (
-        <p className="text-zinc-400">Hazırda aktiv kampaniya yoxdur.</p>
+        <div className="glass rounded-2xl px-6 py-12 text-center">
+          <p className="text-zinc-300">{t("campaigns.empty")}</p>
+        </div>
       ) : (
-        <div className="space-y-3">
+        <div className="max-w-2xl space-y-3">
           {campaigns.map((c) => (
-            <div key={c.code} className="glass rounded-2xl p-4">
+            <div key={c.code} className="premium-card glass rounded-2xl p-5">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-lg font-semibold text-gold">{c.code}</p>
-                <span className="text-sm font-medium text-emerald-400">
+                <button
+                  type="button"
+                  onClick={() => copyCode(c.code)}
+                  aria-label={t("campaigns.copy")}
+                  title={t("campaigns.copy")}
+                  className="group inline-flex items-center gap-2 rounded-xl border border-gold/40 bg-gold/10 px-3 py-1.5 text-gold transition-all hover:border-gold hover:bg-gold/20"
+                >
+                  <span className="font-semibold tracking-wide">{c.code}</span>
+                  <Copy aria-hidden="true" className="h-3.5 w-3.5 opacity-70 group-hover:opacity-100" />
+                </button>
+                <span className="text-sm font-semibold text-emerald-400">
                   {c.discount_type === "percent"
                     ? `-${Number(c.discount_value)}%`
                     : `-${formatCurrency(Number(c.discount_value))}`}
                 </span>
               </div>
-              {c.title && <p className="text-zinc-300 mt-1">{c.title}</p>}
-              {c.description && <p className="text-zinc-400 text-sm mt-0.5">{c.description}</p>}
+              {c.title && <p className="mt-3 text-zinc-200">{c.title}</p>}
+              {c.description && <p className="mt-0.5 text-sm text-zinc-400">{c.description}</p>}
               {Number(c.min_subtotal) > 0 && (
-                <p className="text-xs text-zinc-500 mt-1">
-                  Minimum sifariş: {formatCurrency(Number(c.min_subtotal))}
+                <p className="mt-2 text-xs text-zinc-500">
+                  {t("campaigns.minOrder")}: {formatCurrency(Number(c.min_subtotal))}
                 </p>
               )}
             </div>
