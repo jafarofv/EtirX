@@ -78,44 +78,57 @@ export function Layout() {
     if (query) navigate(`/search?q=${encodeURIComponent(query)}`);
   };
 
-  const renderSearch = (ref: MutableRefObject<HTMLDivElement | null>) => (
-    <div ref={ref} className="relative w-full">
-      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-      <input
-        type="text"
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        onFocus={() => setIsSearchOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") submitSearch();
-        }}
-        placeholder={t("home.search")}
-        aria-label={t("home.search")}
-        className="premium-input w-full glass rounded-full pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500"
-      />
-      {isSearchOpen && (
-        <div className="absolute right-0 mt-2 w-full sm:w-72 glass rounded-2xl p-3 z-50 animate-fade-up">
-          <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2.5 px-1">
-            {t("menu.search")}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {noteHints.map((note) => (
-              <button
-                key={`hs-${note}`}
-                onMouseDown={(e) => {
-                  e.preventDefault();
-                  submitSearch(note);
-                }}
-                className="px-3 py-1.5 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold transition-all"
-              >
-                #{note}
-              </button>
-            ))}
+  const renderSearch = (ref: MutableRefObject<HTMLDivElement | null>, idKey: string) => {
+    const listboxId = `search-suggestions-${idKey}`;
+    return (
+      <div ref={ref} className="relative w-full">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+        <input
+          type="text"
+          role="combobox"
+          aria-expanded={isSearchOpen}
+          aria-controls={listboxId}
+          aria-haspopup="listbox"
+          aria-autocomplete="list"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onFocus={() => setIsSearchOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") submitSearch();
+          }}
+          placeholder={t("home.search")}
+          aria-label={t("home.search")}
+          className="premium-input w-full glass rounded-full pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-500"
+        />
+        {isSearchOpen && (
+          <div
+            id={listboxId}
+            role="listbox"
+            aria-label={t("menu.search")}
+            className="absolute right-0 mt-2 w-full glass rounded-2xl p-3 z-50 animate-fade-up"
+          >
+            <p className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 mb-2.5 px-1">
+              {t("menu.search")}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {noteHints.map((note) => (
+                <button
+                  key={`hs-${idKey}-${note}`}
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  onClick={() => submitSearch(note)}
+                  className="px-3 py-1.5 rounded-full text-xs glass text-zinc-300 hover:border-gold hover:text-gold transition-all"
+                >
+                  #{note}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        )}
+      </div>
+    );
+  };
 
   const navItems = [
     { icon: Home, label: t("nav.home"), path: "/" },
@@ -318,7 +331,7 @@ export function Layout() {
                 </div>
               </div>
             </div>
-            <div className="px-4 pb-3">{renderSearch(searchMobileRef)}</div>
+            <div className="px-4 pb-3">{renderSearch(searchMobileRef, "mobile")}</div>
           </header>
         </div>
         <header className="hidden md:block sticky top-[56px] z-20 border-b border-white/5 bg-black/70 backdrop-blur-xl">
@@ -331,7 +344,7 @@ export function Layout() {
               <img src={logoSrc} alt="EtirX" className="h-14 w-14 object-cover" />
             </button>
             <div className="flex-1 flex justify-center">
-              <div className="w-full max-w-sm">{renderSearch(searchDesktopRef)}</div>
+              <div className="w-full max-w-sm">{renderSearch(searchDesktopRef, "desktop")}</div>
             </div>
             <nav className="flex items-center gap-2 shrink-0">
               <div ref={pagesDesktopRef} className="relative mr-3">
