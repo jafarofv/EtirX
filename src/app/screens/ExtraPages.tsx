@@ -19,6 +19,7 @@ import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
 import { useI18n } from "../i18n";
 import { Seo } from "../components/Seo";
+import { ProductGridSkeleton } from "../components/ProductGridSkeleton";
 
 function ProductGrid({ items }: { items: ApiProduct[] }) {
   const { t } = useI18n();
@@ -247,11 +248,7 @@ export function ShopPage() {
           </button>
         ))}
       </div>
-      {loading ? (
-        <p className="text-zinc-400">{t("shop.loading")}</p>
-      ) : (
-        <ProductGrid items={visibleItems} />
-      )}
+      {loading ? <ProductGridSkeleton /> : <ProductGrid items={visibleItems} />}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
@@ -385,7 +382,7 @@ export function CategoryLandingPage() {
         description={`${current.title} kateqoriyasında premium ətirləri araşdırın.`}
         path={`/kateqoriya/${slug ?? ""}`}
       />
-      {loading ? <p className="text-zinc-400">Yüklənir...</p> : <ProductGrid items={items} />}
+      {loading ? <ProductGridSkeleton /> : <ProductGrid items={items} />}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
@@ -422,11 +419,7 @@ export function CategoryPage() {
         description="Seçilmiş kateqoriyada premium ətirləri araşdırın və sifariş edin."
         path={`/category/${slug ?? ""}`}
       />
-      {loading ? (
-        <p className="text-zinc-400">{t("shop.loading")}</p>
-      ) : (
-        <ProductGrid items={items} />
-      )}
+      {loading ? <ProductGridSkeleton /> : <ProductGrid items={items} />}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
@@ -508,11 +501,7 @@ export function SearchPage() {
           ))}
         </select>
       </div>
-      {loading ? (
-        <p className="text-zinc-400">{t("shop.loading")}</p>
-      ) : (
-        <ProductGrid items={visibleItems} />
-      )}
+      {loading ? <ProductGridSkeleton /> : <ProductGrid items={visibleItems} />}
       {error && <p className="text-amber-400 mt-4">{error}</p>}
     </PageWrap>
   );
