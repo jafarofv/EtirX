@@ -611,7 +611,7 @@ export function Checkout() {
                     <span
                       className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                         selectedDelivery === method.code
-                          ? "border-gold bg-gold text-[#1a1206]"
+                          ? "border-gold bg-gold text-[var(--gold-ink)]"
                           : "border-zinc-500"
                       }`}
                       aria-hidden="true"

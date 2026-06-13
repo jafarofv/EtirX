@@ -206,7 +206,7 @@ export function OrderTracking() {
                         background: isActive
                           ? "linear-gradient(135deg, var(--gold-bright), var(--gold))"
                           : "rgba(255,255,255,0.06)",
-                        color: isActive ? "#1a1206" : "#71717a",
+                        color: isActive ? "var(--gold-ink)" : "#71717a",
                         border: isActive ? "none" : "1px solid rgba(255,255,255,0.12)",
                         boxShadow: isCurrent ? "0 0 0 4px var(--gold-soft)" : "none",
                       }}

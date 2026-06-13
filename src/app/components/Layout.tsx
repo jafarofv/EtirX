@@ -375,7 +375,7 @@ export function Layout() {
                     onClick={() => navigate(item.path)}
                     className={`px-4 py-2 rounded-xl text-sm transition-all flex items-center gap-2 ${
                       isActive
-                        ? "bg-gold text-[#1a1206] font-medium"
+                        ? "bg-gold text-[var(--gold-ink)] font-medium"
                         : "text-zinc-300 hover:bg-zinc-900 hover:text-white"
                     }`}
                   >
@@ -421,7 +421,7 @@ export function Layout() {
                       }`}
                     >
                       <div className="flex items-start gap-4 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-gold text-[#1a1206] flex items-center justify-center font-semibold">
+                        <div className="w-12 h-12 rounded-2xl bg-gold text-[var(--gold-ink)] flex items-center justify-center font-semibold">
                           {review.name.charAt(0)}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -562,7 +562,7 @@ export function Layout() {
                 >
                   <div
                     className={`p-2.5 rounded-2xl transition-all relative ${
-                      isActive ? "bg-gold text-[#1a1206]" : "text-zinc-400 hover:text-white"
+                      isActive ? "bg-gold text-[var(--gold-ink)]" : "text-zinc-400 hover:text-white"
                     }`}
                   >
                     <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 2} />
@@ -636,7 +636,7 @@ export function Layout() {
                           onClick={() => setLanguage(lang)}
                           className={`flex-1 px-3 py-2 rounded-xl text-sm flex items-center justify-center gap-1.5 transition-all ${
                             language === lang
-                              ? "bg-gold text-[#1a1206] font-semibold"
+                              ? "bg-gold text-[var(--gold-ink)] font-semibold"
                               : "glass text-zinc-300 hover:border-gold"
                           }`}
                         >
