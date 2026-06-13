@@ -77,7 +77,8 @@ export function ProductCard({
             e.stopPropagation();
             onToggleFav();
           }}
-          aria-label={t("a11y.favorite")}
+          aria-label={isFavorite ? t("a11y.unfavorite") : t("a11y.favorite")}
+          aria-pressed={isFavorite}
           className={`absolute z-20 rounded-full glass flex items-center justify-center hover:border-gold transition-all ${
             featured ? "top-4 left-4 w-9 h-9" : "top-3 left-3 w-8 h-8"
           }`}

@@ -97,7 +97,8 @@ export function Favorites() {
                     className="zoom-img w-full h-full object-cover"
                   />
                   <button
-                    aria-label={t("favorites.title")}
+                    aria-label={t("a11y.unfavorite")}
+                    aria-pressed={true}
                     onClick={(e) => {
                       e.stopPropagation();
                       removeFavorite(perfume.id);
