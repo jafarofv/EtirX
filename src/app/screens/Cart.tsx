@@ -88,9 +88,13 @@ export function Cart() {
     const code = promoCode.trim();
     if (!code) {
       setPromoDiscount(0);
+      setPromoErr(null);
       return;
     }
-    if (!getAuthToken()) return;
+    if (!getAuthToken()) {
+      setPromoErr(t("cart.promoLoginRequired"));
+      return;
+    }
     let cancelled = false;
     // Debounce so we fire one request after the user stops typing, not per keystroke.
     const timer = setTimeout(() => {
@@ -253,7 +257,7 @@ export function Cart() {
                     }}
                     placeholder={t("cart.promo")}
                     aria-label={t("cart.promo")}
-                    className="flex-1 min-w-0 bg-transparent text-sm focus:outline-none placeholder:text-zinc-500"
+                    className="flex-1 min-w-0 rounded-md bg-transparent px-1 text-sm placeholder:text-zinc-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/60"
                   />
                   <button
                     onClick={async () => {

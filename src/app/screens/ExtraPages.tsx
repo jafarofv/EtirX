@@ -36,7 +36,14 @@ function ProductGrid({ items }: { items: ApiProduct[] }) {
     (p.variants ?? []).some((variant) => variant.is_active && variant.stock > 0) || p.stock > 0;
 
   if (items.length === 0) {
-    return <p className="text-zinc-400">{t("shop.noProducts")}</p>;
+    return (
+      <div className="glass rounded-2xl px-6 py-12 text-center">
+        <p className="text-zinc-300 mb-5">{t("shop.noProducts")}</p>
+        <Link to="/perfumes" className="btn-gold inline-flex rounded-xl px-5 py-2.5 text-sm">
+          {t("favorites.explore")}
+        </Link>
+      </div>
+    );
   }
 
   return (
