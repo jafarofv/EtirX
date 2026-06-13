@@ -114,7 +114,7 @@ function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessag
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
       {items.map((p) => (
         <ProductCard
           key={p.id}

@@ -77,7 +77,7 @@ export function Favorites() {
       </div>
 
       <div className="px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {favorites.map((perfume) => (
             <div
               key={perfume.id}

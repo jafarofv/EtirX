@@ -327,18 +327,18 @@ export function ProductDetails() {
           <div className="gold-rule mt-4 mb-4" />
 
           <div className="grid grid-cols-3 divide-x divide-white/10 border-b border-white/10 pb-4 mb-6">
-            <div className="flex items-start gap-2 px-3 sm:px-4">
+            <div className="flex items-start gap-2 px-2.5 sm:px-4">
               <Droplets className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
                   {t("product.size")}
                 </p>
-                <p className="text-xs sm:text-sm font-medium truncate">
+                <p className="text-xs sm:text-sm font-medium leading-tight">
                   {selectedVariant?.sizeMl ? `${selectedVariant.sizeMl}ml` : perfume.size}
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-2 px-3 sm:px-4">
+            <div className="flex items-start gap-2 px-2.5 sm:px-4">
               <CheckCircle2
                 className={`hidden sm:block w-4 h-4 mt-0.5 shrink-0 ${selectedStock > 0 ? "text-green-500" : "text-red-500"}`}
               />
@@ -353,11 +353,11 @@ export function ProductDetails() {
                 </p>
               </div>
             </div>
-            <div className="flex items-start gap-2 px-3 sm:px-4">
+            <div className="flex items-start gap-2 px-2.5 sm:px-4">
               <User className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
                 <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Cins</p>
-                <p className="text-xs sm:text-sm font-medium truncate">{gender}</p>
+                <p className="text-xs sm:text-sm font-medium leading-tight">{gender}</p>
               </div>
             </div>
           </div>
