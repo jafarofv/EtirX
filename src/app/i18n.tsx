@@ -309,6 +309,7 @@ const dict: Dict = {
   },
   "checkout.place": { az: "Sifarişi tamamla", en: "Place Order", ru: "Оформить заказ" },
   "checkout.orderCode": { az: "Sifariş", en: "Order", ru: "Заказ" },
+  "checkout.trackOrder": { az: "Sifarişi izlə", en: "Track order", ru: "Отследить заказ" },
   "checkout.fullName": { az: "Ad və soyad", en: "Full name", ru: "Имя и фамилия" },
   "checkout.phone": { az: "Telefon", en: "Phone", ru: "Телефон" },
   "checkout.addrInput": { az: "Ünvan", en: "Address", ru: "Адрес" },
