@@ -278,6 +278,13 @@
   color: #f3f3f4;
 }
 
+/* Muted caption text. Tailwind zinc-500 (#71717a) sits at ~4:1 on the near-black
+   base — just under WCAG AA (4.5:1). Lift it to ~5:1 so small labels stay legible.
+   Light mode keeps its own (!important) override above, so this only affects dark. */
+.text-zinc-500 {
+  color: #8e8e99;
+}
+
 /* Gold CTA button */
 .btn-gold {
   background: linear-gradient(135deg, var(--gold-bright), var(--gold));

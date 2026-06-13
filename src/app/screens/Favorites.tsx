@@ -52,7 +52,7 @@ export function Favorites() {
         <div className="w-20 h-20 glass rounded-full flex items-center justify-center mb-6">
           <Heart className="w-10 h-10 text-gold" />
         </div>
-        <h2 className="font-display text-3xl mb-2">{t("favorites.empty")}</h2>
+        <h1 className="font-display text-3xl mb-2">{t("favorites.empty")}</h1>
         <p className="text-sm text-zinc-400 mb-8 text-center">{t("favorites.explore")}</p>
         <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
           {t("favorites.explore")}
