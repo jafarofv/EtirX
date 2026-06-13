@@ -33,6 +33,8 @@ const dict: Dict = {
   "a11y.decreaseQty": { az: "Sayı azalt", en: "Decrease quantity", ru: "Уменьшить количество" },
   "a11y.removeItem": { az: "Səbətdən sil", en: "Remove from cart", ru: "Удалить из корзины" },
   "a11y.back": { az: "Geri", en: "Back", ru: "Назад" },
+  "a11y.showPassword": { az: "Şifrəni göstər", en: "Show password", ru: "Показать пароль" },
+  "a11y.hidePassword": { az: "Şifrəni gizlət", en: "Hide password", ru: "Скрыть пароль" },
 
   "theme.label": { az: "Tema", en: "Theme", ru: "Тема" },
   "theme.dark": { az: "Tünd", en: "Dark", ru: "Тёмная" },

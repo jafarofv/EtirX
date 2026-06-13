@@ -1,6 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { User, Mail, Lock, LogOut, Shield, Phone, ChevronRight, ArrowLeft } from "lucide-react";
+import {
+  User,
+  Mail,
+  Lock,
+  LogOut,
+  Shield,
+  Phone,
+  ChevronRight,
+  ArrowLeft,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { useI18n } from "../i18n";
 import {
   changePassword,
@@ -18,6 +29,49 @@ import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
 import { Seo } from "../components/Seo";
+
+/** Password field with a show/hide toggle and a leading lock icon. */
+function PasswordInput({
+  value,
+  onChange,
+  placeholder,
+  ariaLabel,
+  hasError,
+  autoComplete,
+}: {
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder: string;
+  ariaLabel: string;
+  hasError?: boolean;
+  autoComplete?: string;
+}) {
+  const { t } = useI18n();
+  const [show, setShow] = useState(false);
+  return (
+    <div className="relative">
+      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+      <input
+        type={show ? "text" : "password"}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        aria-label={ariaLabel}
+        aria-invalid={hasError || undefined}
+        autoComplete={autoComplete}
+        className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-10 ${hasError ? "border-red-500" : "border-zinc-700"}`}
+      />
+      <button
+        type="button"
+        onClick={() => setShow((s) => !s)}
+        aria-label={show ? t("a11y.hidePassword") : t("a11y.showPassword")}
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-gold transition-colors"
+      >
+        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    </div>
+  );
+}
 
 function useAuthState() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -347,47 +401,67 @@ export function Profile() {
 
           {mode === "register" && (
             <div className="space-y-2.5">
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder={t("profile.fullName")}
-                  aria-label={t("profile.fullName")}
-                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : ""}`}
-                />
+              <div>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder={t("profile.fullName")}
+                    aria-label={t("profile.fullName")}
+                    aria-invalid={fieldErrors.fullName ? true : undefined}
+                    className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.fullName ? "border-red-500" : ""}`}
+                  />
+                </div>
+                {fieldErrors.fullName && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.fullName}</p>
+                )}
               </div>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("profile.email")}
-                  aria-label={t("profile.email")}
-                  type="email"
-                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
-                />
+              <div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("profile.email")}
+                    aria-label={t("profile.email")}
+                    type="email"
+                    aria-invalid={fieldErrors.email ? true : undefined}
+                    className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+                  />
+                </div>
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                )}
               </div>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder={t("profile.phone")}
-                  aria-label={t("profile.phone")}
-                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
-                />
+              <div>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder={t("profile.phone")}
+                    aria-label={t("profile.phone")}
+                    aria-invalid={fieldErrors.phone ? true : undefined}
+                    className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.phone ? "border-red-500" : "border-zinc-700"}`}
+                  />
+                </div>
+                {fieldErrors.phone && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.phone}</p>
+                )}
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
+              <div>
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("profile.password")}
-                  aria-label={t("profile.password")}
-                  type="password"
-                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+                  ariaLabel={t("profile.password")}
+                  hasError={!!fieldErrors.password}
+                  autoComplete="current-password"
                 />
+                {fieldErrors.password && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+                )}
               </div>
               <button
                 disabled={loading}
@@ -401,27 +475,35 @@ export function Profile() {
 
           {mode === "login" && (
             <div className="space-y-2.5">
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t("profile.email")}
-                  aria-label={t("profile.email")}
-                  type="email"
-                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
-                />
+              <div>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <input
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder={t("profile.email")}
+                    aria-label={t("profile.email")}
+                    type="email"
+                    aria-invalid={fieldErrors.email ? true : undefined}
+                    className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.email ? "border-red-500" : "border-zinc-700"}`}
+                  />
+                </div>
+                {fieldErrors.email && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.email}</p>
+                )}
               </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                <input
+              <div>
+                <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={t("profile.password")}
-                  aria-label={t("profile.password")}
-                  type="password"
-                  className={`w-full glass premium-input rounded-xl py-2.5 pl-10 pr-3 ${fieldErrors.password ? "border-red-500" : "border-zinc-700"}`}
+                  ariaLabel={t("profile.password")}
+                  hasError={!!fieldErrors.password}
+                  autoComplete="current-password"
                 />
+                {fieldErrors.password && (
+                  <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
+                )}
               </div>
               <button
                 disabled={loading}
@@ -579,27 +661,29 @@ export function ChangePasswordPage() {
       </div>
 
       <div className="glass rounded-3xl p-6 space-y-3">
-        <input
+        <PasswordInput
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
-          type="password"
-          className="w-full glass premium-input rounded-xl py-3 px-3"
           placeholder={t("profile.currentPassword")}
-          aria-label={t("profile.currentPassword")}
+          ariaLabel={t("profile.currentPassword")}
+          autoComplete="current-password"
         />
-        <input
+        <PasswordInput
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
-          type="password"
-          className="w-full glass premium-input rounded-xl py-3 px-3"
           placeholder={t("profile.newPassword")}
-          aria-label={t("profile.newPassword")}
+          ariaLabel={t("profile.newPassword")}
+          autoComplete="new-password"
         />
         <button
           disabled={loading}
           onClick={async () => {
             setErr(null);
             setMsg(null);
+            if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPassword)) {
+              setErr(t("profile.passErr"));
+              return;
+            }
             try {
               setLoading(true);
               await changePassword({
@@ -609,6 +693,7 @@ export function ChangePasswordPage() {
               setCurrentPassword("");
               setNewPassword("");
               setMsg(t("profile.passwordUpdated"));
+              setTimeout(() => navigate("/profile"), 900);
             } catch (e) {
               setErr(e instanceof Error ? e.message : t("profile.passwordUpdateFailed"));
             } finally {
