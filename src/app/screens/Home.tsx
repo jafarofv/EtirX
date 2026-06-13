@@ -58,7 +58,7 @@ export function Home() {
     { key: "men", label: t("home.tab.men") },
     { key: "unisex", label: t("home.tab.unisex") },
     { key: "sale", label: t("home.tab.sale") },
-    { key: "best", label: "Ən Çox Satılanlar" },
+    { key: "best", label: t("home.tab.best") },
   ];
 
   const latestProductId = Math.max(...products.map((x) => x.id), 0);

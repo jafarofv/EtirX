@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+﻿import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Language = "az" | "en" | "ru";
 type Dict = Record<string, Record<Language, string>>;
@@ -88,6 +88,7 @@ const dict: Dict = {
   "home.tab.men": { az: "Kişi", en: "Men", ru: "Мужские" },
   "home.tab.unisex": { az: "Uniseks", en: "Unisex", ru: "Унисекс" },
   "home.tab.sale": { az: "Endirim", en: "Sale", ru: "Скидки" },
+  "home.tab.best": { az: "Ən Çox Satılanlar", en: "Best Sellers", ru: "Хиты продаж" },
   "home.offer.badge": { az: "Məhdud təklif", en: "Limited Offer", ru: "Ограниченное предложение" },
   "home.offer.title": {
     az: "ETIRX10 promokodu ilə 10% endirim",
@@ -1007,6 +1008,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     const saved = localStorage.getItem(STORAGE_KEY) as Language | null;
     return saved === "az" || saved === "en" || saved === "ru" ? saved : "az";
   });
+
+  // Keep <html lang> in sync with the active UI language. This is the single
+  // source of truth, so the document language is correct even on screens that
+  // do not render a <Seo> tag, and it updates immediately on language switch.
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const value = useMemo(
     () => ({
