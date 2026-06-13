@@ -149,6 +149,17 @@ const dict: Dict = {
   "search.title": { az: "Axtarış", en: "Search", ru: "Поиск" },
   "search.results": { az: "nəticə", en: "results", ru: "результатов" },
   "search.allCategories": { az: "Bütün kateqoriyalar", en: "All categories", ru: "Все категории" },
+  "search.filterCategory": {
+    az: "Kateqoriyaya görə süz",
+    en: "Filter by category",
+    ru: "Фильтр по категории",
+  },
+  "search.notesHint": { az: "Nota görə", en: "By note", ru: "По ноте" },
+  "search.empty": {
+    az: "Bu axtarışa uyğun nəticə tapılmadı.",
+    en: "No results match this search.",
+    ru: "По этому запросу ничего не найдено.",
+  },
 
   "favorites.title": { az: "Seçilənlər", en: "Favorites", ru: "Избранное" },
   "favorites.empty": {
@@ -382,6 +393,18 @@ const dict: Dict = {
 
   "campaigns.title": { az: "Kampaniyalar", en: "Campaigns", ru: "Кампании" },
   "campaigns.subtitle": { az: "Aktiv endirimlər", en: "Active promotions", ru: "Активные акции" },
+  "campaigns.empty": {
+    az: "Hazırda aktiv kampaniya yoxdur.",
+    en: "No active campaigns right now.",
+    ru: "Сейчас нет активных кампаний.",
+  },
+  "campaigns.copy": { az: "Kodu kopyala", en: "Copy code", ru: "Копировать код" },
+  "campaigns.copied": { az: "Kod kopyalandı", en: "Code copied", ru: "Код скопирован" },
+  "campaigns.minOrder": {
+    az: "Minimum sifariş",
+    en: "Minimum order",
+    ru: "Минимальный заказ",
+  },
   "campaigns.code1": {
     az: "Seçilmiş məhsullara 30% endirim.",
     en: "30% discount on selected products.",
