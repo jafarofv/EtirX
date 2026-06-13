@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { ArrowLeft, MapPin, Truck, CheckCircle2, User } from "lucide-react";
+import { ArrowLeft, Copy, MapPin, Truck, CheckCircle2, User } from "lucide-react";
 import { useI18n } from "../i18n";
 import {
   FALLBACK_DELIVERY_METHODS as API_FALLBACK_DELIVERY_METHODS,
@@ -16,6 +16,11 @@ import { orderStatusLabel, orderStatusStyle } from "../lib/orderStatus";
 import { formatCurrency } from "../lib/formatCurrency";
 import { onImageError } from "../lib/imageFallback";
 import { Seo } from "../components/Seo";
+import { toast } from "sonner";
+
+// Persist the just-placed order so an accidental refresh of the success
+// screen doesn't lose the customer's tracking code.
+const LAST_ORDER_KEY = "etirx-last-order";
 
 type DeliveryMethod = {
   code: string;
@@ -226,6 +231,34 @@ export function Checkout() {
     );
   }, [fullName, phone, address, notes]);
 
+  // Restore the success screen after an accidental refresh: if a freshly
+  // placed order is still in sessionStorage and the cart is empty (not a new
+  // checkout), show it again so the tracking code isn't lost. A non-empty cart
+  // means the user is checking out again, so the stale order is dropped.
+  useEffect(() => {
+    const saved = sessionStorage.getItem(LAST_ORDER_KEY);
+    if (!saved) return;
+    if (getCartRows().length > 0) {
+      sessionStorage.removeItem(LAST_ORDER_KEY);
+      return;
+    }
+    try {
+      setPlacedOrder(JSON.parse(saved) as PlacedOrder);
+      setStep("success");
+    } catch {
+      sessionStorage.removeItem(LAST_ORDER_KEY);
+    }
+  }, []);
+
+  const copyCode = async (code: string) => {
+    try {
+      await navigator.clipboard.writeText(code);
+      toast.success(t("campaigns.copied"));
+    } catch {
+      // Clipboard API unavailable — non-fatal
+    }
+  };
+
   const handlePlaceOrder = async () => {
     setError(null);
     if (!fullName || !phone || (requiresAddress && !address)) {
@@ -271,6 +304,11 @@ export function Checkout() {
       localStorage.removeItem("checkout-promo-code");
       setPlacedOrder(result);
       setStep("success");
+      try {
+        sessionStorage.setItem(LAST_ORDER_KEY, JSON.stringify(result));
+      } catch {
+        // sessionStorage unavailable — non-fatal
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : t("checkout.submitError"));
     } finally {
@@ -329,9 +367,22 @@ export function Checkout() {
                 <p className="text-xs text-zinc-500 uppercase tracking-wider">
                   {t("checkout.orderCode")}
                 </p>
-                <p className="text-gold text-lg font-medium">
-                  {order?.code ? `#${order.code}` : "N/A"}
-                </p>
+                <div className="flex items-center justify-end gap-2">
+                  <p className="text-gold text-lg font-medium">
+                    {order?.code ? `#${order.code}` : "N/A"}
+                  </p>
+                  {order?.code && (
+                    <button
+                      type="button"
+                      onClick={() => copyCode(order.code)}
+                      aria-label={t("campaigns.copy")}
+                      title={t("campaigns.copy")}
+                      className="rounded-lg glass p-1.5 text-zinc-300 transition-all hover:border-gold hover:text-gold"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
                 <span
                   className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}
                 >
@@ -431,11 +482,28 @@ export function Checkout() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              <button onClick={() => navigate("/")} className="btn-gold px-8 py-3.5 rounded-2xl">
+              <button
+                onClick={() => {
+                  sessionStorage.removeItem(LAST_ORDER_KEY);
+                  navigate("/");
+                }}
+                className="btn-gold px-8 py-3.5 rounded-2xl"
+              >
                 {t("checkout.continue")}
               </button>
+              {order?.code && (
+                <button
+                  onClick={() => navigate(`/sifaris-izleme?code=${encodeURIComponent(order.code)}`)}
+                  className="glass px-8 py-3.5 rounded-2xl font-medium hover:border-gold transition-all"
+                >
+                  {t("checkout.trackOrder")}
+                </button>
+              )}
               <button
-                onClick={() => navigate("/profile")}
+                onClick={() => {
+                  sessionStorage.removeItem(LAST_ORDER_KEY);
+                  navigate("/profile");
+                }}
                 className="glass px-8 py-3.5 rounded-2xl font-medium hover:border-gold transition-all"
               >
                 {t("checkout.orderDetails")}
@@ -593,29 +661,34 @@ export function Checkout() {
             <div className="glass rounded-2xl p-5">
               <h2 className="font-display text-2xl mb-4">{t("cart.summary")}</h2>
 
-              <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
-                {cartItems.map((item) => (
-                  <div
-                    key={`${item.perfume.id}-${item.variant.id ?? "d"}`}
-                    className="flex items-center gap-3"
-                  >
-                    <div className="w-11 h-11 rounded-lg overflow-hidden glass shrink-0">
-                      <img
-                        src={item.variant.imageUrl || item.perfume.image}
-                        alt=""
-                        onError={onImageError}
-                        className="w-full h-full object-cover"
-                      />
+              <div className="relative">
+                <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+                  {cartItems.map((item) => (
+                    <div
+                      key={`${item.perfume.id}-${item.variant.id ?? "d"}`}
+                      className="flex items-center gap-3"
+                    >
+                      <div className="w-11 h-11 rounded-lg overflow-hidden glass shrink-0">
+                        <img
+                          src={item.variant.imageUrl || item.perfume.image}
+                          alt=""
+                          onError={onImageError}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm truncate">{item.perfume.name}</p>
+                        <p className="text-xs text-zinc-500">x{item.quantity}</p>
+                      </div>
+                      <p className="text-sm text-gold shrink-0">
+                        {formatCurrency(item.variant.price * item.quantity)}
+                      </p>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm truncate">{item.perfume.name}</p>
-                      <p className="text-xs text-zinc-500">x{item.quantity}</p>
-                    </div>
-                    <p className="text-sm text-gold shrink-0">
-                      {formatCurrency(item.variant.price * item.quantity)}
-                    </p>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                {cartItems.length > 3 && (
+                  <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 rounded-b bg-gradient-to-t from-black/60 to-transparent" />
+                )}
               </div>
 
               <div className="flex gap-2 mt-4">
