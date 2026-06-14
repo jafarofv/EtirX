@@ -16,23 +16,33 @@ export function Favorites() {
   const { t } = useI18n();
   const [favorites, setFavorites] = useState<CatalogProduct[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
     (async () => {
-      const products = await loadCatalogProducts();
-      const favoriteIds = getFavoriteIds();
-      setFavorites(products.filter((p) => favoriteIds.includes(p.id)));
-      setHydrated(true);
+      try {
+        setLoadError(false);
+        const products = await loadCatalogProducts();
+        const favoriteIds = getFavoriteIds();
+        setFavorites(products.filter((p) => favoriteIds.includes(p.id)));
+      } catch {
+        setLoadError(true);
+      } finally {
+        setHydrated(true);
+      }
     })();
-  }, []);
+  }, [retry]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    // Don't persist on a failed load — otherwise an API error would write an
+    // empty list back and wipe the stored favorites.
+    if (!hydrated || loadError) return;
     localStorage.setItem("favorites", JSON.stringify(favorites.map((f) => f.id)));
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
     void syncStoredCollections();
-  }, [favorites, hydrated]);
+  }, [favorites, hydrated, loadError]);
 
   const removeFavorite = (id: number) => {
     setFavorites((favs) => favs.filter((p) => p.id !== id));
@@ -43,6 +53,23 @@ export function Favorites() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <Spinner />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-zinc-300 text-sm mb-6 max-w-sm">{t("product.loadError")}</p>
+        <button
+          onClick={() => {
+            setHydrated(false);
+            setRetry((r) => r + 1);
+          }}
+          className="btn-gold rounded-xl px-6 py-3"
+        >
+          {t("common.retry")}
+        </button>
       </div>
     );
   }

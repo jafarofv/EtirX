@@ -27,39 +27,49 @@ export function Cart() {
   const [promoErr, setPromoErr] = useState<string | null>(null);
   const [promoDiscount, setPromoDiscount] = useState(0);
   const [repricedNote, setRepricedNote] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retry, setRetry] = useState(0);
   const fmt = (v: number) => formatCurrency(v);
 
   useEffect(() => {
     (async () => {
-      const products = await loadCatalogProducts();
-      const byId = new Map(products.map((p) => [p.id, p] as const));
-      const variantById = new Map(
-        products.flatMap((p) => [
-          ...p.variants.map((variant) => [variant.id, { perfume: p, variant }] as const),
-          [p.defaultVariant.id ?? p.id, { perfume: p, variant: p.defaultVariant }] as const,
-        ])
-      );
-      let repriced = false;
-      const items = getCartRows()
-        .map((i) => {
-          const perfume = byId.get(i.id);
-          if (!perfume) return null;
-          const resolved = i.variantId ? variantById.get(i.variantId) : undefined;
-          if (i.variantId && !resolved) repriced = true;
-          const variant = resolved?.variant ?? perfume.defaultVariant;
-          return { perfume, variant, quantity: i.quantity };
-        })
-        .filter((i): i is CartItem => Boolean(i?.perfume && i.variant));
-      setCartItems(items);
-      setRepricedNote(repriced);
-      setPromoCode(localStorage.getItem("checkout-promo-code") ?? "");
-      setPromoDiscount(0);
-      setHydrated(true);
+      try {
+        setLoadError(false);
+        const products = await loadCatalogProducts();
+        const byId = new Map(products.map((p) => [p.id, p] as const));
+        const variantById = new Map(
+          products.flatMap((p) => [
+            ...p.variants.map((variant) => [variant.id, { perfume: p, variant }] as const),
+            [p.defaultVariant.id ?? p.id, { perfume: p, variant: p.defaultVariant }] as const,
+          ])
+        );
+        let repriced = false;
+        const items = getCartRows()
+          .map((i) => {
+            const perfume = byId.get(i.id);
+            if (!perfume) return null;
+            const resolved = i.variantId ? variantById.get(i.variantId) : undefined;
+            if (i.variantId && !resolved) repriced = true;
+            const variant = resolved?.variant ?? perfume.defaultVariant;
+            return { perfume, variant, quantity: i.quantity };
+          })
+          .filter((i): i is CartItem => Boolean(i?.perfume && i.variant));
+        setCartItems(items);
+        setRepricedNote(repriced);
+        setPromoCode(localStorage.getItem("checkout-promo-code") ?? "");
+        setPromoDiscount(0);
+      } catch {
+        setLoadError(true);
+      } finally {
+        setHydrated(true);
+      }
     })();
-  }, []);
+  }, [retry]);
 
   useEffect(() => {
-    if (!hydrated) return;
+    // Don't persist on a failed load — otherwise an API error would write an
+    // empty list back and wipe the stored cart.
+    if (!hydrated || loadError) return;
     localStorage.setItem(
       "cart-items",
       JSON.stringify(
@@ -78,7 +88,7 @@ export function Cart() {
     );
     window.dispatchEvent(new CustomEvent("app-storage-updated"));
     void syncStoredCollections();
-  }, [cartItems, hydrated]);
+  }, [cartItems, hydrated, loadError]);
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = 0;
@@ -148,6 +158,23 @@ export function Cart() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <Spinner />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-6 text-center">
+        <p className="text-zinc-300 text-sm mb-6 max-w-sm">{t("product.loadError")}</p>
+        <button
+          onClick={() => {
+            setHydrated(false);
+            setRetry((r) => r + 1);
+          }}
+          className="btn-gold rounded-xl px-6 py-3"
+        >
+          {t("common.retry")}
+        </button>
       </div>
     );
   }
