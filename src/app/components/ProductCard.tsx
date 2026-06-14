@@ -92,8 +92,8 @@ export function ProductCard({
         </button>
         {data.badges.length > 0 && (
           <div
-            className={`pointer-events-none absolute z-20 flex flex-col items-end gap-1.5 ${
-              featured ? "top-4 right-4" : "top-3 right-3"
+            className={`pointer-events-none absolute z-20 flex flex-wrap justify-end gap-1.5 ${
+              featured ? "top-4 right-4 left-14" : "top-3 right-3 left-12"
             }`}
           >
             {data.badges.map((b) => (
