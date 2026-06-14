@@ -24,6 +24,10 @@ class ProductSerializer(serializers.ModelSerializer):
     variants = serializers.SerializerMethodField()
     default_variant = serializers.SerializerMethodField()
     images = serializers.SerializerMethodField()
+    is_new = serializers.SerializerMethodField()
+
+    def get_is_new(self, obj: Product):
+        return obj.compute_is_new(self._settings().new_badge_days)
 
     def get_images(self, obj: Product):
         request = self.context.get("request")
@@ -115,7 +119,7 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             "id", "name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes", "price", "old_price",
-            "volume_ml", "gender", "stock", "rating", "review_count", "image_url", "images", "variants", "default_variant", "is_active", "is_new_arrival", "is_best_seller", "category", "categories"
+            "volume_ml", "gender", "stock", "rating", "review_count", "image_url", "images", "variants", "default_variant", "is_active", "is_new", "is_best_seller", "category", "categories"
         ]
 
 

@@ -36,20 +36,17 @@ function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessag
   const [favoriteIds, setFavoriteIds] = useState<number[]>(() => getFavoriteIds());
   const [pulseFav, setPulseFav] = useState<number | null>(null);
   const [pulseCart, setPulseCart] = useState<number | null>(null);
-  const latestId = Math.max(...items.map((i) => i.id), 0);
   const hasSlug = (p: ApiProduct, slug: string) =>
     (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
-  const badgeFor = (p: ApiProduct) => {
-    if (p.old_price) return t("common.sale");
-    if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2)
-      return t("common.new");
-    if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return t("common.bestSeller");
-    return null;
-  };
-  const badgeClassFor = (p: ApiProduct) => {
-    if (p.old_price) return "badge-sale";
-    if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2) return "badge-new";
-    return "badge-best";
+  // Up to two badges: Sale always shows; then New (else Best Seller).
+  // "New" is server-computed (admin 3-state mode + auto date window).
+  const badgesFor = (p: ApiProduct) => {
+    const badges: { label: string; className: string }[] = [];
+    if (p.old_price) badges.push({ label: t("common.sale"), className: "badge-sale" });
+    if (p.is_new) badges.push({ label: t("common.new"), className: "badge-new" });
+    else if (p.is_best_seller || hasSlug(p, "en-cox-satanlar"))
+      badges.push({ label: t("common.bestSeller"), className: "badge-best" });
+    return badges;
   };
   const hasStock = (p: ApiProduct) =>
     (p.variants ?? []).some((variant) => variant.is_active && variant.stock > 0) || p.stock > 0;
@@ -99,8 +96,7 @@ function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessag
       .split(",")
       .map((s) => s.trim())
       .filter(Boolean),
-    badge: badgeFor(p),
-    badgeClass: badgeClassFor(p),
+    badges: badgesFor(p),
   });
 
   if (items.length === 0) {

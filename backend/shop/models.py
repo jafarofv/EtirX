@@ -19,6 +19,15 @@ class Category(models.Model):
 
 
 class Product(models.Model):
+    NEW_BADGE_AUTO = "auto"
+    NEW_BADGE_ALWAYS = "always"
+    NEW_BADGE_NEVER = "never"
+    NEW_BADGE_MODE_CHOICES = [
+        (NEW_BADGE_AUTO, "Avtomatik (yaradılma tarixinə görə)"),
+        (NEW_BADGE_ALWAYS, "Həmişə yeni göstər"),
+        (NEW_BADGE_NEVER, "Heç vaxt göstərmə"),
+    ]
+
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     categories = models.ManyToManyField(Category, blank=True, related_name="products_multi")
     name = models.CharField(max_length=150)
@@ -30,7 +39,12 @@ class Product(models.Model):
     base_notes = models.TextField(blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     old_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    is_new_arrival = models.BooleanField(default=False)
+    new_badge_mode = models.CharField(
+        max_length=10,
+        choices=NEW_BADGE_MODE_CHOICES,
+        default=NEW_BADGE_AUTO,
+        help_text="'Yeni' nişanı: Avtomatik (yaradılma tarixindən N gün), Həmişə, və ya Heç vaxt.",
+    )
     is_best_seller = models.BooleanField(default=False)
     volume_ml = models.PositiveIntegerField(default=100)
     gender = models.CharField(max_length=20, default="uniseks")
@@ -59,6 +73,20 @@ class Product(models.Model):
             self.variants.filter(is_active=True, is_default=True).first()
             or self.variants.filter(is_active=True).order_by("sort_order", "id").first()
         )
+
+    def compute_is_new(self, window_days: int) -> bool:
+        """Whether the 'Yeni' badge should show, honouring the admin 3-state mode.
+
+        ALWAYS / NEVER are explicit per-product overrides; AUTO shows the badge
+        while the product is younger than ``window_days`` (SiteSettings.new_badge_days).
+        """
+        if self.new_badge_mode == self.NEW_BADGE_ALWAYS:
+            return True
+        if self.new_badge_mode == self.NEW_BADGE_NEVER:
+            return False
+        if not self.created_at or window_days <= 0:
+            return False
+        return (timezone.now() - self.created_at).days < window_days
 
 
 class ProductImage(models.Model):
@@ -200,6 +228,10 @@ class SiteSettings(models.Model):
     gram_image_100_url = models.URLField(
         blank=True,
         help_text="Shared image for 100ml gram variants.",
+    )
+    new_badge_days = models.PositiveIntegerField(
+        default=7,
+        help_text="Avtomatik 'Yeni' nişanı: məhsul əlavə edildikdən sonra neçə gün yeni sayılsın. 0 = avtomatik söndürülür.",
     )
 
     class Meta:
