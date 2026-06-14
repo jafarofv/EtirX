@@ -41,8 +41,9 @@ function ProductGrid({ items, emptyMessage }: { items: ApiProduct[]; emptyMessag
     (p.categories ?? []).some((c) => c.slug === slug) || p.category?.slug === slug;
   const badgeFor = (p: ApiProduct) => {
     if (p.old_price) return t("common.sale");
-    if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2) return "Yeni";
-    if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return "Çox Satılan";
+    if (p.is_new_arrival || hasSlug(p, "yeni-gelenler") || p.id >= latestId - 2)
+      return t("common.new");
+    if (p.is_best_seller || hasSlug(p, "en-cox-satanlar")) return t("common.bestSeller");
     return null;
   };
   const badgeClassFor = (p: ApiProduct) => {

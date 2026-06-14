@@ -451,7 +451,7 @@ export function Layout() {
                       <div className="mt-4 flex items-center justify-between text-xs text-zinc-500">
                         <span>{review.time}</span>
                         <span className="px-2.5 py-1 rounded-full border border-zinc-800 bg-zinc-900/80">
-                          Nümunə
+                          {t("reviews.sample")}
                         </span>
                       </div>
                     </article>
