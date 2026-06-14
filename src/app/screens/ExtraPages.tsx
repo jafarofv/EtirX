@@ -396,29 +396,32 @@ export function CategoryLandingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const map: Record<string, { title: string; q?: string }> = {
-    "yeni-gelenler": { title: "Yeni Gələnlər", q: "new" },
-    qadin: { title: "Qadın", q: "women" },
-    kisiler: { title: "Kişi", q: "men" },
-    uniseks: { title: "Uniseks", q: "unisex" },
-    endirim: { title: "Endirim", q: "sale" },
-    "en-cox-satanlar": { title: "Ən Çox Satanlar", q: "best seller" },
-    "nis-etirler": { title: "Niş Ətirlər", q: "niche" },
-    "gundelik-istifade": { title: "Gündəlik İstifadə", q: "daily" },
-    "axsam-ve-tedbir": { title: "Axşam və Tədbir", q: "evening" },
-    "yay-etirleri": { title: "Yay Ətirləri", q: "summer" },
-    "qis-etirleri": { title: "Qış Ətirləri", q: "winter" },
-    "uzunmuddetli-qaliciliq": { title: "Uzunmüddətli Qalıcılıq", q: "long lasting" },
-    "hediyyelik-setler": { title: "Hədiyyəlik Setlər", q: "gift set" },
-    "premium-secimler": { title: "Premium Seçimlər", q: "premium" },
+  const titles: Record<string, string> = {
+    "yeni-gelenler": "Yeni Gələnlər",
+    qadin: "Qadın",
+    kisiler: "Kişi",
+    uniseks: "Uniseks",
+    endirim: "Endirim",
+    "en-cox-satanlar": "Ən Çox Satanlar",
+    "nis-etirler": "Niş Ətirlər",
+    "gundelik-istifade": "Gündəlik İstifadə",
+    "axsam-ve-tedbir": "Axşam və Tədbir",
+    "yay-etirleri": "Yay Ətirləri",
+    "qis-etirleri": "Qış Ətirləri",
+    "uzunmuddetli-qaliciliq": "Uzunmüddətli Qalıcılıq",
+    "hediyyelik-setler": "Hədiyyəlik Setlər",
+    "premium-secimler": "Premium Seçimlər",
   };
 
-  const current = map[slug ?? ""] ?? { title: "Kateqoriya" };
+  const current = { title: titles[slug ?? ""] ?? "Kateqoriya" };
 
+  // Filter by the actual category slug (the backend supports ?category=<slug>).
+  // The previous keyword-search approach sent English words ("women", "niche")
+  // against Azerbaijani product text and matched almost nothing.
   useEffect(() => {
     (async () => {
       try {
-        const data = await getProducts(current.q ? { q: current.q } : undefined);
+        const data = await getProducts(slug ? { category: slug } : undefined);
         setItems(data);
       } catch {
         setError("Məhsullar yüklənmədi.");
@@ -427,7 +430,7 @@ export function CategoryLandingPage() {
         setLoading(false);
       }
     })();
-  }, [current.q]);
+  }, [slug]);
 
   return (
     <PageWrap title={current.title} subtitle={`${items.length} məhsul`}>

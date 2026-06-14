@@ -82,7 +82,9 @@ export function Cart() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = 0;
-  const total = subtotal + shipping - promoDiscount;
+  // Clamp to 0: a fixed-amount promo larger than the (reduced) subtotal must not
+  // render a negative total.
+  const total = Math.max(0, subtotal + shipping - promoDiscount);
 
   useEffect(() => {
     if (!hydrated) return;

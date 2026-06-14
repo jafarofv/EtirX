@@ -100,7 +100,8 @@ export function Checkout() {
   const requiresAddress = selectedMethod?.requiresAddress ?? false;
   const subtotal = cartItems.reduce((sum, item) => sum + item.variant.price * item.quantity, 0);
   const shipping = selectedMethod?.fee ?? 0;
-  const total = subtotal + shipping - promoDiscount;
+  // Clamp to 0 so a fixed-amount promo exceeding the order never shows negative.
+  const total = Math.max(0, subtotal + shipping - promoDiscount);
 
   useEffect(() => {
     let mounted = true;
