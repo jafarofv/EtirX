@@ -666,7 +666,11 @@ export function AboutPage() {
   if (cms) {
     return (
       <PageWrap title={cms.title} subtitle={cms.subtitle || undefined}>
-        <Seo title={`${cms.title} | ƏtirX`} description={cms.subtitle || cms.title} path="/about" />
+        <Seo
+          title={`${cms.title} | ƏtirX`}
+          description={cms.subtitle || cms.title}
+          path="/haqqimizda"
+        />
         <CmsBody body={cms.body} />
       </PageWrap>
     );
@@ -682,6 +686,11 @@ export function AboutPage() {
 
   return (
     <PageWrap title={t("about.title")}>
+      <Seo
+        title={`${t("about.title")} | ƏtirX`}
+        description={t("about.subtitle")}
+        path="/haqqimizda"
+      />
       <div className="max-w-4xl space-y-6 text-zinc-300 leading-7">
         <p>
           <strong className="text-white">ƏtirX</strong> olaraq inanırıq ki, ətir sadəcə bir qoxu
@@ -991,6 +1000,11 @@ export function PrivacyPage() {
   if (cms) {
     return (
       <PageWrap title={cms.title} subtitle={cms.subtitle || t("privacy.subtitle")}>
+        <Seo
+          title={`${cms.title} | ƏtirX`}
+          description={cms.subtitle || t("privacy.subtitle")}
+          path="/gizlilik"
+        />
         <CmsBody body={cms.body} />
       </PageWrap>
     );
@@ -1006,6 +1020,11 @@ export function PrivacyPage() {
 
   return (
     <PageWrap title={t("privacy.title")} subtitle={t("privacy.subtitle")}>
+      <Seo
+        title={`${t("privacy.title")} | ƏtirX`}
+        description={t("privacy.subtitle")}
+        path="/gizlilik"
+      />
       <div className="max-w-4xl space-y-3">
         {sections.map(([titleKey, bodyKey], index) => (
           <section key={titleKey} className="glass rounded-2xl p-4">
@@ -1027,6 +1046,11 @@ export function TermsPage() {
   if (cms) {
     return (
       <PageWrap title={cms.title} subtitle={cms.subtitle || t("terms.subtitle")}>
+        <Seo
+          title={`${cms.title} | ƏtirX`}
+          description={cms.subtitle || t("terms.subtitle")}
+          path="/sertler"
+        />
         <CmsBody body={cms.body} />
       </PageWrap>
     );
@@ -1046,6 +1070,11 @@ export function TermsPage() {
 
   return (
     <PageWrap title={t("terms.title")} subtitle={t("terms.subtitle")}>
+      <Seo
+        title={`${t("terms.title")} | ƏtirX`}
+        description={t("terms.subtitle")}
+        path="/sertler"
+      />
       <div className="max-w-4xl space-y-3">
         {sections.map(([titleKey, bodyKey], index) => (
           <section key={titleKey} className="glass rounded-2xl p-4">

@@ -2,8 +2,10 @@ import { useEffect } from "react";
 import { useI18n } from "../i18n";
 
 type SeoProps = {
-  title: string;
-  description: string;
+  /** Page title. Omit for the site-level <Seo> so it never clobbers a page's. */
+  title?: string;
+  /** Meta description. Omit for the site-level <Seo> (page-owned). */
+  description?: string;
   path?: string;
   image?: string;
   lang?: "az" | "en" | "ru";
@@ -55,15 +57,25 @@ export function Seo({
     const canonicalUrl = `${origin}${canonicalPath}`;
     const imageUrl = image.startsWith("http") ? image : `${origin}${image}`;
 
-    document.title = title;
     document.documentElement.lang = activeLang;
 
-    upsertMeta("description", description);
-    upsertMeta("robots", noindex ? "noindex, nofollow" : "index, follow");
+    // Title/description are page-owned. The site-level <Seo> in Layout omits
+    // them (passes undefined) so a page's values are never clobbered: React
+    // runs child (page) effects before parent (Layout) effects, so without
+    // this guard the parent would always overwrite the page title last.
+    if (title !== undefined) {
+      document.title = title;
+      upsertMeta("og:title", title, "property");
+      upsertMeta("twitter:title", title);
+    }
+    if (description !== undefined) {
+      upsertMeta("description", description);
+      upsertMeta("og:description", description, "property");
+      upsertMeta("twitter:description", description);
+    }
 
+    upsertMeta("robots", noindex ? "noindex, nofollow" : "index, follow");
     upsertMeta("og:type", "website", "property");
-    upsertMeta("og:title", title, "property");
-    upsertMeta("og:description", description, "property");
     upsertMeta("og:url", canonicalUrl, "property");
     upsertMeta("og:image", imageUrl, "property");
     upsertMeta(
@@ -73,8 +85,6 @@ export function Seo({
     );
 
     upsertMeta("twitter:card", "summary_large_image");
-    upsertMeta("twitter:title", title);
-    upsertMeta("twitter:description", description);
     upsertMeta("twitter:image", imageUrl);
 
     upsertLink("canonical", canonicalUrl);

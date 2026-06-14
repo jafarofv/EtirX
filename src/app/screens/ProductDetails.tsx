@@ -221,7 +221,9 @@ export function ProductDetails() {
             "@type": "Offer",
             priceCurrency: "AZN",
             price: perfume.price.toFixed(2),
-            availability: "https://schema.org/InStock",
+            availability: perfume.inStock
+              ? "https://schema.org/InStock"
+              : "https://schema.org/OutOfStock",
           },
         }}
       />

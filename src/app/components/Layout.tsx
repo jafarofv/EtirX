@@ -263,9 +263,10 @@ export function Layout() {
 
   return (
     <div className="min-h-screen w-full bg-black text-white">
+      {/* Site-level SEO: canonical/og:url (live path), Organization JSON-LD and
+          lang. Title + description are intentionally omitted so each page's
+          <Seo> owns them — see Seo.tsx for the effect-ordering rationale. */}
       <Seo
-        title="ƏtirX | Premium Ətir Mağazası"
-        description="ƏtirX-də premium qadın, kişi və uniseks ətirləri notlara görə axtarın, seçin və qapıda ödənişlə sifariş edin."
         path={`${location.pathname}${location.search}`}
         lang={language}
         jsonLd={[
