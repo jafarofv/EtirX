@@ -118,7 +118,11 @@ class Command(BaseCommand):
                     "gender": parse_gender(row.get("gender")),
                     "stock": parse_int(row["stock"]),
                     "image_url": (row.get("image_url") or "").strip(),
-                    "is_new_arrival": parse_bool(row.get("is_new_arrival")),
+                    "new_badge_mode": (
+                        Product.NEW_BADGE_ALWAYS
+                        if parse_bool(row.get("is_new_arrival"))
+                        else Product.NEW_BADGE_AUTO
+                    ),
                     "is_best_seller": parse_bool(row.get("is_best_seller")),
                     "is_active": parse_bool(row.get("is_active", "true")),
                 }

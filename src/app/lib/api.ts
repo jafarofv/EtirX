@@ -137,7 +137,8 @@ export type ApiProduct = {
     sort_order: number;
   };
   is_active: boolean;
-  is_new_arrival?: boolean;
+  /** Server-computed: honours the admin 3-state mode + the auto date window. */
+  is_new?: boolean;
   is_best_seller?: boolean;
   category: { id: number; name: string; slug: string };
   categories?: Array<{ id: number; name: string; slug: string }>;

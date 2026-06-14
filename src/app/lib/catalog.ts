@@ -15,7 +15,7 @@ export type CatalogProduct = {
   category: string;
   categorySlugs: string[];
   categoryNames: string[];
-  isNewArrival: boolean;
+  isNew: boolean;
   isBestSeller: boolean;
   size: string;
   gender: string;
@@ -117,7 +117,7 @@ function fromApi(items: ApiProduct[]) {
           [p.category?.name, ...(p.categories ?? []).map((c) => c.name)].filter(Boolean) as string[]
         )
       ),
-      isNewArrival: Boolean(p.is_new_arrival),
+      isNew: Boolean(p.is_new),
       isBestSeller: Boolean(p.is_best_seller),
       size: `${p.volume_ml ?? 100}ml`,
       gender: p.gender ?? "uniseks",

@@ -58,7 +58,6 @@ export function Home() {
     { key: "best", label: t("home.tab.best") },
   ];
 
-  const latestProductId = Math.max(...products.map((x) => x.id), 0);
   const hasCategory = (p: CatalogProduct, slug: string) => p.categorySlugs.includes(slug);
   const isWomen = (p: CatalogProduct) =>
     hasCategory(p, "qadin") || /women|qadin/i.test(`${p.name} ${p.description} ${p.category}`);
@@ -66,8 +65,8 @@ export function Home() {
     hasCategory(p, "kisiler") || /men|kisi/i.test(`${p.name} ${p.description} ${p.category}`);
   const isUnisex = (p: CatalogProduct) =>
     hasCategory(p, "uniseks") || /unisex/i.test(`${p.name} ${p.description} ${p.category}`);
-  const isNew = (p: CatalogProduct) =>
-    p.isNewArrival || hasCategory(p, "yeni-gelenler") || p.id >= latestProductId - 2;
+  // Driven by the server: admin 3-state mode (auto/always/never) + the auto date window.
+  const isNew = (p: CatalogProduct) => p.isNew;
   const bestSellerIds = new Set(
     [...products]
       .sort((a, b) => b.reviews - a.reviews || b.rating - a.rating)
@@ -88,16 +87,14 @@ export function Home() {
       (selectedCategory === "best" && isBest(p))
   );
 
-  const getBadge = (perfume: CatalogProduct) => {
-    if (perfume.originalPrice) return t("common.sale");
-    if (isNew(perfume)) return t("common.new");
-    if (isBest(perfume)) return t("common.bestSeller");
-    return null;
-  };
-  const getBadgeClass = (perfume: CatalogProduct) => {
-    if (perfume.originalPrice) return "badge-sale";
-    if (isNew(perfume)) return "badge-new";
-    return "badge-best";
+  // Up to two badges: Sale always shows; then New (else Best Seller).
+  const getBadges = (perfume: CatalogProduct) => {
+    const badges: { label: string; className: string }[] = [];
+    if (perfume.originalPrice) badges.push({ label: t("common.sale"), className: "badge-sale" });
+    if (isNew(perfume)) badges.push({ label: t("common.new"), className: "badge-new" });
+    else if (isBest(perfume))
+      badges.push({ label: t("common.bestSeller"), className: "badge-best" });
+    return badges;
   };
 
   const addPerfumeToCart = (perfume: CatalogProduct) => {
@@ -140,8 +137,7 @@ export function Home() {
     reviews: perfume.reviews,
     inStock: perfume.inStock,
     notes: perfume.notes.top,
-    badge: getBadge(perfume),
-    badgeClass: getBadgeClass(perfume),
+    badges: getBadges(perfume),
   });
 
   return (

@@ -25,10 +25,11 @@ export interface ProductCardData {
   inStock: boolean;
   /** Raw note keys (English) — the card translates + colour-codes them. */
   notes: string[];
-  /** Localized badge label, or null for no badge. */
-  badge: string | null;
-  /** Badge style class: "badge-sale" | "badge-new" | "badge-best". */
-  badgeClass: string;
+  /**
+   * Badges to overlay on the image, highest priority first (caller caps the count).
+   * Each: localized label + style class ("badge-sale" | "badge-new" | "badge-best").
+   */
+  badges: Array<{ label: string; className: string }>;
 }
 
 type ProductCardProps = {
@@ -89,13 +90,22 @@ export function ProductCard({
             } ${pulseFav ? "scale-125" : ""} transition-transform`}
           />
         </button>
-        {data.badge && (
+        {data.badges.length > 0 && (
           <div
-            className={`badge-lux ${data.badgeClass} absolute rounded-full text-[10px] ${
-              featured ? "top-4 right-4 px-3 py-1.5" : "top-3 right-3 px-2.5 py-1"
+            className={`pointer-events-none absolute z-20 flex flex-col items-end gap-1.5 ${
+              featured ? "top-4 right-4" : "top-3 right-3"
             }`}
           >
-            {data.badge}
+            {data.badges.map((b) => (
+              <span
+                key={b.className}
+                className={`badge-lux ${b.className} rounded-full text-[10px] ${
+                  featured ? "px-3 py-1.5" : "px-2.5 py-1"
+                }`}
+              >
+                {b.label}
+              </span>
+            ))}
           </div>
         )}
       </div>

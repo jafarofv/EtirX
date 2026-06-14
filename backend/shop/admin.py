@@ -75,8 +75,8 @@ class ProductVariantInline(admin.TabularInline):
 
 
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ("name", "brand", "category", "gender", "volume_ml", "is_new_arrival", "is_best_seller", "price", "stock", "rating", "review_count", "is_active", "created_at")
-    list_filter = ("is_active", "is_new_arrival", "is_best_seller", "category", "brand")
+    list_display = ("name", "brand", "category", "gender", "volume_ml", "new_badge_mode", "is_best_seller", "price", "stock", "rating", "review_count", "is_active", "created_at")
+    list_filter = ("is_active", "new_badge_mode", "is_best_seller", "category", "brand")
     search_fields = ("name", "slug", "brand", "description", "top_notes", "heart_notes", "base_notes")
     ordering = ("-created_at",)
     list_editable = ("price", "stock", "rating", "is_active")
@@ -86,7 +86,7 @@ class ProductAdmin(admin.ModelAdmin):
             "fields": (
                 "name", "slug", "brand", "categories",
                 "gender", "volume_ml",
-                "is_new_arrival", "is_best_seller",
+                "new_badge_mode", "is_best_seller",
                 "price", "old_price", "stock", "rating", "review_count", "is_active"
             )
         }),
@@ -258,6 +258,7 @@ class SiteSettingsAdmin(admin.ModelAdmin):
         ("WhatsApp", {"fields": ("whatsapp_number",)}),
         ("Social", {"fields": ("instagram_url", "instagram_handle", "tiktok_url", "tiktok_handle")}),
         ("Store", {"fields": ("store_address",)}),
+        ("Badges", {"fields": ("new_badge_days",)}),
         (
             "Announcement and images",
             {
