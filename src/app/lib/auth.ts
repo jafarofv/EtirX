@@ -35,6 +35,12 @@ async function authRequest<T>(path: string, init?: RequestInit, useToken = false
     headers: { ...headers, ...(init?.headers ?? {}) },
   });
   if (!res.ok) {
+    // A token we sent was rejected (expired / revoked / password changed on
+    // another device): drop it so the UI reflects a logged-out state instead
+    // of repeatedly retrying with a dead token.
+    if (res.status === 401 && useToken) {
+      clearAuth();
+    }
     const bodyText = await res.text();
     throw new Error(extractApiErrorMessage(bodyText, res.status));
   }
@@ -92,7 +98,12 @@ export async function changePassword(payload: { current_password: string; new_pa
     { method: "POST", body: JSON.stringify(payload) },
     true
   );
-  setToken(data.token);
+  // The backend rotates the token on password change; only adopt it when one
+  // is actually returned so a missing/204 response can never persist the
+  // string "undefined" (which would 401 the next request).
+  if (data?.token) {
+    setToken(data.token);
+  }
 }
 
 export type UserOrder = {
