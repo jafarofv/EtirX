@@ -87,6 +87,8 @@ const dict: Dict = {
     ru: "Последние отзывы в стиле соцсетей",
   },
   "reviews.badge": { az: "İstifadəçi rəyləri", en: "User reviews", ru: "Отзывы пользователей" },
+  "reviews.sample": { az: "Nümunə", en: "Sample", ru: "Пример" },
+  "profile.statusLabel": { az: "Status", en: "Status", ru: "Статус" },
 
   "home.tagline": { az: "Lüks Ətirlər", en: "Luxury Fragrances", ru: "Люксовые ароматы" },
   "home.search": { az: "Ətir axtar...", en: "Search fragrances...", ru: "Поиск ароматов..." },
@@ -117,6 +119,8 @@ const dict: Dict = {
   },
   "home.offer.cta": { az: "İndi al", en: "Shop Now", ru: "Купить сейчас" },
   "common.sale": { az: "Endirim", en: "Sale", ru: "Скидка" },
+  "common.new": { az: "Yeni", en: "New", ru: "Новинка" },
+  "common.bestSeller": { az: "Çox Satılan", en: "Best Seller", ru: "Хит продаж" },
   "toast.addedToCart": {
     az: "Səbətə əlavə edildi",
     en: "Added to cart",
@@ -310,6 +314,11 @@ const dict: Dict = {
   "checkout.place": { az: "Sifarişi tamamla", en: "Place Order", ru: "Оформить заказ" },
   "checkout.orderCode": { az: "Sifariş", en: "Order", ru: "Заказ" },
   "checkout.trackOrder": { az: "Sifarişi izlə", en: "Track order", ru: "Отследить заказ" },
+  "checkout.addressRequired": {
+    az: "Ünvan tələb olunur",
+    en: "Address required",
+    ru: "Требуется адрес",
+  },
   "checkout.fullName": { az: "Ad və soyad", en: "Full name", ru: "Имя и фамилия" },
   "checkout.phone": { az: "Telefon", en: "Phone", ru: "Телефон" },
   "checkout.addrInput": { az: "Ünvan", en: "Address", ru: "Адрес" },
@@ -407,6 +416,35 @@ const dict: Dict = {
   "product.topNotes": { az: "Üst notlar", en: "Top Notes", ru: "Верхние ноты" },
   "product.heartNotes": { az: "Orta notlar", en: "Heart Notes", ru: "Средние ноты" },
   "product.baseNotes": { az: "Baza notlar", en: "Base Notes", ru: "Базовые ноты" },
+  "product.genderLabel": { az: "Cins", en: "Gender", ru: "Пол" },
+  "product.gender.women": { az: "Qadın", en: "Women", ru: "Женский" },
+  "product.gender.men": { az: "Kişi", en: "Men", ru: "Мужской" },
+  "product.gender.unisex": { az: "Uniseks", en: "Unisex", ru: "Унисекс" },
+  "product.shippingTerms": {
+    az: "Çatdırılma şərtləri",
+    en: "Shipping terms",
+    ru: "Условия доставки",
+  },
+  "product.shippingTermsBody": {
+    az: "Bakı: 1-2 iş günü, regionlar: 2-4 iş günü.",
+    en: "Baku: 1–2 business days, regions: 2–4 business days.",
+    ru: "Баку: 1–2 рабочих дня, регионы: 2–4 рабочих дня.",
+  },
+  "product.codTitle": {
+    az: "Bank kartı vasitəsilə ödəniş",
+    en: "Pay by card on delivery",
+    ru: "Оплата картой при получении",
+  },
+  "product.codBody": {
+    az: "Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.",
+    en: "Pay by cash or card when the order is delivered.",
+    ru: "Оплатите наличными или картой при получении.",
+  },
+  "product.whatsappCta": {
+    az: "WhatsApp-da bizə yaz",
+    en: "Message us on WhatsApp",
+    ru: "Напишите нам в WhatsApp",
+  },
 
   "campaigns.title": { az: "Kampaniyalar", en: "Campaigns", ru: "Кампании" },
   "campaigns.subtitle": { az: "Aktiv endirimlər", en: "Active promotions", ru: "Активные акции" },

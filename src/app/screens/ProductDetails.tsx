@@ -120,7 +120,11 @@ export function ProductDetails() {
   };
 
   const gender =
-    perfume.gender === "qadin" ? "Qadın" : perfume.gender === "kisi" ? "Kişi" : "Uniseks";
+    perfume.gender === "qadin"
+      ? t("product.gender.women")
+      : perfume.gender === "kisi"
+        ? t("product.gender.men")
+        : t("product.gender.unisex");
 
   const variants = perfume.variants.length > 0 ? perfume.variants : [perfume.defaultVariant];
   const selectedVariant =
@@ -364,7 +368,9 @@ export function ProductDetails() {
             <div className="flex items-start gap-2 px-2.5 sm:px-4">
               <User className="hidden sm:block w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div className="min-w-0">
-                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">Cins</p>
+                <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-0.5">
+                  {t("product.genderLabel")}
+                </p>
                 <p className="text-xs sm:text-sm font-medium leading-tight">{gender}</p>
               </div>
             </div>
@@ -442,17 +448,15 @@ export function ProductDetails() {
             <div className="flex items-start gap-3 p-3.5">
               <Truck className="w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Çatdırılma şərtləri</p>
-                <p className="text-sm text-zinc-400">Bakı: 1-2 iş günü, regionlar: 2-4 iş günü.</p>
+                <p className="text-sm font-medium">{t("product.shippingTerms")}</p>
+                <p className="text-sm text-zinc-400">{t("product.shippingTermsBody")}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3.5">
               <CreditCard className="w-4 h-4 text-gold mt-0.5 shrink-0" />
               <div>
-                <p className="text-sm font-medium">Bank kartı vasitəsilə ödəniş</p>
-                <p className="text-sm text-zinc-400">
-                  Məhsulu təhvil alanda nağd və ya bank kartı vasitəsilə ödəniş et.
-                </p>
+                <p className="text-sm font-medium">{t("product.codTitle")}</p>
+                <p className="text-sm text-zinc-400">{t("product.codBody")}</p>
               </div>
             </div>
             <a
@@ -462,7 +466,7 @@ export function ProductDetails() {
               className="flex items-center gap-3 p-3.5 hover:bg-emerald-700/10 transition-all"
             >
               <MessageCircle className="w-4 h-4 text-emerald-300 shrink-0" />
-              <p className="text-sm font-medium text-emerald-200">WhatsApp-da bizə yaz</p>
+              <p className="text-sm font-medium text-emerald-200">{t("product.whatsappCta")}</p>
             </a>
           </div>
         </div>

@@ -90,8 +90,8 @@ export function Home() {
 
   const getBadge = (perfume: CatalogProduct) => {
     if (perfume.originalPrice) return t("common.sale");
-    if (isNew(perfume)) return "Yeni";
-    if (isBest(perfume)) return "Çox Satılan";
+    if (isNew(perfume)) return t("common.new");
+    if (isBest(perfume)) return t("common.bestSeller");
     return null;
   };
   const getBadgeClass = (perfume: CatalogProduct) => {

@@ -387,7 +387,7 @@ export function Checkout() {
                 <span
                   className={`inline-flex mt-2 px-3 py-1 rounded-full text-xs font-medium border ${orderStatusStyle(status)}`}
                 >
-                  {orderStatusLabel(status)}
+                  {orderStatusLabel(status, t)}
                 </span>
               </div>
             </div>
@@ -636,7 +636,9 @@ export function Checkout() {
                       </div>
                       <p className="mt-0.5 text-xs text-zinc-400">{method.eta}</p>
                       {method.requiresAddress && (
-                        <p className="mt-1 text-xs text-zinc-500">Ünvan tələb olunur</p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {t("checkout.addressRequired")}
+                        </p>
                       )}
                     </div>
                   </button>
