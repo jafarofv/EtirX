@@ -458,7 +458,7 @@ export function Profile() {
                   placeholder={t("profile.password")}
                   ariaLabel={t("profile.password")}
                   hasError={!!fieldErrors.password}
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                 />
                 {fieldErrors.password && (
                   <p className="mt-1 text-xs text-red-400">{fieldErrors.password}</p>
